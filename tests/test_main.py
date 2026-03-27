@@ -1,6 +1,6 @@
 import math
 from datetime import datetime
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 import main
 
@@ -48,8 +48,8 @@ def _get_sample_value(metrics, name, labels=None):
 
 
 def collect_with(html):
-    collector = main.SurfboardCollector()
-    with patch("builtins.open", mock_open(read_data=html)):
+    collector = main.SurfboardCollector("user", "pass")
+    with patch("main.connection_status_get", return_value=html):
         return list(collector.collect())
 
 

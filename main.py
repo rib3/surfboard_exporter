@@ -1,21 +1,24 @@
 import logging
+import os
 
 from prometheus_client import REGISTRY, start_http_server
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
+from client import connection_status_get
 from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
 logger = logging.getLogger(__name__)
 
-CM_STATUS_HTML = "cmconnectionstatus.html"
-
 
 class SurfboardCollector:
+    def __init__(self, username: str, password: str) -> None:
+        self.username = username
+        self.password = password
+
     def collect(self):
         logger.info("collect start")
 
-        with open(CM_STATUS_HTML, encoding="windows-1252") as f:
-            html = f.read()
+        html = connection_status_get(self.username, self.password)
 
         yield GaugeMetricFamily(
             "surfboard_system_time",
@@ -110,7 +113,9 @@ def logging_config() -> None:
 def main() -> None:
     logging_config()
     logger.info("starting")
-    REGISTRY.register(SurfboardCollector())
+    username = os.environ.get("SURFBOARD_USERNAME", "admin")
+    password = os.environ["SURFBOARD_PASSWORD"]
+    REGISTRY.register(SurfboardCollector(username, password))
     _, thread = start_http_server(8000)
     thread.join()
 

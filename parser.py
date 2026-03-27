@@ -47,6 +47,9 @@ def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
     soup = BeautifulSoup(html, "html.parser")
 
     header = soup.find("th", string=lambda t: t and "Upstream Bonded Channels" in t)
+    if header is None:
+        logger.warning("header not found:\n%r", html)
+        return []
     table = header.find_parent("table")
 
     channels = []
@@ -71,6 +74,9 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
     soup = BeautifulSoup(html, "html.parser")
 
     header = soup.find("th", string=lambda t: t and "Downstream Bonded Channels" in t)
+    if header is None:
+        logger.warning("header not found:\n%r", html)
+        return []
     table = header.find_parent("table")
 
     channels = []

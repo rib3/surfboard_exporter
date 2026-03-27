@@ -23,6 +23,9 @@ dev = [
   "watchdog>=6.0.0",
 ]
 
+[tool.black]
+target-version = ["py312"]
+
 [tool.pytest-watcher]
 now = true
 # clear = true

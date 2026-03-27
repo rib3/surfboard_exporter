@@ -73,10 +73,22 @@ def scrape() -> None:
 
 
 def logging_config() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+    format = ":".join(
+        [
+            "%(created)s",
+            # "%(asctime)s",
+            "%(process)d",
+            "%(thread)d",
+            "%(threadName)s",
+            # "%(taskName)s",
+            "%(name)s",
+            "%(levelname)s",
+            "%(module)s",
+            "%(funcName)s",
+            "%(message)s",
+        ]
     )
+    logging.basicConfig(level=logging.DEBUG, format=format)
 
 
 if __name__ == "__main__":

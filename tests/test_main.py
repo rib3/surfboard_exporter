@@ -46,7 +46,7 @@ LABELS = {"channel_id": "1"}
 
 
 def _get_sample_value(name, labels=None):
-    return _get_sample_value(name, labels)
+    return REGISTRY.get_sample_value(name, labels)
 
 
 def scrape_with(html):

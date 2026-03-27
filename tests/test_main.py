@@ -45,6 +45,10 @@ HTML_150 = HTML.replace("<td>100</td>", "<td>150</td>").replace(
 LABELS = {"channel_id": "1"}
 
 
+def _get_sample_value(name, labels=None):
+    return _get_sample_value(name, labels)
+
+
 def scrape_with(html):
     with patch("builtins.open", mock_open(read_data=html)):
         main.scrape()
@@ -59,69 +63,57 @@ def test_system_time():
     scrape_with(HTML)
 
     assert (
-        REGISTRY.get_sample_value("surfboard_system_time")
+        _get_sample_value("surfboard_system_time")
         == datetime(2026, 3, 26, 14, 58, 2).timestamp()
     )
 
 
 def test_system_time_missing_element():
     scrape_with(HTML_NO_TIME)
-    assert math.isnan(REGISTRY.get_sample_value("surfboard_system_time"))
+    assert math.isnan(_get_sample_value("surfboard_system_time"))
 
 
 def test_system_time_invalid_format():
     scrape_with(HTML_WITH_BAD_TIME)
-    assert math.isnan(REGISTRY.get_sample_value("surfboard_system_time"))
+    assert math.isnan(_get_sample_value("surfboard_system_time"))
 
 
 def test_downstream_gauges():
     scrape_with(HTML)
 
-    assert (
-        REGISTRY.get_sample_value("surfboard_downstream_frequency_hz", LABELS)
-        == 387000000
-    )
-    assert REGISTRY.get_sample_value("surfboard_downstream_power_dbmv", LABELS) == -8.2
-    assert REGISTRY.get_sample_value("surfboard_downstream_snr_db", LABELS) == 43.5
+    assert _get_sample_value("surfboard_downstream_frequency_hz", LABELS) == 387000000
+    assert _get_sample_value("surfboard_downstream_power_dbmv", LABELS) == -8.2
+    assert _get_sample_value("surfboard_downstream_snr_db", LABELS) == 43.5
 
 
 def test_upstream_gauges():
     scrape_with(HTML)
 
-    assert (
-        REGISTRY.get_sample_value("surfboard_upstream_frequency_hz", LABELS) == 16400000
-    )
-    assert REGISTRY.get_sample_value("surfboard_upstream_width_hz", LABELS) == 6400000
-    assert REGISTRY.get_sample_value("surfboard_upstream_power_dbmv", LABELS) == 46.0
+    assert _get_sample_value("surfboard_upstream_frequency_hz", LABELS) == 16400000
+    assert _get_sample_value("surfboard_upstream_width_hz", LABELS) == 6400000
+    assert _get_sample_value("surfboard_upstream_power_dbmv", LABELS) == 46.0
 
 
 def test_counter_first_scrape_is_zero():
     scrape_with(HTML)
 
-    assert (
-        REGISTRY.get_sample_value("surfboard_downstream_corrected_total", LABELS) == 0.0
-    )
-    assert (
-        REGISTRY.get_sample_value("surfboard_downstream_uncorrectables_total", LABELS)
-        == 0.0
-    )
+    assert _get_sample_value("surfboard_downstream_corrected_total", LABELS) == 0.0
+    assert _get_sample_value("surfboard_downstream_uncorrectables_total", LABELS) == 0.0
 
 
 def test_counter_delta():
     scrape_with(HTML)
-    before_corrected = REGISTRY.get_sample_value(
-        "surfboard_downstream_corrected_total", LABELS
-    )
-    before_uncorrectables = REGISTRY.get_sample_value(
+    before_corrected = _get_sample_value("surfboard_downstream_corrected_total", LABELS)
+    before_uncorrectables = _get_sample_value(
         "surfboard_downstream_uncorrectables_total", LABELS
     )
 
     scrape_with(HTML_150)
     assert (
-        REGISTRY.get_sample_value("surfboard_downstream_corrected_total", LABELS)
+        _get_sample_value("surfboard_downstream_corrected_total", LABELS)
         == before_corrected + 50
     )
     assert (
-        REGISTRY.get_sample_value("surfboard_downstream_uncorrectables_total", LABELS)
+        _get_sample_value("surfboard_downstream_uncorrectables_total", LABELS)
         == before_uncorrectables + 50
     )

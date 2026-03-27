@@ -45,6 +45,8 @@ _prev_uncorrectables: dict[str, int] = {}
 
 
 def scrape() -> None:
+    logger.info("scrape start")
+
     with open(CM_STATUS_HTML, encoding="windows-1252") as f:
         html = f.read()
 
@@ -70,6 +72,8 @@ def scrape() -> None:
         )
         _prev_corrected[cid] = ch.corrected
         _prev_uncorrectables[cid] = ch.uncorrectables
+
+    logger.info("scrape end")
 
 
 def logging_config() -> None:
@@ -97,7 +101,6 @@ def main() -> None:
     start_http_server(8000)
     while True:
         scrape()
-        logger.info("scraped")
         time.sleep(30)
 
 

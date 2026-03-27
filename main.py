@@ -1,7 +1,7 @@
-import time
 import logging
 
-from prometheus_client import Counter, Gauge, start_http_server
+from prometheus_client import REGISTRY, start_http_server
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
 from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
@@ -9,71 +9,83 @@ logger = logging.getLogger(__name__)
 
 CM_STATUS_HTML = "cmconnectionstatus.html"
 
-SYSTEM_TIME = Gauge("surfboard_system_time", "System time (Unix timestamp)")
 
-DS_FREQUENCY = Gauge(
-    "surfboard_downstream_frequency_hz",
-    "Downstream channel frequency (Hz)",
-    ["channel_id"],
-)
-DS_POWER = Gauge(
-    "surfboard_downstream_power_dbmv", "Downstream power (dBmV)", ["channel_id"]
-)
-DS_SNR = Gauge("surfboard_downstream_snr_db", "Downstream SNR/MER (dB)", ["channel_id"])
-DS_CORRECTED = Counter(
-    "surfboard_downstream_corrected", "Downstream corrected codewords", ["channel_id"]
-)
-DS_UNCORRECTABLES = Counter(
-    "surfboard_downstream_uncorrectables",
-    "Downstream uncorrectable codewords",
-    ["channel_id"],
-)
+class SurfboardCollector:
+    def collect(self):
+        logger.info("collect start")
 
+        with open(CM_STATUS_HTML, encoding="windows-1252") as f:
+            html = f.read()
 
-US_FREQUENCY = Gauge(
-    "surfboard_upstream_frequency_hz", "Upstream channel frequency (Hz)", ["channel_id"]
-)
-US_WIDTH = Gauge(
-    "surfboard_upstream_width_hz", "Upstream channel width (Hz)", ["channel_id"]
-)
-US_POWER = Gauge(
-    "surfboard_upstream_power_dbmv", "Upstream power (dBmV)", ["channel_id"]
-)
-
-_prev_corrected: dict[str, int] = {}
-_prev_uncorrectables: dict[str, int] = {}
-
-
-def scrape() -> None:
-    logger.info("scrape start")
-
-    with open(CM_STATUS_HTML, encoding="windows-1252") as f:
-        html = f.read()
-
-    SYSTEM_TIME.set(parse_system_time(html))
-
-    for ch in parse_upstream_channels(html):
-        labels = {"channel_id": str(ch.channel_id)}
-        US_FREQUENCY.labels(**labels).set(ch.frequency_hz)
-        US_WIDTH.labels(**labels).set(ch.width_hz)
-        US_POWER.labels(**labels).set(ch.power_dbmv)
-
-    for ch in parse_downstream_channels(html):
-        labels = {"channel_id": str(ch.channel_id)}
-        cid = str(ch.channel_id)
-        DS_FREQUENCY.labels(**labels).set(ch.frequency_hz)
-        DS_POWER.labels(**labels).set(ch.power_dbmv)
-        DS_SNR.labels(**labels).set(ch.snr_db)
-        DS_CORRECTED.labels(**labels).inc(
-            ch.corrected - _prev_corrected.get(cid, ch.corrected)
+        yield GaugeMetricFamily(
+            "surfboard_system_time",
+            "System time (Unix timestamp)",
+            value=parse_system_time(html),
         )
-        DS_UNCORRECTABLES.labels(**labels).inc(
-            ch.uncorrectables - _prev_uncorrectables.get(cid, ch.uncorrectables)
-        )
-        _prev_corrected[cid] = ch.corrected
-        _prev_uncorrectables[cid] = ch.uncorrectables
 
-    logger.info("scrape end")
+        us_frequency = GaugeMetricFamily(
+            "surfboard_upstream_frequency_hz",
+            "Upstream channel frequency (Hz)",
+            labels=["channel_id"],
+        )
+        us_width = GaugeMetricFamily(
+            "surfboard_upstream_width_hz",
+            "Upstream channel width (Hz)",
+            labels=["channel_id"],
+        )
+        us_power = GaugeMetricFamily(
+            "surfboard_upstream_power_dbmv",
+            "Upstream power (dBmV)",
+            labels=["channel_id"],
+        )
+        for ch in parse_upstream_channels(html):
+            cid = [str(ch.channel_id)]
+            us_frequency.add_metric(cid, ch.frequency_hz)
+            us_width.add_metric(cid, ch.width_hz)
+            us_power.add_metric(cid, ch.power_dbmv)
+        yield us_frequency
+        yield us_width
+        yield us_power
+
+        ds_frequency = GaugeMetricFamily(
+            "surfboard_downstream_frequency_hz",
+            "Downstream channel frequency (Hz)",
+            labels=["channel_id"],
+        )
+        ds_power = GaugeMetricFamily(
+            "surfboard_downstream_power_dbmv",
+            "Downstream power (dBmV)",
+            labels=["channel_id"],
+        )
+        ds_snr = GaugeMetricFamily(
+            "surfboard_downstream_snr_db",
+            "Downstream SNR/MER (dB)",
+            labels=["channel_id"],
+        )
+        ds_corrected = CounterMetricFamily(
+            "surfboard_downstream_corrected",
+            "Downstream corrected codewords",
+            labels=["channel_id"],
+        )
+        ds_uncorrectables = CounterMetricFamily(
+            "surfboard_downstream_uncorrectables",
+            "Downstream uncorrectable codewords",
+            labels=["channel_id"],
+        )
+        for ch in parse_downstream_channels(html):
+            cid = [str(ch.channel_id)]
+            ds_frequency.add_metric(cid, ch.frequency_hz)
+            ds_power.add_metric(cid, ch.power_dbmv)
+            ds_snr.add_metric(cid, ch.snr_db)
+            ds_corrected.add_metric(cid, ch.corrected)
+            ds_uncorrectables.add_metric(cid, ch.uncorrectables)
+        yield ds_frequency
+        yield ds_power
+        yield ds_snr
+        yield ds_corrected
+        yield ds_uncorrectables
+
+        logger.info("collect end")
 
 
 def logging_config() -> None:
@@ -98,10 +110,9 @@ def logging_config() -> None:
 def main() -> None:
     logging_config()
     logger.info("starting")
-    start_http_server(8000)
-    while True:
-        scrape()
-        time.sleep(30)
+    REGISTRY.register(SurfboardCollector())
+    _, thread = start_http_server(8000)
+    thread.join()
 
 
 if __name__ == "__main__":

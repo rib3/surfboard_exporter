@@ -1,7 +1,10 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -14,6 +17,20 @@ class DownstreamChannel:
     snr_db: float
     corrected: int
     uncorrectables: int
+
+
+def parse_system_time(html: str) -> float:
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("p", id="systime")
+    if tag is not None:
+        try:
+            text = tag.get_text(strip=True)
+            time_str = text.removeprefix("Current System Time:").strip()
+            return datetime.strptime(time_str, "%a %b %d %H:%M:%S %Y").timestamp()
+        except ValueError:
+            logger.exception("failed to parse system time")
+
+    return float("nan")
 
 
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:

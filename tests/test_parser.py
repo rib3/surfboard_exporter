@@ -1,4 +1,7 @@
-from parser import parse_downstream_channels
+import math
+from datetime import datetime
+
+from parser import parse_downstream_channels, parse_system_time
 
 
 HTML = """
@@ -37,7 +40,21 @@ HTML = """
 </tr>
 </tbody>
 </table>
+<p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>
 """
+
+
+def test_parse_system_time():
+    assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
+
+
+def test_parse_system_time_missing_element():
+    assert math.isnan(parse_system_time("<html></html>"))
+
+
+def test_parse_system_time_invalid_format():
+    html = '<p id="systime">Current System Time: not-a-date</p>'
+    assert math.isnan(parse_system_time(html))
 
 
 def test_channel_fields():

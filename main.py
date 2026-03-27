@@ -3,26 +3,28 @@ import logging
 
 from prometheus_client import Counter, Gauge, start_http_server
 
-from parser import parse_downstream_channels
+from parser import parse_downstream_channels, parse_system_time
 
 logger = logging.getLogger(__name__)
 
 CM_STATUS_HTML = "cmconnectionstatus.html"
 
-CM_SYSTEM_TIME = Gauge(
-    "cm_system_time_seconds", "Cable modem system time (Unix timestamp)"
-)
+SYSTEM_TIME = Gauge("surfboard_system_time", "System time (Unix timestamp)")
 
 DS_FREQUENCY = Gauge(
-    "downstream_frequency_hz", "Downstream channel frequency (Hz)", ["channel_id"]
+    "surfboard_downstream_frequency_hz",
+    "Downstream channel frequency (Hz)",
+    ["channel_id"],
 )
-DS_POWER = Gauge("downstream_power_dbmv", "Downstream power (dBmV)", ["channel_id"])
-DS_SNR = Gauge("downstream_snr_db", "Downstream SNR/MER (dB)", ["channel_id"])
+DS_POWER = Gauge(
+    "surfboard_downstream_power_dbmv", "Downstream power (dBmV)", ["channel_id"]
+)
+DS_SNR = Gauge("surfboard_downstream_snr_db", "Downstream SNR/MER (dB)", ["channel_id"])
 DS_CORRECTED = Counter(
-    "downstream_corrected", "Downstream corrected codewords", ["channel_id"]
+    "surfboard_downstream_corrected", "Downstream corrected codewords", ["channel_id"]
 )
 DS_UNCORRECTABLES = Counter(
-    "downstream_uncorrectables",
+    "surfboard_downstream_uncorrectables",
     "Downstream uncorrectable codewords",
     ["channel_id"],
 )
@@ -35,6 +37,9 @@ _prev_uncorrectables: dict[str, int] = {}
 def scrape() -> None:
     with open(CM_STATUS_HTML, encoding="windows-1252") as f:
         html = f.read()
+
+    SYSTEM_TIME.set(parse_system_time(html))
+
     for ch in parse_downstream_channels(html):
         labels = {"channel_id": str(ch.channel_id)}
         cid = str(ch.channel_id)

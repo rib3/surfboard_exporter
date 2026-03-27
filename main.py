@@ -36,7 +36,9 @@ US_FREQUENCY = Gauge(
 US_WIDTH = Gauge(
     "surfboard_upstream_width_hz", "Upstream channel width (Hz)", ["channel_id"]
 )
-US_POWER = Gauge("surfboard_upstream_power_dbmv", "Upstream power (dBmV)", ["channel_id"])
+US_POWER = Gauge(
+    "surfboard_upstream_power_dbmv", "Upstream power (dBmV)", ["channel_id"]
+)
 
 _prev_corrected: dict[str, int] = {}
 _prev_uncorrectables: dict[str, int] = {}

@@ -3,7 +3,6 @@ from datetime import datetime
 
 from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
-
 HTML = """
 <table class="simpleTable">
 <tbody>

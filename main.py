@@ -91,7 +91,7 @@ def logging_config() -> None:
     logging.basicConfig(level=logging.DEBUG, format=format)
 
 
-if __name__ == "__main__":
+def main() -> None:
     logging_config()
     logger.info("starting")
     start_http_server(8000)
@@ -99,3 +99,7 @@ if __name__ == "__main__":
         scrape()
         logger.info("scraped")
         time.sleep(30)
+
+
+if __name__ == "__main__":
+    main()

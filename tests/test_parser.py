@@ -1,7 +1,7 @@
 import math
 from datetime import datetime
 
-from parser import parse_downstream_channels, parse_system_time
+from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
 
 HTML = """
@@ -40,8 +40,60 @@ HTML = """
 </tr>
 </tbody>
 </table>
+<table class="simpleTable">
+<tbody>
+<tr><th colspan="7"><strong>Upstream Bonded Channels</strong></th></tr>
+<tr>
+  <td><strong>Channel</strong></td>
+  <td><strong>Channel ID</strong></td>
+  <td><strong>Lock Status</strong></td>
+  <td><strong>US Channel Type</strong></td>
+  <td><strong>Frequency</strong></td>
+  <td><strong>Width</strong></td>
+  <td><strong>Power</strong></td>
+</tr>
+<tr align="left">
+  <td>1</td>
+  <td>1</td>
+  <td>Locked</td>
+  <td>SC-QAM Upstream</td>
+  <td>16400000 Hz</td>
+  <td>6400000 Hz</td>
+  <td>46.0 dBmV</td>
+</tr>
+<tr align="left">
+  <td>2</td>
+  <td>2</td>
+  <td>Locked</td>
+  <td>SC-QAM Upstream</td>
+  <td>22800000 Hz</td>
+  <td>6400000 Hz</td>
+  <td>48.0 dBmV</td>
+</tr>
+</tbody>
+</table>
 <p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>
 """
+
+
+def test_upstream_channel_fields():
+    channels = parse_upstream_channels(HTML)
+
+    assert channels[0].channel_id == 1
+    assert channels[0].lock_status == "Locked"
+    assert channels[0].channel_type == "SC-QAM Upstream"
+    assert channels[0].frequency_hz == 16400000
+    assert channels[0].width_hz == 6400000
+    assert channels[0].power_dbmv == 46.0
+
+    assert channels[1].channel_id == 2
+    assert channels[1].lock_status == "Locked"
+    assert channels[1].channel_type == "SC-QAM Upstream"
+    assert channels[1].frequency_hz == 22800000
+    assert channels[1].width_hz == 6400000
+    assert channels[1].power_dbmv == 48.0
+
+    assert not channels[2:]
 
 
 def test_parse_system_time():
@@ -54,6 +106,7 @@ def test_parse_system_time_missing_element():
 
 def test_parse_system_time_invalid_format():
     html = '<p id="systime">Current System Time: not-a-date</p>'
+
     assert math.isnan(parse_system_time(html))
 
 

@@ -3,7 +3,7 @@ import logging
 
 from prometheus_client import Counter, Gauge, start_http_server
 
-from parser import parse_downstream_channels, parse_system_time
+from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,14 @@ DS_UNCORRECTABLES = Counter(
 )
 
 
+US_FREQUENCY = Gauge(
+    "surfboard_upstream_frequency_hz", "Upstream channel frequency (Hz)", ["channel_id"]
+)
+US_WIDTH = Gauge(
+    "surfboard_upstream_width_hz", "Upstream channel width (Hz)", ["channel_id"]
+)
+US_POWER = Gauge("surfboard_upstream_power_dbmv", "Upstream power (dBmV)", ["channel_id"])
+
 _prev_corrected: dict[str, int] = {}
 _prev_uncorrectables: dict[str, int] = {}
 
@@ -39,6 +47,12 @@ def scrape() -> None:
         html = f.read()
 
     SYSTEM_TIME.set(parse_system_time(html))
+
+    for ch in parse_upstream_channels(html):
+        labels = {"channel_id": str(ch.channel_id)}
+        US_FREQUENCY.labels(**labels).set(ch.frequency_hz)
+        US_WIDTH.labels(**labels).set(ch.width_hz)
+        US_POWER.labels(**labels).set(ch.power_dbmv)
 
     for ch in parse_downstream_channels(html):
         labels = {"channel_id": str(ch.channel_id)}

@@ -20,11 +20,21 @@ def _client_get_or_create() -> httpx.Client:
     return _client
 
 
-@cachetools.cached(
-    cachetools.TTLCache(maxsize=128, ttl=30),
-    key=lambda client, username, password: (id(client), username, password),
-)
-def login(client: httpx.Client, username: str, password: str) -> str:
+_token_cache: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
+
+
+def _session_id_from_client(client: httpx.Client) -> str | None:
+    return client.cookies.get("sessionId")
+
+
+def token_get(client: httpx.Client, username: str, password: str) -> str:
+    session_id = _session_id_from_client(client)
+    if session_id:
+        token = _token_cache.get(session_id)
+        logger.debug("token (cached)=%r", token)
+        if token:
+            return token
+
     logger.info("cookies (before)=%r", dict(client.cookies))
     auth = base64.b64encode(f"{username}:{password}".encode()).decode()
     response = client.get(
@@ -34,12 +44,17 @@ def login(client: httpx.Client, username: str, password: str) -> str:
     logger.info("response=%r, response.text=%r", response, response.text)
     response.raise_for_status()
     logger.info("cookies=%r", dict(client.cookies))
-    return response.text
+    token = response.text
+    logger.debug("token=%r", token)
+    session_id = _session_id_from_client(client)
+    if session_id:
+        _token_cache[session_id] = token
+    return token
 
 
 def connection_status_get(username: str, password: str) -> str:
     client = _client_get_or_create()
-    token = login(client, username, password)
+    token = token_get(client, username, password)
     logger.info("cookies (before)=%r", dict(client.cookies))
     response = client.get(f"cmconnectionstatus.html?ct_{token}")
     logger.info("response=%r", response)

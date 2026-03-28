@@ -2,30 +2,32 @@ import base64
 
 import httpx
 
-from client import _client_create, connection_status_get, login
+from client import _client_create, connection_status_get, token_get
 
 
-def test_login(respx_mock):
+def test_token_get(respx_mock):
     auth = base64.b64encode(b"admin:password").decode()
     respx_mock.get(f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}").mock(
         return_value=httpx.Response(200, text="abc123token")
     )
     client = _client_create()
 
-    result = login(client, "admin", "password")
+    result = token_get(client, "admin", "password")
 
     assert result == "abc123token"
 
 
-def test_login_cached(respx_mock):
+def test_token_get_cached(respx_mock):
     auth = base64.b64encode(b"admin:password").decode()
     respx_mock.get(f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}").mock(
-        return_value=httpx.Response(200, text="abc123token")
+        return_value=httpx.Response(
+            200, text="abc123token", headers={"Set-Cookie": "sessionId=sess1"}
+        )
     )
     client = _client_create()
 
-    login(client, "admin", "password")
-    login(client, "admin", "password")
+    token_get(client, "admin", "password")
+    token_get(client, "admin", "password")
 
     assert respx_mock.calls.call_count == 1
 

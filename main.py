@@ -17,7 +17,6 @@ class SurfboardCollector:
 
     def collect(self):
         logger.info("collect start")
-
         html = connection_status_get(self.username, self.password)
 
         yield GaugeMetricFamily(
@@ -25,7 +24,12 @@ class SurfboardCollector:
             "System time (Unix timestamp)",
             value=parse_system_time(html),
         )
+        yield from self.collect_upstream(html)
+        yield from self.collect_downstream(html)
 
+        logger.info("collect end")
+
+    def collect_upstream(self, html: str):
         us_frequency = GaugeMetricFamily(
             "surfboard_upstream_frequency_hz",
             "Upstream channel frequency (Hz)",
@@ -50,6 +54,7 @@ class SurfboardCollector:
         yield us_width
         yield us_power
 
+    def collect_downstream(self, html: str):
         ds_frequency = GaugeMetricFamily(
             "surfboard_downstream_frequency_hz",
             "Downstream channel frequency (Hz)",
@@ -87,8 +92,6 @@ class SurfboardCollector:
         yield ds_snr
         yield ds_corrected
         yield ds_uncorrectables
-
-        logger.info("collect end")
 
 
 def logging_config() -> None:

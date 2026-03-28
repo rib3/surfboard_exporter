@@ -19,6 +19,10 @@ class SurfboardCollector:
         logger.info("collect start")
         html = connection_status_get(self.username, self.password)
 
+        if not html:
+            logger.warning("skipping collect, html=%r", html)
+            return
+
         yield GaugeMetricFamily(
             "surfboard_system_time",
             "System time (Unix timestamp)",

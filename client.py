@@ -52,7 +52,7 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     return token
 
 
-def connection_status_get(username: str, password: str) -> str:
+def connection_status_get(username: str, password: str) -> str | None:
     client = _client_get_or_create()
     token = token_get(client, username, password)
     logger.info("cookies (before)=%r", dict(client.cookies))
@@ -60,4 +60,10 @@ def connection_status_get(username: str, password: str) -> str:
     logger.info("response=%r", response)
     logger.info("cookies=%r", dict(client.cookies))
     response.raise_for_status()
+
+    session_id = _session_id_from_client(client)
+    if not session_id:
+        logger.warning("session_id=%r empty after request", session_id)
+        return None
+
     return response.text

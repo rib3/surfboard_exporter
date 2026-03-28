@@ -35,7 +35,9 @@ def test_token_get_cached(respx_mock):
 def test_connection_status_get(respx_mock):
     auth = base64.b64encode(b"admin:password").decode()
     respx_mock.get(f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}").mock(
-        return_value=httpx.Response(200, text="abc123token")
+        return_value=httpx.Response(
+            200, text="abc123token", headers={"Set-Cookie": "sessionId=sess1"}
+        )
     )
     respx_mock.get("https://192.168.100.1/cmconnectionstatus.html?ct_abc123token").mock(
         return_value=httpx.Response(200, text="<html>status</html>")

@@ -34,5 +34,8 @@ now = true
 # delay = 0.2
 # runner = "pytest"
 # runner_args = []
-# patterns = ["*.py"]
+patterns = [
+  "*.py",
+  "pyproject.toml", # updates to pytest/tool options
+]
 # ignore_patterns = []

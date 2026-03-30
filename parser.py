@@ -53,7 +53,7 @@ def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
     table = header.find_parent("table")
 
     channels = []
-    for row in table.find_all("tr")[2:]:  # skip header rows
+    for row in table.find_all("tr")[1:]:  # skip header row
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 7:
             continue
@@ -80,7 +80,7 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
     table = header.find_parent("table")
 
     channels = []
-    for row in table.find_all("tr")[2:]:  # skip header rows
+    for row in table.find_all("tr")[1:]:  # skip header row
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 8:
             continue

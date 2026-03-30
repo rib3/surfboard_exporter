@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from client import _client_create, connection_status_get, token_get
 
 
@@ -41,7 +43,9 @@ def test_connection_status_get_non_200(
 ):
     token = "abc123token"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
-    surfboard_api_mock_get_connectionstatus(token=token, status_code=401)
+    surfboard_api_mock_get_connectionstatus(
+        token=token, status_code=HTTPStatus.UNAUTHORIZED
+    )
 
     result = connection_status_get("admin", "password")
 

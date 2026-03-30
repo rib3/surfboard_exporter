@@ -1,4 +1,5 @@
 import base64
+from http import HTTPStatus
 
 import httpx
 import pytest
@@ -60,7 +61,12 @@ def clear_token_cache():
 @pytest.fixture
 def surfboard_api_mock_get_login(respx_mock, mimesis):
     def _mock(
-        *, username, password, status_code=200, token=UNDEFINED, session_id=UNDEFINED
+        *,
+        username,
+        password,
+        status_code=HTTPStatus.OK,
+        token=UNDEFINED,
+        session_id=UNDEFINED,
     ):
         if token is UNDEFINED:
             token = mimesis("token_hex")
@@ -80,7 +86,7 @@ def surfboard_api_mock_get_login(respx_mock, mimesis):
 
 @pytest.fixture
 def surfboard_api_mock_get_connectionstatus(respx_mock, mimesis):
-    def _mock(*, token, status_code=200, text=UNDEFINED):
+    def _mock(*, token, status_code=HTTPStatus.OK, text=UNDEFINED):
         if text is UNDEFINED:
             text = mimesis("token_hex")
         return respx_mock.get(

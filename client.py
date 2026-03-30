@@ -1,5 +1,6 @@
 import base64
 import logging
+from http import HTTPStatus
 
 import cachetools
 import httpx
@@ -58,8 +59,10 @@ def connection_status_get(username: str, password: str) -> str | None:
     logger.info("cookies (before)=%r", dict(client.cookies))
     response = client.get(f"cmconnectionstatus.html?ct_{token}")
     logger.info("response=%r", response)
-    if response.status_code != 200:
-        logger.warning("response.status_code=%r != 200", response.status_code)
+    if response.status_code != HTTPStatus.OK:
+        logger.warning(
+            "response.status_code=%r != %r", response.status_code, HTTPStatus.OK
+        )
         return None
 
     logger.info("cookies=%r", dict(client.cookies))

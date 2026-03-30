@@ -27,6 +27,9 @@ dev = [
 [tool.black]
 target-version = ["py312"]
 
+[tool.pytest.ini_options]
+addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
+
 [tool.pytest-watcher]
 now = true
 # clear = true

@@ -58,9 +58,11 @@ def connection_status_get(username: str, password: str) -> str | None:
     logger.info("cookies (before)=%r", dict(client.cookies))
     response = client.get(f"cmconnectionstatus.html?ct_{token}")
     logger.info("response=%r", response)
-    logger.info("cookies=%r", dict(client.cookies))
-    response.raise_for_status()
+    if response.status_code != 200:
+        logger.warning("response.status_code=%r != 200", response.status_code)
+        return None
 
+    logger.info("cookies=%r", dict(client.cookies))
     session_id = _session_id_from_client(client)
     if not session_id:
         logger.warning("session_id=%r empty after request", session_id)

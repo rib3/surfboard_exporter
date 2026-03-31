@@ -10,6 +10,11 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+
+class TokenUnavailable(Exception):
+    pass
+
+
 _client: httpx.Client | None = None
 
 
@@ -41,12 +46,15 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
 
     logger.info("cookies (before)=%r", dict(client.cookies))
     auth = base64.b64encode(f"{username}:{password}".encode()).decode()
-    response = client.get(
-        f"cmconnectionstatus.html?login_{auth}",
-        headers={"Authorization": f"Basic {auth}"},
-    )
-    logger.info("response=%r, response.text=%r", response, response.text)
-    response.raise_for_status()
+    try:
+        response = client.get(
+            f"cmconnectionstatus.html?login_{auth}",
+            headers={"Authorization": f"Basic {auth}"},
+        )
+        logger.info("response=%r, response.text=%r", response, response.text)
+        response.raise_for_status()
+    except httpx.HTTPError as e:
+        raise TokenUnavailable() from e
     logger.info("cookies=%r", dict(client.cookies))
     token = response.text
     logger.debug("token=%r", token)
@@ -82,12 +90,16 @@ def connection_status_get(username: str, password: str, html_save=False) -> str 
     client = _client_get_or_create()
     try:
         token = token_get(client, username, password)
-    except httpx.HTTPStatusError:
-        logger.warning("unable to fetch token", exc_info=True)
+    except TokenUnavailable:
+        logger.warning("can't get status, token unavailable", exc_info=True)
         return None
 
     logger.info("cookies (before)=%r", dict(client.cookies))
-    response = client.get(f"cmconnectionstatus.html?ct_{token}")
+    try:
+        response = client.get(f"cmconnectionstatus.html?ct_{token}")
+    except httpx.HTTPError:
+        logger.warning("connection status request failed", exc_info=True)
+        return None
     logger.info("response=%r", response)
     if html_save:
         connection_status_save(response)

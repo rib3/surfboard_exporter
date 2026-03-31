@@ -72,6 +72,8 @@ def surfboard_api_mock_get_login(respx_mock, mimesis):
         status_code=HTTPStatus.OK,
         token=UNDEFINED,
         session_id=UNDEFINED,
+        return_value=UNDEFINED,
+        side_effect=None,
     ):
         if token is UNDEFINED:
             token = mimesis("token_hex")
@@ -82,20 +84,37 @@ def surfboard_api_mock_get_login(respx_mock, mimesis):
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:
             headers = None
+        if return_value is UNDEFINED:
+            if side_effect is not None:
+                return_value = None
+            else:
+                return_value = httpx.Response(status_code, text=token, headers=headers)
         return respx_mock.get(
             f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
-        ).mock(return_value=httpx.Response(status_code, text=token, headers=headers))
+        ).mock(return_value=return_value, side_effect=side_effect)
 
     return _mock
 
 
 @pytest.fixture
 def surfboard_api_mock_get_connectionstatus(respx_mock, mimesis):
-    def _mock(*, token, status_code=HTTPStatus.OK, text=UNDEFINED):
+    def _mock(
+        *,
+        token,
+        status_code=HTTPStatus.OK,
+        text=UNDEFINED,
+        return_value=UNDEFINED,
+        side_effect=None,
+    ):
         if text is UNDEFINED:
             text = mimesis("token_hex")
+        if return_value is UNDEFINED:
+            if side_effect is not None:
+                return_value = None
+            else:
+                return_value = httpx.Response(status_code, text=text)
         return respx_mock.get(
             f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
-        ).mock(return_value=httpx.Response(status_code, text=text))
+        ).mock(return_value=return_value, side_effect=side_effect)
 
     return _mock

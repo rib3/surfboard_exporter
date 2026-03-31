@@ -88,6 +88,16 @@ def test_token_get_cached(respx_mock, surfboard_api_mock_get_login):
     assert respx_mock.calls.call_count == 1
 
 
+def test_connection_status_get_token_get_fails(surfboard_api_mock_get_login):
+    surfboard_api_mock_get_login(
+        username="admin", password="password", status_code=HTTPStatus.UNAUTHORIZED
+    )
+
+    result = connection_status_get("admin", "password")
+
+    assert result is None
+
+
 def test_connection_status_get(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):

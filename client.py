@@ -80,7 +80,12 @@ def connection_status_save(response: httpx.Response) -> None:
 
 def connection_status_get(username: str, password: str, html_save=False) -> str | None:
     client = _client_get_or_create()
-    token = token_get(client, username, password)
+    try:
+        token = token_get(client, username, password)
+    except httpx.HTTPStatusError:
+        logger.warning("unable to fetch token", exc_info=True)
+        return None
+
     logger.info("cookies (before)=%r", dict(client.cookies))
     response = client.get(f"cmconnectionstatus.html?ct_{token}")
     logger.info("response=%r", response)

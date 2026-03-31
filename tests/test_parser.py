@@ -5,8 +5,7 @@ from parser import parse_downstream_channels, parse_system_time, parse_upstream_
 HTML = """
 <table class="simpleTable">
 <tbody>
-<tr><th colspan="8"><strong>Downstream Bonded Channels</strong></th></tr>
-<tr>
+<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>
   <td><strong>Channel ID</strong></td>
   <td><strong>Lock Status</strong></td>
   <td><strong>Modulation</strong></td>
@@ -40,12 +39,11 @@ HTML = """
 </table>
 <table class="simpleTable">
 <tbody>
-<tr><th colspan="7"><strong>Upstream Bonded Channels</strong></th></tr>
-<tr>
+<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>
   <td><strong>Channel</strong></td>
   <td><strong>Channel ID</strong></td>
   <td><strong>Lock Status</strong></td>
-  <td><strong>US Channel Type</strong></td>
+  <td><strong>US Channel Type</td>
   <td><strong>Frequency</strong></td>
   <td><strong>Width</strong></td>
   <td><strong>Power</strong></td>

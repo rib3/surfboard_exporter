@@ -7,9 +7,16 @@ import server
 HTML = """
 <table class="simpleTable">
 <tbody>
-<tr><th colspan="8"><strong>Downstream Bonded Channels</strong></th></tr>
-<tr><td>Channel ID</td><td>Lock Status</td><td>Modulation</td><td>Frequency</td>
-    <td>Power</td><td>SNR/MER</td><td>Corrected</td><td>Uncorrectables</td></tr>
+<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>
+      <td><strong>Channel ID</strong></td>
+      <td><strong>Lock Status</strong></td>
+      <td><strong>Modulation</strong></td>
+      <td><strong>Frequency</strong></td>
+      <td><strong>Power</strong></td>
+      <td><strong>SNR/MER</strong></td>
+      <td><strong>Corrected</strong></td>
+      <td><strong>Uncorrectables</strong></td>
+   </tr>
 <tr align="left">
   <td>1</td><td>Locked</td><td>QAM256</td><td>387000000 Hz</td>
   <td>-8.2 dBmV</td><td>43.5 dB</td><td>100</td><td>200</td>
@@ -18,9 +25,15 @@ HTML = """
 </table>
 <table class="simpleTable">
 <tbody>
-<tr><th colspan="7"><strong>Upstream Bonded Channels</strong></th></tr>
-<tr><td>Channel</td><td>Channel ID</td><td>Lock Status</td><td>US Channel Type</td>
-    <td>Frequency</td><td>Width</td><td>Power</td></tr>
+<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>
+      <td><strong>Channel</strong></td>
+      <td><strong>Channel ID</strong></td>
+      <td><strong>Lock Status</strong></td>
+      <td><strong>US Channel Type</td>
+      <td><strong>Frequency</strong></td>
+      <td><strong>Width</strong></td>
+      <td><strong>Power</strong></td>
+   </tr>
 <tr align="left">
   <td>1</td><td>1</td><td>Locked</td><td>SC-QAM Upstream</td>
   <td>16400000 Hz</td><td>6400000 Hz</td><td>46.0 dBmV</td>

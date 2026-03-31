@@ -1,3 +1,4 @@
+import os
 import re
 from http import HTTPStatus
 
@@ -7,10 +8,39 @@ from re_assert import Matches
 
 from client import (
     _client_create,
+    _html_save_dir_get_or_create,
     connection_status_get,
     connection_status_save,
     token_get,
 )
+
+
+def test_html_save_dir_get_or_create(tmp_path, monkeypatch):
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
+
+    result = _html_save_dir_get_or_create()
+
+    expected = Matches(
+        rf"{re.escape(str(tmp_path))}/surfboard_exporter\.{os.getpid()}\."
+    )
+    assert result == expected
+    assert os.path.isdir(result)
+    dirs = list(tmp_path.iterdir())
+    dir = dirs[0]
+    assert dir.name == Matches(rf"surfboard_exporter\.{os.getpid()}\.")
+    assert str(dir) == expected
+
+
+def test_html_save_dir_get_or_create_once(tmp_path, monkeypatch):
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
+
+    result1 = _html_save_dir_get_or_create()
+    result2 = _html_save_dir_get_or_create()
+
+    assert result1 == result2
+    dirs = list(tmp_path.iterdir())
+    dirs[0]
+    assert not dirs[1:]
 
 
 def test_connection_status_save(tmp_path, monkeypatch, mimesis):
@@ -22,7 +52,11 @@ def test_connection_status_save(tmp_path, monkeypatch, mimesis):
     with time_machine.travel(frozen_dt, tick=False):
         connection_status_save(response)
 
-    files = list(tmp_path.iterdir())
+    dirs = list(tmp_path.iterdir())
+    save_dir = dirs[0]
+    assert save_dir.name == Matches(rf"surfboard_exporter\.{os.getpid()}\.")
+    assert not dirs[1:]
+    files = list(save_dir.iterdir())
     file = files[0]
     expected_filename = Matches(
         rf"surfboard_exporter\.{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\..*\.html"

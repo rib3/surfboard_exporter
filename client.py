@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 import tempfile
 from datetime import datetime
 from http import HTTPStatus
@@ -55,10 +56,24 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     return token
 
 
+_html_save_dir: str | None = None
+
+
+def _html_save_dir_get_or_create() -> str:
+    global _html_save_dir
+    if _html_save_dir is None:
+        prefix = f"surfboard_exporter.{os.getpid()}."
+        _html_save_dir = tempfile.mkdtemp(prefix=prefix)
+    return _html_save_dir
+
+
 def connection_status_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
     prefix = f"surfboard_exporter.{epoch}.cmconnectionstatus."
-    with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".html", delete=False) as f:
+    dir = _html_save_dir_get_or_create()
+    with tempfile.NamedTemporaryFile(
+        prefix=prefix, suffix=".html", delete=False, dir=dir
+    ) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)
 

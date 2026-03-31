@@ -7,6 +7,7 @@ import pytest
 from mimesis.locales import Locale
 from mimesis.schema import Field
 
+import client
 from client import _token_cache
 
 UNDEFINED = object()
@@ -55,6 +56,11 @@ def mimesis(_mimesis_cache: _CacheCallable, mimesis_locale: Locale) -> Field:
 @pytest.fixture(autouse=True)
 def clear_token_cache():
     _token_cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def html_save_dir_reset():
+    client._html_save_dir = None
 
 
 @pytest.fixture

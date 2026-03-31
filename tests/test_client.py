@@ -32,7 +32,7 @@ def test_connection_status_save(tmp_path, monkeypatch, mimesis):
     assert not files[1:]
 
 
-def test_token_get(respx_mock, surfboard_api_mock_get_login):
+def test_token_get(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", token="abc123token"
     )

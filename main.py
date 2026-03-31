@@ -1,9 +1,13 @@
+import argparse
 import logging
 import os
 
 from server import start
 
 logger = logging.getLogger(__name__)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--html-save", action="store_true", default=False)
 
 
 def logging_config() -> None:
@@ -28,9 +32,10 @@ def logging_config() -> None:
 def main() -> None:
     logging_config()
     logger.info("starting")
+    args = parser.parse_args()
     username = os.environ.get("SURFBOARD_USERNAME", "admin")
     password = os.environ["SURFBOARD_PASSWORD"]
-    _, thread = start(username, password)
+    _, thread = start(username, password, html_save=args.html_save)
     thread.join()
 
 

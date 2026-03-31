@@ -1,5 +1,7 @@
 import base64
 import logging
+import tempfile
+from datetime import datetime
 from http import HTTPStatus
 
 import cachetools
@@ -53,12 +55,23 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     return token
 
 
-def connection_status_get(username: str, password: str) -> str | None:
+def connection_status_save(response: httpx.Response) -> None:
+    epoch = datetime.now().timestamp()
+    prefix = f"surfboard_exporter.{epoch}.cmconnectionstatus."
+    with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".html", delete=False) as f:
+        logger.info("writing to %r", f.name)
+        f.write(response.content)
+
+
+def connection_status_get(username: str, password: str, html_save=False) -> str | None:
     client = _client_get_or_create()
     token = token_get(client, username, password)
     logger.info("cookies (before)=%r", dict(client.cookies))
     response = client.get(f"cmconnectionstatus.html?ct_{token}")
     logger.info("response=%r", response)
+    if html_save:
+        connection_status_save(response)
+
     if response.status_code != HTTPStatus.OK:
         logger.warning(
             "response.status_code=%r != %r", response.status_code, HTTPStatus.OK

@@ -1,10 +1,10 @@
 import logging
+from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
 from prometheus_client import REGISTRY, start_http_server
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
 from client import connection_status_get
-from parser import parse_downstream_channels, parse_system_time, parse_upstream_channels
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,13 @@
 import base64
 from http import HTTPStatus
+from typing import Callable
 
 import httpx
 import pytest
-
-from client import _token_cache
-from typing import Callable
-
 from mimesis.locales import Locale
 from mimesis.schema import Field
+
+from client import _token_cache
 
 UNDEFINED = object()
 

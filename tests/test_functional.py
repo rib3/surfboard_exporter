@@ -1,12 +1,12 @@
 from datetime import datetime
 from pathlib import Path
 
-import server
 from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.metrics_core import Metric
 from prometheus_client.parser import text_string_to_metric_families
 from prometheus_client.samples import Sample
 
+import server
 from tests.test_server import HTML, LABELS, _get_sample_value
 
 

@@ -20,7 +20,7 @@ def _sample(name, labels, value):
     return Sample(name, labels, value, None, None, None)
 
 
-def test_generate_latest(
+def test__generate_latest(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     token = "abc123token"
@@ -146,7 +146,7 @@ def test_generate_latest(
     assert metrics == expected_metrics
 
 
-def test_generate_latest_real_html__2026_03_26_1558(
+def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     html = Path("testdata/cmconnectionstatus.2026-03-26-1558.html").read_text(
@@ -660,7 +660,7 @@ def test_generate_latest_real_html__2026_03_26_1558(
     assert metrics == expected_metrics
 
 
-def test_generate_latest_real_html__2026_03_30_1441(
+def test__generate_latest_real_html__2026_03_30_1441(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     html = Path("testdata/cmconnectionstatus.2026-03-30-1441.html").read_text(

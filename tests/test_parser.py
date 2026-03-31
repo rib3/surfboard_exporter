@@ -72,7 +72,7 @@ HTML = """
 """
 
 
-def test_upstream_channel_fields():
+def test__upstream_channel_fields():
     channels = parse_upstream_channels(HTML)
 
     assert channels[0].channel_id == 1
@@ -92,21 +92,21 @@ def test_upstream_channel_fields():
     assert not channels[2:]
 
 
-def test_parse_system_time():
+def test__parse_system_time():
     assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
 
 
-def test_parse_system_time_missing_element():
+def test__parse_system_time__missing_element():
     assert math.isnan(parse_system_time("<html></html>"))
 
 
-def test_parse_system_time_invalid_format():
+def test__parse_system_time__invalid_format():
     html = '<p id="systime">Current System Time: not-a-date</p>'
 
     assert math.isnan(parse_system_time(html))
 
 
-def test_channel_fields():
+def test__channel_fields():
     channels = parse_downstream_channels(HTML)
 
     assert channels[0].channel_id == 1

@@ -17,7 +17,7 @@ from client import (
 )
 
 
-def test_html_save_dir_get_or_create(tmp_path, monkeypatch):
+def test__html_save_dir_get_or_create(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
     result = _html_save_dir_get_or_create()
@@ -33,7 +33,7 @@ def test_html_save_dir_get_or_create(tmp_path, monkeypatch):
     assert str(dir) == expected
 
 
-def test_html_save_dir_get_or_create_once(tmp_path, monkeypatch):
+def test__html_save_dir_get_or_create__once(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
     result1 = _html_save_dir_get_or_create()
@@ -45,7 +45,7 @@ def test_html_save_dir_get_or_create_once(tmp_path, monkeypatch):
     assert not dirs[1:]
 
 
-def test_connection_status_save(tmp_path, monkeypatch, mimesis):
+def test__connection_status_save(tmp_path, monkeypatch, mimesis):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
     frozen_dt = mimesis("datetime", timezone="UTC")
     content = b"<html>status</html>"
@@ -68,7 +68,7 @@ def test_connection_status_save(tmp_path, monkeypatch, mimesis):
     assert not files[1:]
 
 
-def test_token_get(surfboard_api_mock_get_login):
+def test__token_get(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", token="abc123token"
     )
@@ -79,7 +79,7 @@ def test_token_get(surfboard_api_mock_get_login):
     assert result == "abc123token"
 
 
-def test_token_get_cached(respx_mock, surfboard_api_mock_get_login):
+def test__token_get__cached(respx_mock, surfboard_api_mock_get_login):
     login_mock = surfboard_api_mock_get_login(username="admin", password="password")
     client = _client_create()
 
@@ -90,7 +90,7 @@ def test_token_get_cached(respx_mock, surfboard_api_mock_get_login):
     assert respx_mock.calls.call_count == 1
 
 
-def test_token_get_network_error(surfboard_api_mock_get_login):
+def test__token_get__network_error(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin",
         password="password",
@@ -102,7 +102,7 @@ def test_token_get_network_error(surfboard_api_mock_get_login):
         token_get(client, "admin", "password")
 
 
-def test_connection_status_get(
+def test__connection_status_get(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     token = "abc123token"
@@ -115,7 +115,7 @@ def test_connection_status_get(
     assert result == text
 
 
-def test_connection_status_get_token_network_error(surfboard_api_mock_get_login):
+def test__connection_status_get__token_network_error(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin",
         password="password",
@@ -127,7 +127,7 @@ def test_connection_status_get_token_network_error(surfboard_api_mock_get_login)
     assert result is None
 
 
-def test_connection_status_get_token_get_fails(surfboard_api_mock_get_login):
+def test__connection_status_get__token_get__fails(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", status_code=HTTPStatus.UNAUTHORIZED
     )
@@ -137,7 +137,7 @@ def test_connection_status_get_token_get_fails(surfboard_api_mock_get_login):
     assert result is None
 
 
-def test_connection_status_get_non_200(
+def test__connection_status_get__non_200(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     token = "abc123token"
@@ -151,7 +151,7 @@ def test_connection_status_get_non_200(
     assert result is None
 
 
-def test_connection_status_get_network_error(
+def test__connection_status_get__network_error(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
     token = "abc123token"

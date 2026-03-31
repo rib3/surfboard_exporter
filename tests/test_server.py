@@ -66,7 +66,7 @@ def collect_with(html):
         return list(collector.collect())
 
 
-def test_system_time():
+def test__system_time():
     metrics = collect_with(HTML)
 
     assert (
@@ -75,19 +75,19 @@ def test_system_time():
     )
 
 
-def test_system_time_missing_element():
+def test__system_time__missing_element():
     metrics = collect_with(HTML_NO_TIME)
 
     assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
 
 
-def test_system_time_invalid_format():
+def test__system_time__invalid_format():
     metrics = collect_with(HTML_WITH_BAD_TIME)
 
     assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
 
 
-def test_downstream_gauges():
+def test__downstream_gauges():
     metrics = collect_with(HTML)
 
     assert (
@@ -98,7 +98,7 @@ def test_downstream_gauges():
     assert _get_sample_value(metrics, "surfboard_downstream_snr_db", LABELS) == 43.5
 
 
-def test_upstream_gauges():
+def test__upstream_gauges():
     metrics = collect_with(HTML)
 
     assert (
@@ -109,7 +109,7 @@ def test_upstream_gauges():
     assert _get_sample_value(metrics, "surfboard_upstream_power_dbmv", LABELS) == 46.0
 
 
-def test_downstream_counters():
+def test__downstream_counters():
     metrics = collect_with(HTML)
 
     assert (

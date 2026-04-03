@@ -10,13 +10,32 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+_HTML_SAVE_DIR: str | None = None
 _CLIENT: httpx.Client | None = None
 _TOKEN_CACHE: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
-_HTML_SAVE_DIR: str | None = None
 
 
 class TokenUnavailable(Exception):
     pass
+
+
+def _html_save_dir_get_or_create() -> str:
+    global _HTML_SAVE_DIR
+    if _HTML_SAVE_DIR is None:
+        prefix = f"surfboard_exporter.{os.getpid()}."
+        _HTML_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
+    return _HTML_SAVE_DIR
+
+
+def connection_status_save(response: httpx.Response) -> None:
+    epoch = datetime.now().timestamp()
+    prefix = f"surfboard_exporter.{epoch}.cmconnectionstatus."
+    dir = _html_save_dir_get_or_create()
+    with tempfile.NamedTemporaryFile(
+        prefix=prefix, suffix=".html", delete=False, dir=dir
+    ) as f:
+        logger.info("writing to %r", f.name)
+        f.write(response.content)
 
 
 def _client_create() -> httpx.Client:
@@ -60,25 +79,6 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     if session_id:
         _TOKEN_CACHE[session_id] = token
     return token
-
-
-def _html_save_dir_get_or_create() -> str:
-    global _HTML_SAVE_DIR
-    if _HTML_SAVE_DIR is None:
-        prefix = f"surfboard_exporter.{os.getpid()}."
-        _HTML_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
-    return _HTML_SAVE_DIR
-
-
-def connection_status_save(response: httpx.Response) -> None:
-    epoch = datetime.now().timestamp()
-    prefix = f"surfboard_exporter.{epoch}.cmconnectionstatus."
-    dir = _html_save_dir_get_or_create()
-    with tempfile.NamedTemporaryFile(
-        prefix=prefix, suffix=".html", delete=False, dir=dir
-    ) as f:
-        logger.info("writing to %r", f.name)
-        f.write(response.content)
 
 
 def connection_status_get(username: str, password: str, html_save=False) -> str | None:

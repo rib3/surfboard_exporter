@@ -59,8 +59,8 @@ def clear_token_cache():
 
 
 @pytest.fixture(autouse=True)
-def html_save_dir_reset():
-    client._HTML_SAVE_DIR = None
+def response_save_dir_reset():
+    client._RESPONSE_SAVE_DIR = None
 
 
 @pytest.fixture

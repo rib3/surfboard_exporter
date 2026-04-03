@@ -10,17 +10,17 @@ from re_assert import Matches
 from client import (
     TokenUnavailable,
     _client_create,
-    _html_save_dir_get_or_create,
+    _response_save,
+    _response_save_dir_get_or_create,
     connection_status_get,
-    connection_status_save,
     token_get,
 )
 
 
-def test__html_save_dir_get_or_create(tmp_path, monkeypatch):
+def test__response_save_dir_get_or_create(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
-    result = _html_save_dir_get_or_create()
+    result = _response_save_dir_get_or_create()
 
     expected = Matches(
         rf"{re.escape(str(tmp_path))}/surfboard_exporter\.{os.getpid()}\."
@@ -33,11 +33,11 @@ def test__html_save_dir_get_or_create(tmp_path, monkeypatch):
     assert str(dir) == expected
 
 
-def test__html_save_dir_get_or_create__once(tmp_path, monkeypatch):
+def test__response_save_dir_get_or_create__once(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
-    result1 = _html_save_dir_get_or_create()
-    result2 = _html_save_dir_get_or_create()
+    result1 = _response_save_dir_get_or_create()
+    result2 = _response_save_dir_get_or_create()
 
     assert result1 == result2
     dirs = list(tmp_path.iterdir())
@@ -45,14 +45,17 @@ def test__html_save_dir_get_or_create__once(tmp_path, monkeypatch):
     assert not dirs[1:]
 
 
-def test__connection_status_save(tmp_path, monkeypatch, mimesis):
+def test__response_save(tmp_path, monkeypatch, mimesis):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
     frozen_dt = mimesis("datetime", timezone="UTC")
     content = b"<html>status</html>"
-    response = httpx.Response(HTTPStatus.OK, content=content)
+    request = httpx.Request(
+        "GET", "https://192.168.100.1/cmconnectionstatus.html?ct_token"
+    )
+    response = httpx.Response(HTTPStatus.OK, content=content, request=request)
 
     with time_machine.travel(frozen_dt, tick=False):
-        connection_status_save(response)
+        _response_save(response)
 
     dirs = list(tmp_path.iterdir())
     save_dir = dirs[0]
@@ -61,7 +64,7 @@ def test__connection_status_save(tmp_path, monkeypatch, mimesis):
     files = list(save_dir.iterdir())
     file = files[0]
     expected_filename = Matches(
-        rf"{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\..*\.html"
+        rf"{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\.html\..*"
     )
     assert file.name == expected_filename
     assert file.read_bytes() == content

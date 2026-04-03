@@ -10,16 +10,18 @@ logger = logging.getLogger(__name__)
 
 
 class SurfboardCollector:
-    def __init__(self, username: str, password: str, html_save: bool = False) -> None:
+    def __init__(
+        self, username: str, password: str, response_save: bool = False
+    ) -> None:
         self.username = username
         self.password = password
-        self.html_save = html_save
-        logger.info("html_save=%r", self.html_save)
+        self.response_save = response_save
+        logger.info("response_save=%r", self.response_save)
 
     def collect(self):
         logger.info("collect start")
         html = connection_status_get(
-            self.username, self.password, html_save=self.html_save
+            self.username, self.password, response_save=self.response_save
         )
         if not html:
             logger.warning("skipping collect, html=%r", html)
@@ -100,6 +102,8 @@ class SurfboardCollector:
         yield ds_uncorrectables
 
 
-def start(username: str, password: str, html_save: bool = False):
-    REGISTRY.register(SurfboardCollector(username, password, html_save=html_save))
+def start(username: str, password: str, response_save: bool = False):
+    REGISTRY.register(
+        SurfboardCollector(username, password, response_save=response_save)
+    )
     return start_http_server(8000)

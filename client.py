@@ -10,7 +10,7 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-_HTML_SAVE_DIR: str | None = None
+_RESPONSE_SAVE_DIR: str | None = None
 _CLIENT: httpx.Client | None = None
 _TOKEN_CACHE: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
 
@@ -19,21 +19,20 @@ class TokenUnavailable(Exception):
     pass
 
 
-def _html_save_dir_get_or_create() -> str:
-    global _HTML_SAVE_DIR
-    if _HTML_SAVE_DIR is None:
+def _response_save_dir_get_or_create() -> str:
+    global _RESPONSE_SAVE_DIR
+    if _RESPONSE_SAVE_DIR is None:
         prefix = f"surfboard_exporter.{os.getpid()}."
-        _HTML_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
-    return _HTML_SAVE_DIR
+        _RESPONSE_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
+    return _RESPONSE_SAVE_DIR
 
 
-def connection_status_save(response: httpx.Response) -> None:
+def _response_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
-    prefix = f"{epoch}.cmconnectionstatus."
-    dir = _html_save_dir_get_or_create()
-    with tempfile.NamedTemporaryFile(
-        prefix=prefix, suffix=".html", delete=False, dir=dir
-    ) as f:
+    path = response.request.url.path.lstrip("/")
+    prefix = f"{epoch}.{path}."
+    dir = _response_save_dir_get_or_create()
+    with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=dir) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)
 
@@ -81,7 +80,9 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     return token
 
 
-def connection_status_get(username: str, password: str, html_save=False) -> str | None:
+def connection_status_get(
+    username: str, password: str, response_save=False
+) -> str | None:
     client = _client_get_or_create()
     try:
         token = token_get(client, username, password)
@@ -96,8 +97,8 @@ def connection_status_get(username: str, password: str, html_save=False) -> str 
         logger.warning("connection status request failed", exc_info=True)
         return None
     logger.info("response=%r", response)
-    if html_save:
-        connection_status_save(response)
+    if response_save:
+        _response_save(response)
 
     if response.status_code != HTTPStatus.OK:
         logger.warning(

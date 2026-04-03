@@ -29,7 +29,7 @@ def _html_save_dir_get_or_create() -> str:
 
 def connection_status_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
-    prefix = f"surfboard_exporter.{epoch}.cmconnectionstatus."
+    prefix = f"{epoch}.cmconnectionstatus."
     dir = _html_save_dir_get_or_create()
     with tempfile.NamedTemporaryFile(
         prefix=prefix, suffix=".html", delete=False, dir=dir

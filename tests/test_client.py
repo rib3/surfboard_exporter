@@ -61,7 +61,7 @@ def test__connection_status_save(tmp_path, monkeypatch, mimesis):
     files = list(save_dir.iterdir())
     file = files[0]
     expected_filename = Matches(
-        rf"surfboard_exporter\.{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\..*\.html"
+        rf"{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\..*\.html"
     )
     assert file.name == expected_filename
     assert file.read_bytes() == content

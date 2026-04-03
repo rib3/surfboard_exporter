@@ -10,12 +10,13 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+_CLIENT: httpx.Client | None = None
+_TOKEN_CACHE: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
+_HTML_SAVE_DIR: str | None = None
+
 
 class TokenUnavailable(Exception):
     pass
-
-
-_client: httpx.Client | None = None
 
 
 def _client_create() -> httpx.Client:
@@ -23,13 +24,10 @@ def _client_create() -> httpx.Client:
 
 
 def _client_get_or_create() -> httpx.Client:
-    global _client
-    if _client is None:
-        _client = _client_create()
-    return _client
-
-
-_token_cache: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
+    global _CLIENT
+    if _CLIENT is None:
+        _CLIENT = _client_create()
+    return _CLIENT
 
 
 def _session_id_from_client(client: httpx.Client) -> str | None:
@@ -39,7 +37,7 @@ def _session_id_from_client(client: httpx.Client) -> str | None:
 def token_get(client: httpx.Client, username: str, password: str) -> str:
     session_id = _session_id_from_client(client)
     if session_id:
-        token = _token_cache.get(session_id)
+        token = _TOKEN_CACHE.get(session_id)
         logger.debug("token (cached)=%r", token)
         if token:
             return token
@@ -60,19 +58,16 @@ def token_get(client: httpx.Client, username: str, password: str) -> str:
     logger.debug("token=%r", token)
     session_id = _session_id_from_client(client)
     if session_id:
-        _token_cache[session_id] = token
+        _TOKEN_CACHE[session_id] = token
     return token
 
 
-_html_save_dir: str | None = None
-
-
 def _html_save_dir_get_or_create() -> str:
-    global _html_save_dir
-    if _html_save_dir is None:
+    global _HTML_SAVE_DIR
+    if _HTML_SAVE_DIR is None:
         prefix = f"surfboard_exporter.{os.getpid()}."
-        _html_save_dir = tempfile.mkdtemp(prefix=prefix)
-    return _html_save_dir
+        _HTML_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
+    return _HTML_SAVE_DIR
 
 
 def connection_status_save(response: httpx.Response) -> None:

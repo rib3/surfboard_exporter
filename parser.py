@@ -53,7 +53,7 @@ def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
     table = header.find_parent("table")
 
     channels = []
-    # skip header row(s); malformed html combines section title and column headers in one tr
+    # skip header row(s); malformed html combines title and column headers in one tr
     for row in table.find_all("tr")[1:]:
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 7:
@@ -81,7 +81,7 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
     table = header.find_parent("table")
 
     channels = []
-    # skip header row(s); malformed html combines section title and column headers in one tr
+    # skip header row(s); malformed html combines title and column headers in one tr
     for row in table.find_all("tr")[1:]:
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 8:

@@ -45,7 +45,9 @@ HTML = """
 
 HTML_WITH_BAD_TIME = HTML.replace("Thu Mar 26 14:58:02 2026", "not-a-date")
 HTML_NO_TIME = HTML.replace(
-    '<p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>',
+    '<p id="systime">'
+    "<strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026"
+    "</p>",
     "",
 )
 

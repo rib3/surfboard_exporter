@@ -22,7 +22,8 @@ def _response_save_dir_get() -> str:
 
 
 def _response_save(response: httpx.Response) -> None:
-    # time.time() (at least under time_machine) may have additional digits compared to datetime.timestamp() used in tests
+    # time.time() (at least under time_machine) may have additional digits compared to
+    # datetime.timestamp() used in tests
     # example: 1792793067.4058182 vs 1792793067.405818
     epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")

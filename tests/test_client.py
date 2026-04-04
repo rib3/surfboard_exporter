@@ -11,14 +11,14 @@ from client import (
     SurfboardClient,
     TokenUnavailable,
     _response_save,
-    _response_save_dir_get_or_create,
+    _response_save_dir_get,
 )
 
 
-def test__response_save_dir_get_or_create(tmp_path, monkeypatch):
+def test__response_save_dir_get(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
-    result = _response_save_dir_get_or_create()
+    result = _response_save_dir_get()
 
     expected = Matches(
         rf"{re.escape(str(tmp_path))}/surfboard_exporter\.{os.getpid()}\."
@@ -31,11 +31,11 @@ def test__response_save_dir_get_or_create(tmp_path, monkeypatch):
     assert str(dir) == expected
 
 
-def test__response_save_dir_get_or_create__once(tmp_path, monkeypatch):
+def test__response_save_dir_get__once(tmp_path, monkeypatch):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
 
-    result1 = _response_save_dir_get_or_create()
-    result2 = _response_save_dir_get_or_create()
+    result1 = _response_save_dir_get()
+    result2 = _response_save_dir_get()
 
     assert result1 == result2
     dirs = list(tmp_path.iterdir())

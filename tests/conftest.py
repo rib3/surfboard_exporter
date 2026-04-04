@@ -7,7 +7,7 @@ import pytest
 from mimesis.locales import Locale
 from mimesis.schema import Field
 
-import client
+from client import _response_save_dir_get
 
 UNDEFINED = object()
 
@@ -53,8 +53,8 @@ def mimesis(_mimesis_cache: _CacheCallable, mimesis_locale: Locale) -> Field:
 
 
 @pytest.fixture(autouse=True)
-def response_save_dir_reset():
-    client._RESPONSE_SAVE_DIR = None
+def response_save_dir_get__cache_clear():
+    _response_save_dir_get.cache_clear()
 
 
 @pytest.fixture

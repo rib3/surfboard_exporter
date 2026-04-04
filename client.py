@@ -1,4 +1,5 @@
 import base64
+import functools
 import logging
 import os
 import tempfile
@@ -9,26 +10,22 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-_RESPONSE_SAVE_DIR: str | None = None
-
 
 class TokenUnavailable(Exception):
     pass
 
 
-def _response_save_dir_get_or_create() -> str:
-    global _RESPONSE_SAVE_DIR
-    if _RESPONSE_SAVE_DIR is None:
-        prefix = f"surfboard_exporter.{os.getpid()}."
-        _RESPONSE_SAVE_DIR = tempfile.mkdtemp(prefix=prefix)
-    return _RESPONSE_SAVE_DIR
+@functools.cache
+def _response_save_dir_get() -> str:
+    prefix = f"surfboard_exporter.{os.getpid()}."
+    return tempfile.mkdtemp(prefix=prefix)
 
 
 def _response_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
-    dir = _response_save_dir_get_or_create()
+    dir = _response_save_dir_get()
     with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=dir) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)

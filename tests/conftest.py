@@ -36,13 +36,13 @@ def _mimesis_cache() -> _CacheCallable:
     return factory
 
 
-@pytest.fixture()
+@pytest.fixture
 def mimesis_locale() -> Locale:
     """Specifies which locale to use."""
     return Locale.DEFAULT
 
 
-@pytest.fixture()
+@pytest.fixture
 def mimesis(_mimesis_cache: _CacheCallable, mimesis_locale: Locale) -> Field:
     """Mimesis fixture to provide fake data using all built-in providers."""
     return _mimesis_cache(mimesis_locale)

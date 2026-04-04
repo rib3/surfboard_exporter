@@ -3,7 +3,7 @@ import functools
 import logging
 import os
 import tempfile
-import time
+from datetime import datetime
 from http import HTTPStatus
 
 import httpx
@@ -22,7 +22,9 @@ def _response_save_dir_get() -> str:
 
 
 def _response_save(response: httpx.Response) -> None:
-    epoch = time.time()
+    # time.time() (at least under time_machine) may have additional digits compared to datetime.timestamp() used in tests
+    # example: 1792793067.4058182 vs 1792793067.405818
+    epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
     save_dir = _response_save_dir_get()

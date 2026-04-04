@@ -96,17 +96,24 @@ def surfboard_api_mock_get_connectionstatus(respx_mock, mimesis):
         *,
         token,
         status_code=HTTPStatus.OK,
+        session_id=UNDEFINED,
         text=UNDEFINED,
         return_value=UNDEFINED,
         side_effect=None,
     ):
+        if session_id is UNDEFINED:
+            session_id = mimesis("token_hex")
+        if session_id is not None:
+            headers = {"Set-Cookie": f"sessionId={session_id}"}
+        else:
+            headers = None
         if text is UNDEFINED:
             text = mimesis("token_hex")
         if return_value is UNDEFINED:
             if side_effect is not None:
                 return_value = None
             else:
-                return_value = httpx.Response(status_code, text=text)
+                return_value = httpx.Response(status_code, headers=headers, text=text)
         return respx_mock.get(
             f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
         ).mock(return_value=return_value, side_effect=side_effect)

@@ -124,6 +124,38 @@ def test__connection_status_get(
     assert result == text
 
 
+def test__connection_status_get__response_save(
+    tmp_path,
+    monkeypatch,
+    mimesis,
+    surfboard_api_mock_get_login,
+    surfboard_api_mock_get_connectionstatus,
+):
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
+    frozen_dt = mimesis("datetime", timezone="UTC")
+    token = "abc123token"
+    text = "<html>status</html>"
+    surfboard_api_mock_get_login(username="admin", password="password", token=token)
+    surfboard_api_mock_get_connectionstatus(token=token, text=text)
+    client = SurfboardClient("admin", "password")
+
+    with time_machine.travel(frozen_dt, tick=False):
+        result = client.connection_status_get(response_save=True)
+
+    assert result == text
+    dirs = list(tmp_path.iterdir())
+    expected_dir_name = Matches(rf"surfboard_exporter\.{os.getpid()}\.")
+    assert dirs[0].name == expected_dir_name
+    files = list(dirs[0].iterdir())
+    expected_file_name = Matches(
+        rf"{re.escape(str(frozen_dt.timestamp()))}\.cmconnectionstatus\.html\..*"
+    )
+    assert files[0].name == expected_file_name
+    assert files[0].read_bytes() == text.encode()
+    assert not files[1:]
+    assert not dirs[1:]
+
+
 def test__connection_status_get__token_network_error(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin",
@@ -185,3 +217,30 @@ def test__connection_status_get__network_error(
     result = client.connection_status_get()
 
     assert result is None
+
+
+def test__connection_status_get__no_session_after_status(
+    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
+):
+    token = "abc123token"
+    surfboard_api_mock_get_login(username="admin", password="password", token=token)
+    surfboard_api_mock_get_connectionstatus(token=token, session_id="")
+    client = SurfboardClient("admin", "password")
+
+    result = client.connection_status_get()
+
+    assert result is None
+
+
+def test__connection_status_get__no_session_cookie_after_status(
+    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
+):
+    token = "abc123token"
+    text = "<html>status</html>"
+    surfboard_api_mock_get_login(username="admin", password="password", token=token)
+    surfboard_api_mock_get_connectionstatus(token=token, text=text, session_id=None)
+    client = SurfboardClient("admin", "password")
+
+    result = client.connection_status_get()
+
+    assert result == text

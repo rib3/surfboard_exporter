@@ -5,7 +5,6 @@ import tempfile
 from datetime import datetime
 from http import HTTPStatus
 
-import cachetools
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -40,20 +39,19 @@ class SurfboardClient:
         self._username = username
         self._password = password
         self._client = httpx.Client(base_url="https://192.168.100.1", verify=False)
-        self._token_cache: cachetools.TTLCache = cachetools.TTLCache(
-            maxsize=128, ttl=30
-        )
+        self._token: str | None = None
 
     def _session_id(self) -> str | None:
         return self._client.cookies.get("sessionId")
 
     def token_get(self) -> str:
         session_id = self._session_id()
-        if session_id:
-            token = self._token_cache.get(session_id)
-            logger.debug("token (cached)=%r", token)
-            if token:
-                return token
+        if not session_id:
+            logger.debug("no session_id, clearing token=%r", self._token)
+            self._token = None
+        if self._token:
+            logger.debug("token (cached)=%r", self._token)
+            return self._token
 
         logger.info("cookies (before)=%r", dict(self._client.cookies))
         auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
@@ -68,11 +66,13 @@ class SurfboardClient:
             raise TokenUnavailable() from e
         logger.info("cookies=%r", dict(self._client.cookies))
         token = response.text
-        logger.debug("token=%r", token)
+        logger.debug("token=%r (self._token=%r)", token, self._token)
         session_id = self._session_id()
         if session_id:
-            self._token_cache[session_id] = token
-        return token
+            self._token = token
+        else:
+            self._token = None
+        return self._token
 
     def connection_status_get(self, response_save: bool = False) -> str | None:
         try:

@@ -54,4 +54,11 @@ patterns = [
 # ignore_patterns = []
 
 [tool.ruff.lint]
-select = ["B", "E", "I", "PT", "UP", "W"]
+select = [
+  "B", # flake8-bugbear
+  "E", # pycodestyle (errors)
+  "I", # isort
+  "PT", # flake8-pytest-style
+  "UP", # pyupgrade
+  "W", # pycodestyle (warnings)
+]

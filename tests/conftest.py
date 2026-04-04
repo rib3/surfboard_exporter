@@ -64,15 +64,15 @@ def surfboard_api_mock_get_login(respx_mock, mimesis):
         username,
         password,
         status_code=HTTPStatus.OK,
-        token=UNDEFINED,
         session_id=UNDEFINED,
+        token=UNDEFINED,
         return_value=UNDEFINED,
         side_effect=None,
     ):
-        if token is UNDEFINED:
-            token = mimesis("token_hex")
         if session_id is UNDEFINED:
             session_id = mimesis("token_hex")
+        if token is UNDEFINED:
+            token = mimesis("token_hex")
         auth = base64.b64encode(f"{username}:{password}".encode()).decode()
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
@@ -82,7 +82,7 @@ def surfboard_api_mock_get_login(respx_mock, mimesis):
             if side_effect is not None:
                 return_value = None
             else:
-                return_value = httpx.Response(status_code, text=token, headers=headers)
+                return_value = httpx.Response(status_code, headers=headers, text=token)
         return respx_mock.get(
             f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
         ).mock(return_value=return_value, side_effect=side_effect)

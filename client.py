@@ -11,8 +11,6 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _RESPONSE_SAVE_DIR: str | None = None
-_CLIENT: httpx.Client | None = None
-_TOKEN_CACHE: cachetools.TTLCache = cachetools.TTLCache(maxsize=128, ttl=30)
 
 
 class TokenUnavailable(Exception):
@@ -37,79 +35,72 @@ def _response_save(response: httpx.Response) -> None:
         f.write(response.content)
 
 
-def _client_create() -> httpx.Client:
-    return httpx.Client(base_url="https://192.168.100.1", verify=False)
-
-
-def _client_get_or_create() -> httpx.Client:
-    global _CLIENT
-    if _CLIENT is None:
-        _CLIENT = _client_create()
-    return _CLIENT
-
-
-def _session_id_from_client(client: httpx.Client) -> str | None:
-    return client.cookies.get("sessionId")
-
-
-def token_get(client: httpx.Client, username: str, password: str) -> str:
-    session_id = _session_id_from_client(client)
-    if session_id:
-        token = _TOKEN_CACHE.get(session_id)
-        logger.debug("token (cached)=%r", token)
-        if token:
-            return token
-
-    logger.info("cookies (before)=%r", dict(client.cookies))
-    auth = base64.b64encode(f"{username}:{password}".encode()).decode()
-    try:
-        response = client.get(
-            f"cmconnectionstatus.html?login_{auth}",
-            headers={"Authorization": f"Basic {auth}"},
+class SurfboardClient:
+    def __init__(self, username: str, password: str) -> None:
+        self._username = username
+        self._password = password
+        self._client = httpx.Client(base_url="https://192.168.100.1", verify=False)
+        self._token_cache: cachetools.TTLCache = cachetools.TTLCache(
+            maxsize=128, ttl=30
         )
-        logger.info("response=%r, response.text=%r", response, response.text)
-        response.raise_for_status()
-    except httpx.HTTPError as e:
-        raise TokenUnavailable() from e
-    logger.info("cookies=%r", dict(client.cookies))
-    token = response.text
-    logger.debug("token=%r", token)
-    session_id = _session_id_from_client(client)
-    if session_id:
-        _TOKEN_CACHE[session_id] = token
-    return token
 
+    def _session_id(self) -> str | None:
+        return self._client.cookies.get("sessionId")
 
-def connection_status_get(
-    username: str, password: str, response_save=False
-) -> str | None:
-    client = _client_get_or_create()
-    try:
-        token = token_get(client, username, password)
-    except TokenUnavailable:
-        logger.warning("can't get status, token unavailable", exc_info=True)
-        return None
+    def token_get(self) -> str:
+        session_id = self._session_id()
+        if session_id:
+            token = self._token_cache.get(session_id)
+            logger.debug("token (cached)=%r", token)
+            if token:
+                return token
 
-    logger.info("cookies (before)=%r", dict(client.cookies))
-    try:
-        response = client.get(f"cmconnectionstatus.html?ct_{token}")
-    except httpx.HTTPError:
-        logger.warning("connection status request failed", exc_info=True)
-        return None
-    logger.info("response=%r", response)
-    if response_save:
-        _response_save(response)
+        logger.info("cookies (before)=%r", dict(self._client.cookies))
+        auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
+        try:
+            response = self._client.get(
+                f"cmconnectionstatus.html?login_{auth}",
+                headers={"Authorization": f"Basic {auth}"},
+            )
+            logger.info("response=%r, response.text=%r", response, response.text)
+            response.raise_for_status()
+        except httpx.HTTPError as e:
+            raise TokenUnavailable() from e
+        logger.info("cookies=%r", dict(self._client.cookies))
+        token = response.text
+        logger.debug("token=%r", token)
+        session_id = self._session_id()
+        if session_id:
+            self._token_cache[session_id] = token
+        return token
 
-    if response.status_code != HTTPStatus.OK:
-        logger.warning(
-            "response.status_code=%r != %r", response.status_code, HTTPStatus.OK
-        )
-        return None
+    def connection_status_get(self, response_save: bool = False) -> str | None:
+        try:
+            token = self.token_get()
+        except TokenUnavailable:
+            logger.warning("can't get status, token unavailable", exc_info=True)
+            return None
 
-    logger.info("cookies=%r", dict(client.cookies))
-    session_id = _session_id_from_client(client)
-    if not session_id:
-        logger.warning("session_id=%r empty after request", session_id)
-        return None
+        logger.info("cookies (before)=%r", dict(self._client.cookies))
+        try:
+            response = self._client.get(f"cmconnectionstatus.html?ct_{token}")
+        except httpx.HTTPError:
+            logger.warning("connection status request failed", exc_info=True)
+            return None
+        logger.info("response=%r", response)
+        if response_save:
+            _response_save(response)
 
-    return response.text
+        if response.status_code != HTTPStatus.OK:
+            logger.warning(
+                "response.status_code=%r != %r", response.status_code, HTTPStatus.OK
+            )
+            return None
+
+        logger.info("cookies=%r", dict(self._client.cookies))
+        session_id = self._session_id()
+        if not session_id:
+            logger.warning("session_id=%r empty after request", session_id)
+            return None
+
+        return response.text

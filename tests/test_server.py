@@ -62,7 +62,7 @@ def _get_sample_value(metrics, name, labels=None):
 
 def collect_with(html):
     collector = server.SurfboardCollector("user", "pass")
-    with patch("server.connection_status_get", return_value=html):
+    with patch("client.SurfboardClient.connection_status_get", return_value=html):
         return list(collector.collect())
 
 

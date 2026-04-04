@@ -8,7 +8,6 @@ from mimesis.locales import Locale
 from mimesis.schema import Field
 
 import client
-from client import _TOKEN_CACHE
 
 UNDEFINED = object()
 
@@ -51,11 +50,6 @@ def mimesis(_mimesis_cache: _CacheCallable, mimesis_locale: Locale) -> Field:
 
 
 # mimesis pytest plugin END
-
-
-@pytest.fixture(autouse=True)
-def clear_token_cache():
-    _TOKEN_CACHE.clear()
 
 
 @pytest.fixture(autouse=True)

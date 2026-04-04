@@ -8,12 +8,10 @@ import time_machine
 from re_assert import Matches
 
 from client import (
+    SurfboardClient,
     TokenUnavailable,
-    _client_create,
     _response_save,
     _response_save_dir_get_or_create,
-    connection_status_get,
-    token_get,
 )
 
 
@@ -75,19 +73,19 @@ def test__token_get(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", token="abc123token"
     )
-    client = _client_create()
+    client = SurfboardClient("admin", "password")
 
-    result = token_get(client, "admin", "password")
+    result = client.token_get()
 
     assert result == "abc123token"
 
 
 def test__token_get__cached(respx_mock, surfboard_api_mock_get_login):
     login_mock = surfboard_api_mock_get_login(username="admin", password="password")
-    client = _client_create()
+    client = SurfboardClient("admin", "password")
 
-    token_get(client, "admin", "password")
-    token_get(client, "admin", "password")
+    client.token_get()
+    client.token_get()
 
     assert login_mock.call_count == 1
     assert respx_mock.calls.call_count == 1
@@ -99,10 +97,10 @@ def test__token_get__network_error(surfboard_api_mock_get_login):
         password="password",
         side_effect=httpx.ConnectError("connection refused"),
     )
-    client = _client_create()
+    client = SurfboardClient("admin", "password")
 
     with pytest.raises(TokenUnavailable):
-        token_get(client, "admin", "password")
+        client.token_get()
 
 
 def test__connection_status_get(
@@ -112,8 +110,9 @@ def test__connection_status_get(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text)
+    client = SurfboardClient("admin", "password")
 
-    result = connection_status_get("admin", "password")
+    result = client.connection_status_get()
 
     assert result == text
 
@@ -124,8 +123,9 @@ def test__connection_status_get__token_network_error(surfboard_api_mock_get_logi
         password="password",
         side_effect=httpx.ConnectError("connection refused"),
     )
+    client = SurfboardClient("admin", "password")
 
-    result = connection_status_get("admin", "password")
+    result = client.connection_status_get()
 
     assert result is None
 
@@ -134,8 +134,9 @@ def test__connection_status_get__token_get__fails(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", status_code=HTTPStatus.UNAUTHORIZED
     )
+    client = SurfboardClient("admin", "password")
 
-    result = connection_status_get("admin", "password")
+    result = client.connection_status_get()
 
     assert result is None
 
@@ -148,8 +149,9 @@ def test__connection_status_get__non_200(
     surfboard_api_mock_get_connectionstatus(
         token=token, status_code=HTTPStatus.UNAUTHORIZED
     )
+    client = SurfboardClient("admin", "password")
 
-    result = connection_status_get("admin", "password")
+    result = client.connection_status_get()
 
     assert result is None
 
@@ -162,7 +164,8 @@ def test__connection_status_get__network_error(
     surfboard_api_mock_get_connectionstatus(
         token=token, side_effect=httpx.ConnectError("connection refused")
     )
+    client = SurfboardClient("admin", "password")
 
-    result = connection_status_get("admin", "password")
+    result = client.connection_status_get()
 
     assert result is None

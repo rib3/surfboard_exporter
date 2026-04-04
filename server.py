@@ -4,7 +4,7 @@ from parser import parse_downstream_channels, parse_system_time, parse_upstream_
 from prometheus_client import REGISTRY, start_http_server
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
-from client import connection_status_get
+from client import SurfboardClient
 
 logger = logging.getLogger(__name__)
 
@@ -13,16 +13,13 @@ class SurfboardCollector:
     def __init__(
         self, username: str, password: str, response_save: bool = False
     ) -> None:
-        self.username = username
-        self.password = password
+        self._client = SurfboardClient(username, password)
         self.response_save = response_save
         logger.info("response_save=%r", self.response_save)
 
     def collect(self):
         logger.info("collect start")
-        html = connection_status_get(
-            self.username, self.password, response_save=self.response_save
-        )
+        html = self._client.connection_status_get(response_save=self.response_save)
         if not html:
             logger.warning("skipping collect, html=%r", html)
             return

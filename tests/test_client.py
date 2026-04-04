@@ -91,6 +91,14 @@ def test__token_get__cached(respx_mock, surfboard_api_mock_get_login):
     assert respx_mock.calls.call_count == 1
 
 
+def test__token_get__no_session_id(surfboard_api_mock_get_login):
+    surfboard_api_mock_get_login(username="admin", password="password", session_id=None)
+    client = SurfboardClient("admin", "password")
+
+    with pytest.raises(TokenUnavailable):
+        client.token_get()
+
+
 def test__token_get__network_error(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin",
@@ -134,6 +142,15 @@ def test__connection_status_get__token_get__fails(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", status_code=HTTPStatus.UNAUTHORIZED
     )
+    client = SurfboardClient("admin", "password")
+
+    result = client.connection_status_get()
+
+    assert result is None
+
+
+def test__connection_status_get__token_get__no_session_id(surfboard_api_mock_get_login):
+    surfboard_api_mock_get_login(username="admin", password="password", session_id=None)
     client = SurfboardClient("admin", "password")
 
     result = client.connection_status_get()

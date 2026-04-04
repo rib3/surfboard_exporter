@@ -60,7 +60,7 @@ class SurfboardClient:
             logger.info("response=%r, response.text=%r", response, response.text)
             response.raise_for_status()
         except httpx.HTTPError as e:
-            raise TokenUnavailable() from e
+            raise TokenUnavailable from e
         logger.info("cookies=%r", dict(self._client.cookies))
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
@@ -69,6 +69,7 @@ class SurfboardClient:
             self._token = token
         else:
             self._token = None
+            raise TokenUnavailable
         return self._token
 
     def connection_status_get(self, response_save: bool = False) -> str | None:

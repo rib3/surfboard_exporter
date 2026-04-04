@@ -52,3 +52,6 @@ patterns = [
   "pyproject.toml", # updates to pytest/tool options
 ]
 # ignore_patterns = []
+
+[tool.ruff.lint]
+select = ["I"]

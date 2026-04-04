@@ -18,8 +18,8 @@ UNDEFINED = object()
 
 try:
     import pytest
-except ImportError:
-    raise ImportError("pytest is required to use this plugin")
+except ImportError as e:
+    raise ImportError("pytest is required to use this plugin") from e
 
 _CacheCallable = Callable[[Locale], Field]
 

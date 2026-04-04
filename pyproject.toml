@@ -54,4 +54,4 @@ patterns = [
 # ignore_patterns = []
 
 [tool.ruff.lint]
-select = ["E", "I", "UP", "W"]
+select = ["B", "E", "I", "UP", "W"]

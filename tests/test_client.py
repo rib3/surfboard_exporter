@@ -26,9 +26,8 @@ def test__response_save_dir_get(tmp_path, monkeypatch):
     assert result == expected
     assert os.path.isdir(result)
     dirs = list(tmp_path.iterdir())
-    dir = dirs[0]
-    assert dir.name == Matches(rf"surfboard_exporter\.{os.getpid()}\.")
-    assert str(dir) == expected
+    assert dirs[0].name == Matches(rf"surfboard_exporter\.{os.getpid()}\.")
+    assert str(dirs[0]) == expected
 
 
 def test__response_save_dir_get__once(tmp_path, monkeypatch):

@@ -25,8 +25,8 @@ def _response_save(response: httpx.Response) -> None:
     epoch = time.time()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
-    dir = _response_save_dir_get()
-    with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=dir) as f:
+    save_dir = _response_save_dir_get()
+    with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=save_dir) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)
 

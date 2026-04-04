@@ -7,6 +7,7 @@ http-dev:
 	watchmedo auto-restart --patterns="*.py;pyproject.toml" --recursive -- $(MAKE) http
 
 lint:
+	ruff check # --diff excludes unfixable violations
 	ruff check --diff
 	isort --diff .
 	black --diff .

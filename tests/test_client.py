@@ -79,15 +79,14 @@ def test__token_get(surfboard_api_mock_get_login):
     assert result == "abc123token"
 
 
-def test__token_get__cached(respx_mock, surfboard_api_mock_get_login):
-    login_mock = surfboard_api_mock_get_login(username="admin", password="password")
+def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
+    surfboard_api_mock_get_login(username="admin", password="password")
     client = SurfboardClient("admin", "password")
 
     client.token_get()
     client.token_get()
 
-    assert login_mock.call_count == 1
-    assert respx_mock.calls.call_count == 1
+    assert len(httpx_mock.get_requests()) == 1
 
 
 def test__token_get__no_session_id(surfboard_api_mock_get_login):

@@ -61,6 +61,7 @@ select = [
   "I",   # isort
   "LOG", # flake8-logging
   "PT",  # flake8-pytest-style
+  "PTH", # flake8-use-pathlib
   "UP",  # pyupgrade
   "W",   # pycodestyle (warnings)
 ]

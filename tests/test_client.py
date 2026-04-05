@@ -1,6 +1,7 @@
 import os
 import re
 from http import HTTPStatus
+from pathlib import Path
 
 import httpx
 import pytest
@@ -24,7 +25,7 @@ def test__response_save_dir_get(tmp_path, monkeypatch):
         rf"{re.escape(str(tmp_path))}/surfboard_exporter\.{os.getpid()}\."
     )
     assert result == expected
-    assert os.path.isdir(result)
+    assert Path(result).is_dir()
     dirs = list(tmp_path.iterdir())
     assert dirs[0].name == Matches(rf"surfboard_exporter\.{os.getpid()}\.")
     assert str(dirs[0]) == expected

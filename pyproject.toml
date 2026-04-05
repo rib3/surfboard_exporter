@@ -60,6 +60,7 @@ select = [
   "E",   # pycodestyle (errors)
   "I",   # isort
   "LOG", # flake8-logging
+  "N",   # pep8-naming
   "PT",  # flake8-pytest-style
   "PTH", # flake8-use-pathlib
   "UP",  # pyupgrade

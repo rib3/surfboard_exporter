@@ -10,7 +10,7 @@ from re_assert import Matches
 
 from client import (
     SurfboardClient,
-    TokenUnavailable,
+    TokenUnavailableError,
     _response_save,
     _response_save_dir_get,
 )
@@ -94,7 +94,7 @@ def test__token_get__no_session_id(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(username="admin", password="password", session_id=None)
     client = SurfboardClient("admin", "password")
 
-    with pytest.raises(TokenUnavailable):
+    with pytest.raises(TokenUnavailableError):
         client.token_get()
 
 
@@ -106,7 +106,7 @@ def test__token_get__network_error(surfboard_api_mock_get_login):
     )
     client = SurfboardClient("admin", "password")
 
-    with pytest.raises(TokenUnavailable):
+    with pytest.raises(TokenUnavailableError):
         client.token_get()
 
 

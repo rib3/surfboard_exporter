@@ -11,7 +11,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
-class TokenUnavailable(Exception):
+class TokenUnavailableError(Exception):
     pass
 
 
@@ -63,7 +63,7 @@ class SurfboardClient:
             logger.info("response=%r, response.text=%r", response, response.text)
             response.raise_for_status()
         except httpx.HTTPError as e:
-            raise TokenUnavailable from e
+            raise TokenUnavailableError from e
         logger.info("cookies=%r", dict(self._client.cookies))
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
@@ -72,13 +72,13 @@ class SurfboardClient:
             self._token = token
         else:
             self._token = None
-            raise TokenUnavailable
+            raise TokenUnavailableError
         return self._token
 
     def connection_status_get(self, response_save: bool = False) -> str | None:
         try:
             token = self.token_get()
-        except TokenUnavailable:
+        except TokenUnavailableError:
             logger.warning("can't get status, token unavailable", exc_info=True)
             return None
 

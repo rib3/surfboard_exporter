@@ -2,12 +2,10 @@ import base64
 import logging
 import pathlib
 import ssl
-import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 from cryptography import x509
@@ -16,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from mimesis.locales import Locale
 from mimesis.schema import Field
+from pytest_httpserver import HTTPServer
 
 from client import _response_save_dir_get
 
@@ -129,39 +128,6 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
     return _mock
 
 
-_MODEM_SERVER_TOKEN = "modem_server_token"
-_MODEM_SERVER_SESSION_ID = "modem_server_session"
-_MODEM_SERVER_HTML = "<html>modem server status</html>"
-
-
-class _RequestHandlerModem(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if "login_" in self.path:
-            body = _MODEM_SERVER_TOKEN.encode()
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Set-Cookie", f"sessionId={_MODEM_SERVER_SESSION_ID}")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-        elif f"ct_{_MODEM_SERVER_TOKEN}" in self.path:
-            body = _MODEM_SERVER_HTML.encode()
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Set-Cookie", f"sessionId={_MODEM_SERVER_SESSION_ID}")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-        else:
-            self.send_response(HTTPStatus.NOT_FOUND)
-            self.end_headers()
-
-
-@dataclass
-class ModemLikeServer:
-    host: str
-    cert_path: pathlib.Path
-    html: str
-
-
 @pytest.fixture
 def modem_like_cert(tmp_path):
     _counter = [0]
@@ -201,24 +167,80 @@ def modem_like_cert(tmp_path):
     return _make
 
 
-@pytest.fixture
-def modem_like_server(modem_like_cert):
-    cert_path, key_path = modem_like_cert()
+@dataclass
+class HttpServerModem:
+    server: HTTPServer
+    cert_path: pathlib.Path
+    host: str
 
-    server_ip = "127.0.0.1"
-    server = HTTPServer((server_ip, 0), _RequestHandlerModem)
+
+@pytest.fixture
+def https_server_modem(modem_like_cert):
+    cert_path, key_path = modem_like_cert()
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
     ssl_ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
-    server.socket = ssl_ctx.wrap_socket(server.socket, server_side=True)
+    logger.debug("https_server_modem starting")
+    with HTTPServer(host="127.0.0.1", ssl_context=ssl_ctx) as server:
+        host = f"{server.host}:{server.port}"
+        logger.info("https_server_modem started host=%r", host)
+        yield HttpServerModem(server=server, cert_path=cert_path, host=host)
+        assert (
+            not server.ordered_handlers
+        ), f"unfulfilled ordered requests: {server.ordered_handlers}"
+        logger.info("https_server_modem stopping host=%r", host)
 
-    host = f"{server_ip}:{server.server_port}"
-    thread = threading.Thread(target=server.serve_forever)
-    thread.daemon = True
-    logger.info("modem_like_server starting host=%r", host)
-    thread.start()
 
-    yield ModemLikeServer(host=host, cert_path=cert_path, html=_MODEM_SERVER_HTML)
+@pytest.fixture
+def https_server_modem_expect_ordered_request_login_get(https_server_modem, mimesis):
+    def _expect(
+        *,
+        username,
+        password,
+        session_id=UNSPECIFIED,
+        token=UNSPECIFIED,
+    ):
+        if session_id is UNSPECIFIED:
+            session_id = mimesis("token_hex")
+        if token is UNSPECIFIED:
+            token = mimesis("token_hex")
+        auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        if session_id is not None:
+            headers = {"Set-Cookie": f"sessionId={session_id}"}
+        else:
+            headers = None
+        https_server_modem.server.expect_ordered_request(
+            "/cmconnectionstatus.html",
+            query_string=f"login_{auth}",
+        ).respond_with_data(token, headers=headers)
+        return session_id, token
 
-    server.shutdown()
-    logger.info("modem_like_server shutdown host=%r", host)
+    return _expect
+
+
+@pytest.fixture
+def https_server_modem_expect_ordered_request_connectionstatus_get(
+    https_server_modem, mimesis
+):
+    def _expect(
+        *,
+        token,
+        status_code=HTTPStatus.OK,
+        session_id=UNSPECIFIED,
+        text=UNSPECIFIED,
+    ):
+        if session_id is UNSPECIFIED:
+            session_id = mimesis("token_hex")
+        if session_id is not None:
+            headers = {"Set-Cookie": f"sessionId={session_id}"}
+        else:
+            headers = None
+        if text is UNSPECIFIED:
+            text = mimesis("token_hex")
+        https_server_modem.server.expect_ordered_request(
+            "/cmconnectionstatus.html",
+            query_string=f"ct_{token}",
+        ).respond_with_data(text, status=status_code, headers=headers)
+        return session_id, text
+
+    return _expect

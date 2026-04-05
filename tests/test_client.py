@@ -161,28 +161,39 @@ def test__connection_status_get__modem_certificate_verify__false(
     assert result == text
 
 
-def test__connection_status_get__modem_certificate_path(modem_like_server):
+def test__connection_status_get__modem_certificate_path(
+    https_server_modem,
+    https_server_modem_expect_ordered_request_login_get,
+    https_server_modem_expect_ordered_request_connectionstatus_get,
+):
+    session_id, token = https_server_modem_expect_ordered_request_login_get(
+        username="admin", password="password"
+    )
+    _, status_html = https_server_modem_expect_ordered_request_connectionstatus_get(
+        token=token, session_id=session_id
+    )
     client = SurfboardClient(
         "admin",
         "password",
-        modem_host=modem_like_server.host,
+        modem_host=https_server_modem.host,
         modem_certificate_verify=True,
-        modem_certificate_path=str(modem_like_server.cert_path),
+        modem_certificate_path=str(https_server_modem.cert_path),
     )
 
     result = client.connection_status_get()
 
-    assert result == modem_like_server.html
+    assert result == status_html
+    https_server_modem.server.check_assertions()
 
 
 @pytest.mark.parametrize("client_kwargs", [{}, {"modem_certificate_verify": True}])
 def test__connection_status_get__modem_certificate_path__none__ssl_fails(
-    modem_like_server, caplog, client_kwargs
+    https_server_modem, caplog, client_kwargs
 ):
     client = SurfboardClient(
         "admin",
         "password",
-        modem_host=modem_like_server.host,
+        modem_host=https_server_modem.host,
         **client_kwargs,
     )
 
@@ -198,13 +209,13 @@ def test__connection_status_get__modem_certificate_path__none__ssl_fails(
 
 
 def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
-    modem_like_server, modem_like_cert, caplog
+    https_server_modem, modem_like_cert, caplog
 ):
     wrong_cert_path, _ = modem_like_cert()
     client = SurfboardClient(
         "admin",
         "password",
-        modem_host=modem_like_server.host,
+        modem_host=https_server_modem.host,
         modem_certificate_verify=True,
         modem_certificate_path=str(wrong_cert_path),
     )

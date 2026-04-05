@@ -1,4 +1,5 @@
 import base64
+import logging
 import pathlib
 import ssl
 import threading
@@ -17,6 +18,8 @@ from mimesis.locales import Locale
 from mimesis.schema import Field
 
 from client import _response_save_dir_get
+
+logger = logging.getLogger(__name__)
 
 UNSPECIFIED = object()
 
@@ -131,7 +134,7 @@ _MODEM_SERVER_SESSION_ID = "modem_server_session"
 _MODEM_SERVER_HTML = "<html>modem server status</html>"
 
 
-class _ModemHandler(BaseHTTPRequestHandler):
+class _RequestHandlerModem(BaseHTTPRequestHandler):
     def do_GET(self):
         if "login_" in self.path:
             body = _MODEM_SERVER_TOKEN.encode()
@@ -151,9 +154,6 @@ class _ModemHandler(BaseHTTPRequestHandler):
             self.send_response(HTTPStatus.NOT_FOUND)
             self.end_headers()
 
-    def log_message(self, format, *args):
-        pass
-
 
 @dataclass
 class ModemLikeServer:
@@ -164,48 +164,61 @@ class ModemLikeServer:
 
 @pytest.fixture
 def modem_like_cert(tmp_path):
-    # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
-    key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "localhost.localdomain")])
-    cert = (
-        x509.CertificateBuilder()
-        .subject_name(name)
-        .issuer_name(name)
-        .public_key(key.public_key())
-        .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.now(UTC))
-        .not_valid_after(datetime.now(UTC) + timedelta(days=1))
-        .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
-        .sign(key, hashes.SHA256())
-    )
-    cert_path = tmp_path / "modem.crt"
-    cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-    key_path = tmp_path / "modem.key"
-    key_path.write_bytes(
-        key.private_bytes(
-            serialization.Encoding.PEM,
-            serialization.PrivateFormat.TraditionalOpenSSL,
-            serialization.NoEncryption(),
+    _counter = [0]
+
+    def _make():
+        # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
+        _counter[0] += 1
+        key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+        name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "localhost.localdomain")]
         )
-    )
-    return cert_path, key_path
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(name)
+            .issuer_name(name)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.now(UTC))
+            .not_valid_after(datetime.now(UTC) + timedelta(days=1))
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None), critical=True
+            )
+            .sign(key, hashes.SHA256())
+        )
+        cert_path = tmp_path / f"modem_{_counter[0]}.crt"
+        cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+        key_path = tmp_path / f"modem_{_counter[0]}.key"
+        key_path.write_bytes(
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
+            )
+        )
+        return cert_path, key_path
+
+    return _make
 
 
 @pytest.fixture
 def modem_like_server(modem_like_cert):
-    cert_path, key_path = modem_like_cert
+    cert_path, key_path = modem_like_cert()
 
-    server = HTTPServer(("127.0.0.1", 0), _ModemHandler)
+    server_ip = "127.0.0.1"
+    server = HTTPServer((server_ip, 0), _RequestHandlerModem)
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
     ssl_ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
     server.socket = ssl_ctx.wrap_socket(server.socket, server_side=True)
 
-    host = f"127.0.0.1:{server.server_address[1]}"
+    host = f"{server_ip}:{server.server_port}"
     thread = threading.Thread(target=server.serve_forever)
     thread.daemon = True
+    logger.info("modem_like_server starting host=%r", host)
     thread.start()
 
     yield ModemLikeServer(host=host, cert_path=cert_path, html=_MODEM_SERVER_HTML)
 
     server.shutdown()
+    logger.info("modem_like_server shutdown host=%r", host)

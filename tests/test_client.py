@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from http import HTTPStatus
@@ -125,18 +126,25 @@ def test__connection_status_get(
 
 
 def test__connection_status_get__modem_certificate_verify__true(
-    surfboard_api_mock_get_login,
+    surfboard_api_mock_get_login, caplog
 ):
+    ssl_error = httpx.ConnectError("SSL verification failed")
     surfboard_api_mock_get_login(
         username="admin",
         password="password",
-        side_effect=httpx.ConnectError("SSL verification failed"),
+        side_effect=ssl_error,
     )
     client = SurfboardClient("admin", "password", modem_certificate_verify=True)
 
     result = client.connection_status_get()
 
     assert result is None
+    expected_log_tuple_ssl = (
+        "client",
+        logging.ERROR,
+        Matches(f"ssl problem:.*{ssl_error}"),
+    )
+    assert expected_log_tuple_ssl in caplog.record_tuples
 
 
 def test__connection_status_get__modem_certificate_verify__false(
@@ -167,19 +175,55 @@ def test__connection_status_get__modem_certificate_path(modem_like_server):
     assert result == modem_like_server.html
 
 
+@pytest.mark.parametrize("client_kwargs", [{}, {"modem_certificate_verify": True}])
 def test__connection_status_get__modem_certificate_path__none__ssl_fails(
-    modem_like_server,
+    modem_like_server, caplog, client_kwargs
 ):
     client = SurfboardClient(
         "admin",
         "password",
         modem_host=modem_like_server.host,
-        modem_certificate_verify=True,
+        **client_kwargs,
     )
 
     result = client.connection_status_get()
 
     assert result is None
+    expected_log_tuple_ssl = (
+        "client",
+        logging.ERROR,
+        Matches("ssl problem:.*CERTIFICATE_VERIFY_FAILED.*EE certificate key too weak"),
+    )
+    assert expected_log_tuple_ssl in caplog.record_tuples
+
+
+def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
+    modem_like_server, modem_like_cert, caplog
+):
+    wrong_cert_path, _ = modem_like_cert()
+    client = SurfboardClient(
+        "admin",
+        "password",
+        modem_host=modem_like_server.host,
+        modem_certificate_verify=True,
+        modem_certificate_path=str(wrong_cert_path),
+    )
+
+    result = client.connection_status_get()
+
+    assert result is None
+    expected_log_tuple_ssl = (
+        "client",
+        logging.ERROR,
+        Matches("ssl problem:.*CERTIFICATE_VERIFY_FAILED.*self-signed certificate"),
+    )
+    assert expected_log_tuple_ssl in caplog.record_tuples
+    expected_log_tuple = (
+        "client",
+        logging.WARNING,
+        "can't get status, token unavailable",
+    )
+    assert expected_log_tuple in caplog.record_tuples
 
 
 def test__connection_status_get__response_save(

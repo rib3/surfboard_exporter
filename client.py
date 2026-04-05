@@ -100,6 +100,8 @@ class SurfboardClient:
             logger.info("response=%r, response.text=%r", response, response.text)
             response.raise_for_status()
         except httpx.HTTPError as e:
+            if "SSL" in str(e):
+                logger.error("ssl problem: %s", e)
             raise TokenUnavailableError from e
         logger.info("cookies=%r", dict(self._client.cookies))
         token = response.text

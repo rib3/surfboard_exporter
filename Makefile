@@ -6,6 +6,7 @@ http:
 http-dev:
 	watchmedo auto-restart --patterns="*.py;pyproject.toml" --recursive -- $(MAKE) http
 
+.IGNORE: lint # continue after fail (so all errors are displayed)
 lint:
 	ruff format --diff
 	ruff check # --diff excludes unfixable violations

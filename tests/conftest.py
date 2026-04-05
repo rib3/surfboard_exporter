@@ -1,8 +1,18 @@
 import base64
+import pathlib
+import ssl
+import threading
 from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
 from mimesis.locales import Locale
 from mimesis.schema import Field
 
@@ -114,3 +124,88 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
             )
 
     return _mock
+
+
+_MODEM_SERVER_TOKEN = "modem_server_token"
+_MODEM_SERVER_SESSION_ID = "modem_server_session"
+_MODEM_SERVER_HTML = "<html>modem server status</html>"
+
+
+class _ModemHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if "login_" in self.path:
+            body = _MODEM_SERVER_TOKEN.encode()
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Set-Cookie", f"sessionId={_MODEM_SERVER_SESSION_ID}")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        elif f"ct_{_MODEM_SERVER_TOKEN}" in self.path:
+            body = _MODEM_SERVER_HTML.encode()
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Set-Cookie", f"sessionId={_MODEM_SERVER_SESSION_ID}")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
+            self.send_response(HTTPStatus.NOT_FOUND)
+            self.end_headers()
+
+    def log_message(self, format, *args):
+        pass
+
+
+@dataclass
+class ModemLikeServer:
+    host: str
+    cert_path: pathlib.Path
+    html: str
+
+
+@pytest.fixture
+def modem_like_cert(tmp_path):
+    # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
+    key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "localhost.localdomain")])
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(name)
+        .issuer_name(name)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.now(UTC))
+        .not_valid_after(datetime.now(UTC) + timedelta(days=1))
+        .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
+        .sign(key, hashes.SHA256())
+    )
+    cert_path = tmp_path / "modem.crt"
+    cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
+    key_path = tmp_path / "modem.key"
+    key_path.write_bytes(
+        key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.TraditionalOpenSSL,
+            serialization.NoEncryption(),
+        )
+    )
+    return cert_path, key_path
+
+
+@pytest.fixture
+def modem_like_server(modem_like_cert):
+    cert_path, key_path = modem_like_cert
+
+    server = HTTPServer(("127.0.0.1", 0), _ModemHandler)
+    ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
+    ssl_ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
+    server.socket = ssl_ctx.wrap_socket(server.socket, server_side=True)
+
+    host = f"127.0.0.1:{server.server_address[1]}"
+    thread = threading.Thread(target=server.serve_forever)
+    thread.daemon = True
+    thread.start()
+
+    yield ModemLikeServer(host=host, cert_path=cert_path, html=_MODEM_SERVER_HTML)
+
+    server.shutdown()

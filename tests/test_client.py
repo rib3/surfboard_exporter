@@ -124,6 +124,64 @@ def test__connection_status_get(
     assert result == text
 
 
+def test__connection_status_get__modem_certificate_verify__true(
+    surfboard_api_mock_get_login,
+):
+    surfboard_api_mock_get_login(
+        username="admin",
+        password="password",
+        side_effect=httpx.ConnectError("SSL verification failed"),
+    )
+    client = SurfboardClient("admin", "password", modem_certificate_verify=True)
+
+    result = client.connection_status_get()
+
+    assert result is None
+
+
+def test__connection_status_get__modem_certificate_verify__false(
+    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
+):
+    token = "abc123token"
+    text = "<html>status</html>"
+    surfboard_api_mock_get_login(username="admin", password="password", token=token)
+    surfboard_api_mock_get_connectionstatus(token=token, text=text)
+    client = SurfboardClient("admin", "password", modem_certificate_verify=False)
+
+    result = client.connection_status_get()
+
+    assert result == text
+
+
+def test__connection_status_get__modem_certificate_path(modem_like_server):
+    client = SurfboardClient(
+        "admin",
+        "password",
+        modem_host=modem_like_server.host,
+        modem_certificate_verify=True,
+        modem_certificate_path=str(modem_like_server.cert_path),
+    )
+
+    result = client.connection_status_get()
+
+    assert result == modem_like_server.html
+
+
+def test__connection_status_get__modem_certificate_path__none__ssl_fails(
+    modem_like_server,
+):
+    client = SurfboardClient(
+        "admin",
+        "password",
+        modem_host=modem_like_server.host,
+        modem_certificate_verify=True,
+    )
+
+    result = client.connection_status_get()
+
+    assert result is None
+
+
 def test__connection_status_get__response_save(
     tmp_path,
     monkeypatch,

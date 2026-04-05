@@ -41,13 +41,14 @@ class SurfboardClient:
         self,
         username: str,
         password: str,
+        modem_host: str = "192.168.100.1",
         modem_certificate_verify: bool = True,
         modem_certificate_path: str | None = None,
     ) -> None:
         self._username = username
         self._password = password
         verify = self._verify_get(modem_certificate_verify, modem_certificate_path)
-        self._client = httpx.Client(base_url="https://192.168.100.1", verify=verify)
+        self._client = httpx.Client(base_url=f"https://{modem_host}", verify=verify)
         self._token: str | None = None
 
     def _verify_get(

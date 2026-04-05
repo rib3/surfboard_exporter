@@ -2,6 +2,8 @@ import base64
 import functools
 import logging
 import os
+import pathlib
+import ssl
 import tempfile
 from datetime import datetime
 from http import HTTPStatus
@@ -35,10 +37,30 @@ def _response_save(response: httpx.Response) -> None:
 
 
 class SurfboardClient:
-    def __init__(self, username: str, password: str) -> None:
+    def __init__(
+        self, username: str, password: str, modem_certificate_path: str | None = None
+    ) -> None:
         self._username = username
         self._password = password
-        self._client = httpx.Client(base_url="https://192.168.100.1", verify=False)
+        logger.info("modem_certificate_path=%r", modem_certificate_path)
+        if modem_certificate_path:
+            if not pathlib.Path(modem_certificate_path).is_file():
+                raise FileNotFoundError(
+                    f"modem_certificate_path={modem_certificate_path!r} does not exist"
+                )
+            # modem cert is self-signed, use a context with only the modem cert as CA
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ssl_context.load_verify_locations(cafile=modem_certificate_path)
+            # modem cert has CA:FALSE
+            # partial chain allows a non-CA cert in trust store to terminate the chain
+            ssl_context.verify_flags |= ssl.VERIFY_X509_PARTIAL_CHAIN
+            ssl_context.check_hostname = False  # work around CN=localhost.localdomain
+            # lower seclevel to support weak modem cert key (1024-bit RSA)
+            ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
+            verify: bool | ssl.SSLContext = ssl_context
+        else:
+            verify = True  # default arg value
+        self._client = httpx.Client(base_url="https://192.168.100.1", verify=verify)
         self._token: str | None = None
 
     def _session_id(self) -> str | None:

@@ -35,7 +35,13 @@ def main() -> None:
     args = parser.parse_args()
     username = os.environ.get("SURFBOARD_USERNAME", "admin")
     password = os.environ["SURFBOARD_PASSWORD"]
-    _, thread = start(username, password, response_save=args.response_save)
+    modem_certificate_path = os.environ.get("SURFBOARD_MODEM_CERTIFICATE_PATH") or None
+    _, thread = start(
+        username,
+        password,
+        modem_certificate_path=modem_certificate_path,
+        response_save=args.response_save,
+    )
     thread.join()
 
 

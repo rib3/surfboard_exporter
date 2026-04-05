@@ -11,9 +11,15 @@ logger = logging.getLogger(__name__)
 
 class SurfboardCollector:
     def __init__(
-        self, username: str, password: str, response_save: bool = False
+        self,
+        username: str,
+        password: str,
+        modem_certificate_path: str | None = None,
+        response_save: bool = False,
     ) -> None:
-        self._client = SurfboardClient(username, password)
+        self._client = SurfboardClient(
+            username, password, modem_certificate_path=modem_certificate_path
+        )
         self.response_save = response_save
         logger.info("response_save=%r", self.response_save)
 
@@ -99,8 +105,18 @@ class SurfboardCollector:
         yield ds_uncorrectables
 
 
-def start(username: str, password: str, response_save: bool = False):
+def start(
+    username: str,
+    password: str,
+    modem_certificate_path: str | None = None,
+    response_save: bool = False,
+):
     REGISTRY.register(
-        SurfboardCollector(username, password, response_save=response_save)
+        SurfboardCollector(
+            username,
+            password,
+            modem_certificate_path=modem_certificate_path,
+            response_save=response_save,
+        )
     )
     return start_http_server(8000)

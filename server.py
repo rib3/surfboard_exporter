@@ -14,11 +14,15 @@ class SurfboardCollector:
         self,
         username: str,
         password: str,
+        modem_certificate_verify: bool = True,
         modem_certificate_path: str | None = None,
         response_save: bool = False,
     ) -> None:
         self._client = SurfboardClient(
-            username, password, modem_certificate_path=modem_certificate_path
+            username,
+            password,
+            modem_certificate_verify=modem_certificate_verify,
+            modem_certificate_path=modem_certificate_path,
         )
         self.response_save = response_save
         logger.info("response_save=%r", self.response_save)
@@ -108,6 +112,7 @@ class SurfboardCollector:
 def start(
     username: str,
     password: str,
+    modem_certificate_verify: bool = True,
     modem_certificate_path: str | None = None,
     response_save: bool = False,
 ):
@@ -115,6 +120,7 @@ def start(
         SurfboardCollector(
             username,
             password,
+            modem_certificate_verify=modem_certificate_verify,
             modem_certificate_path=modem_certificate_path,
             response_save=response_save,
         )

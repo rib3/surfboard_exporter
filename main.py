@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 
@@ -35,10 +36,14 @@ def main() -> None:
     args = parser.parse_args()
     username = os.environ.get("SURFBOARD_USERNAME", "admin")
     password = os.environ["SURFBOARD_PASSWORD"]
+    modem_certificate_verify = json.loads(
+        os.environ.get("SURFBOARD_MODEM_CERTIFICATE_VERIFY", "true")
+    )
     modem_certificate_path = os.environ.get("SURFBOARD_MODEM_CERTIFICATE_PATH") or None
     _, thread = start(
         username,
         password,
+        modem_certificate_verify=modem_certificate_verify,
         modem_certificate_path=modem_certificate_path,
         response_save=args.response_save,
     )

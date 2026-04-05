@@ -38,30 +38,44 @@ def _response_save(response: httpx.Response) -> None:
 
 class SurfboardClient:
     def __init__(
-        self, username: str, password: str, modem_certificate_path: str | None = None
+        self,
+        username: str,
+        password: str,
+        modem_certificate_verify: bool = True,
+        modem_certificate_path: str | None = None,
     ) -> None:
         self._username = username
         self._password = password
-        logger.info("modem_certificate_path=%r", modem_certificate_path)
-        if modem_certificate_path:
-            if not pathlib.Path(modem_certificate_path).is_file():
-                raise FileNotFoundError(
-                    f"modem_certificate_path={modem_certificate_path!r} does not exist"
-                )
-            # modem cert is self-signed, use a context with only the modem cert as CA
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            ssl_context.load_verify_locations(cafile=modem_certificate_path)
-            # modem cert has CA:FALSE
-            # partial chain allows a non-CA cert in trust store to terminate the chain
-            ssl_context.verify_flags |= ssl.VERIFY_X509_PARTIAL_CHAIN
-            ssl_context.check_hostname = False  # work around CN=localhost.localdomain
-            # lower seclevel to support weak modem cert key (1024-bit RSA)
-            ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
-            verify: bool | ssl.SSLContext = ssl_context
-        else:
-            verify = True  # default arg value
+        verify = self._verify_get(modem_certificate_verify, modem_certificate_path)
         self._client = httpx.Client(base_url="https://192.168.100.1", verify=verify)
         self._token: str | None = None
+
+    def _verify_get(
+        self, modem_certificate_verify: bool, modem_certificate_path: str | None
+    ) -> bool | ssl.SSLContext:
+        logger.info("modem_certificate_verify=%r", modem_certificate_verify)
+        if modem_certificate_verify:
+            logger.info("modem_certificate_path=%r", modem_certificate_path)
+            if modem_certificate_path:
+                return self._ssl_context_get_modem(modem_certificate_path)
+            else:
+                return True
+        else:
+            return False
+
+    def _ssl_context_get_modem(self, path: str) -> ssl.SSLContext:
+        if not pathlib.Path(path).is_file():
+            raise FileNotFoundError(f"modem_certificate_path={path!r} does not exist")
+        # modem cert is self-signed, use a context with only the modem cert as CA
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_context.load_verify_locations(cafile=path)
+        # modem cert has CA:FALSE
+        # partial chain allows a non-CA cert in trust store to terminate the chain
+        ssl_context.verify_flags |= ssl.VERIFY_X509_PARTIAL_CHAIN
+        ssl_context.check_hostname = False  # work around CN=localhost.localdomain
+        # lower seclevel to support weak modem cert key (1024-bit RSA)
+        ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
+        return ssl_context
 
     def _session_id(self) -> str | None:
         return self._client.cookies.get("sessionId")

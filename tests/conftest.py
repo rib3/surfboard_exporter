@@ -8,7 +8,7 @@ from mimesis.schema import Field
 
 from client import _response_save_dir_get
 
-UNDEFINED = object()
+UNSPECIFIED = object()
 
 # mimesis pytest plugin BEGIN
 # removed in mimesis 0.19????
@@ -63,13 +63,13 @@ def surfboard_api_mock_get_login(httpx_mock, mimesis):
         username,
         password,
         status_code=HTTPStatus.OK,
-        session_id=UNDEFINED,
-        token=UNDEFINED,
+        session_id=UNSPECIFIED,
+        token=UNSPECIFIED,
         side_effect=None,
     ):
-        if session_id is UNDEFINED:
+        if session_id is UNSPECIFIED:
             session_id = mimesis("token_hex")
-        if token is UNDEFINED:
+        if token is UNSPECIFIED:
             token = mimesis("token_hex")
         auth = base64.b64encode(f"{username}:{password}".encode()).decode()
         url = f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
@@ -93,17 +93,17 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
         *,
         token,
         status_code=HTTPStatus.OK,
-        session_id=UNDEFINED,
-        text=UNDEFINED,
+        session_id=UNSPECIFIED,
+        text=UNSPECIFIED,
         side_effect=None,
     ):
-        if session_id is UNDEFINED:
+        if session_id is UNSPECIFIED:
             session_id = mimesis("token_hex")
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:
             headers = None
-        if text is UNDEFINED:
+        if text is UNSPECIFIED:
             text = mimesis("token_hex")
         url = f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
         if side_effect is not None:

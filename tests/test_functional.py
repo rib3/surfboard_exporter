@@ -59,6 +59,14 @@ def test__generate_latest(
 
     expected_metrics = [
         _metric(
+            "surfboard_scrape_success",
+            "Whether the scrape was successful (1=success, 0=failure)",
+            "gauge",
+            [
+                _sample("surfboard_scrape_success", {}, 1.0),
+            ],
+        ),
+        _metric(
             "surfboard_system_time",
             "System time (Unix timestamp)",
             "gauge",
@@ -165,6 +173,14 @@ def test__generate_latest_real_html__2026_03_26_1558(
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
     expected_system_time = datetime(2026, 3, 26, 14, 58, 2).timestamp()
     expected_metrics = [
+        _metric(
+            "surfboard_scrape_success",
+            "Whether the scrape was successful (1=success, 0=failure)",
+            "gauge",
+            [
+                _sample("surfboard_scrape_success", {}, 1.0),
+            ],
+        ),
         _metric(
             "surfboard_system_time",
             "System time (Unix timestamp)",
@@ -679,6 +695,14 @@ def test__generate_latest_real_html__2026_03_30_1441(
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
     expected_system_time = datetime(2026, 3, 30, 13, 40, 58).timestamp()
     expected_metrics = [
+        _metric(
+            "surfboard_scrape_success",
+            "Whether the scrape was successful (1=success, 0=failure)",
+            "gauge",
+            [
+                _sample("surfboard_scrape_success", {}, 1.0),
+            ],
+        ),
         _metric(
             "surfboard_system_time",
             "System time (Unix timestamp)",

@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
+import pytest
 from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.metrics_core import Metric
 from prometheus_client.parser import text_string_to_metric_families
@@ -58,6 +59,14 @@ def test__generate_latest(
     assert _get_sample_value(metrics, "surfboard_upstream_power_dbmv", LABELS) == 46.0
 
     expected_metrics = [
+        _metric(
+            "surfboard_ssl_verify",
+            "Whether SSL verification is enabled (1=enabled, 0=disabled)",
+            "gauge",
+            [
+                _sample("surfboard_ssl_verify", {}, 1.0),
+            ],
+        ),
         _metric(
             "surfboard_scrape_success",
             "Whether the scrape was successful (1=success, 0=failure)",
@@ -154,6 +163,49 @@ def test__generate_latest(
     assert metrics == expected_metrics
 
 
+@pytest.mark.parametrize("collector_kwargs", [{}, {"modem_certificate_verify": True}])
+def test__generate_latest__ssl_verify__enabled__certificate_path__none(
+    https_server_modem, collector_kwargs
+):
+    registry = CollectorRegistry()
+    collector = server.SurfboardCollector(
+        "user", "pass", modem_host=https_server_modem.host, **collector_kwargs
+    )
+    registry.register(collector)
+
+    output = generate_latest(registry)
+
+    metrics = list(text_string_to_metric_families(output.decode("utf-8")))
+    assert _get_sample_value(metrics, "surfboard_ssl_verify") == 1.0
+    assert _get_sample_value(metrics, "surfboard_scrape_success") == 0.0
+
+
+def test__generate_latest__ssl_verify__disabled(
+    https_server_modem,
+    https_server_modem_expect_ordered_request_login_get,
+    https_server_modem_expect_ordered_request_connectionstatus_get,
+):
+    _, token = https_server_modem_expect_ordered_request_login_get(
+        username="user", password="pass"
+    )
+    https_server_modem_expect_ordered_request_connectionstatus_get(token=token)
+
+    registry = CollectorRegistry()
+    collector = server.SurfboardCollector(
+        "user",
+        "pass",
+        modem_host=https_server_modem.host,
+        modem_certificate_verify=False,
+    )
+    registry.register(collector)
+
+    output = generate_latest(registry)
+
+    metrics = list(text_string_to_metric_families(output.decode("utf-8")))
+    assert _get_sample_value(metrics, "surfboard_ssl_verify") == 0.0
+    assert _get_sample_value(metrics, "surfboard_scrape_success") == 1.0
+
+
 def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
@@ -173,6 +225,14 @@ def test__generate_latest_real_html__2026_03_26_1558(
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
     expected_system_time = datetime(2026, 3, 26, 14, 58, 2).timestamp()
     expected_metrics = [
+        _metric(
+            "surfboard_ssl_verify",
+            "Whether SSL verification is enabled (1=enabled, 0=disabled)",
+            "gauge",
+            [
+                _sample("surfboard_ssl_verify", {}, 1.0),
+            ],
+        ),
         _metric(
             "surfboard_scrape_success",
             "Whether the scrape was successful (1=success, 0=failure)",
@@ -695,6 +755,14 @@ def test__generate_latest_real_html__2026_03_30_1441(
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
     expected_system_time = datetime(2026, 3, 30, 13, 40, 58).timestamp()
     expected_metrics = [
+        _metric(
+            "surfboard_ssl_verify",
+            "Whether SSL verification is enabled (1=enabled, 0=disabled)",
+            "gauge",
+            [
+                _sample("surfboard_ssl_verify", {}, 1.0),
+            ],
+        ),
         _metric(
             "surfboard_scrape_success",
             "Whether the scrape was successful (1=success, 0=failure)",

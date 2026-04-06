@@ -105,11 +105,14 @@ def test__upstream_channel_fields():
     ("lock_status", "expected_locked"),
     [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
 )
-def test__parse_upstream_channels__lock_status(lock_status, expected_locked):
-    html = HTML.replace(
-        "<td>1</td>\n  <td>Locked</td>\n  <td>SC-QAM Upstream</td>",
-        f"<td>1</td>\n  <td>{lock_status}</td>\n  <td>SC-QAM Upstream</td>",
-    )
+def test__parse_upstream_channels__lock_status(
+    lock_status,
+    expected_locked,
+    upstream_bonded_channels_factory,
+    upstream_bonded_channels_row_factory,
+):
+    row = upstream_bonded_channels_row_factory.build(lock_status=lock_status)
+    html = upstream_bonded_channels_factory.build(rows=[row]).to_html()
 
     channels = parse_upstream_channels(html)
 
@@ -161,11 +164,14 @@ def test__channel_fields():
     ("lock_status", "expected_locked"),
     [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
 )
-def test__parse_downstream_channels__lock_status(lock_status, expected_locked):
-    html = HTML.replace(
-        "<td>1</td>\n  <td>Locked</td>\n  <td>QAM256</td>",
-        f"<td>1</td>\n  <td>{lock_status}</td>\n  <td>QAM256</td>",
-    )
+def test__parse_downstream_channels__lock_status(
+    lock_status,
+    expected_locked,
+    downstream_bonded_channels_factory,
+    downstream_bonded_channels_row_factory,
+):
+    row = downstream_bonded_channels_row_factory.build(lock_status=lock_status)
+    html = downstream_bonded_channels_factory.build(rows=[row]).to_html()
 
     channels = parse_downstream_channels(html)
 

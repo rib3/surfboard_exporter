@@ -106,16 +106,21 @@ def test__downstream_gauges():
     ("lock_status", "expected_locked"),
     [("Locked", 1), ("Not Locked", 0), ("", 0), ("BOGUS", 0)],
 )
-def test__downstream_gauges__lock_status(lock_status, expected_locked):
-    html = HTML.replace(
-        "<td>1</td><td>Locked</td><td>QAM256</td>",
-        f"<td>1</td><td>{lock_status}</td><td>QAM256</td>",
-    )
+def test__downstream_gauges__locked(
+    lock_status,
+    expected_locked,
+    downstream_bonded_channels_factory,
+    downstream_bonded_channels_row_factory,
+):
+    row = downstream_bonded_channels_row_factory.build(lock_status=lock_status)
+    html = downstream_bonded_channels_factory.build(rows=[row]).to_html()
 
     metrics = collect_with(html)
 
     assert (
-        _get_sample_value(metrics, "surfboard_downstream_locked", LABELS)
+        _get_sample_value(
+            metrics, "surfboard_downstream_locked", {"channel_id": str(row.channel_id)}
+        )
         == expected_locked
     )
 
@@ -135,16 +140,21 @@ def test__upstream_gauges():
     ("lock_status", "expected_locked"),
     [("Locked", 1), ("Not Locked", 0), ("", 0), ("BOGUS", 0)],
 )
-def test__upstream_gauges__lock_status(lock_status, expected_locked):
-    html = HTML.replace(
-        "<td>1</td><td>1</td><td>Locked</td><td>SC-QAM Upstream</td>",
-        f"<td>1</td><td>1</td><td>{lock_status}</td><td>SC-QAM Upstream</td>",
-    )
+def test__upstream_gauges__locked(
+    lock_status,
+    expected_locked,
+    upstream_bonded_channels_factory,
+    upstream_bonded_channels_row_factory,
+):
+    row = upstream_bonded_channels_row_factory.build(lock_status=lock_status)
+    html = upstream_bonded_channels_factory.build(rows=[row]).to_html()
 
     metrics = collect_with(html)
 
     assert (
-        _get_sample_value(metrics, "surfboard_upstream_locked", LABELS)
+        _get_sample_value(
+            metrics, "surfboard_upstream_locked", {"channel_id": str(row.channel_id)}
+        )
         == expected_locked
     )
 

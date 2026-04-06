@@ -14,9 +14,17 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from mimesis.locales import Locale
 from mimesis.schema import Field
+from polyfactory.factories.dataclass_factory import DataclassFactory
+from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
 
 from client import _response_save_dir_get
+from testsupport.modem_html import (
+    DownstreamBondedChannels,
+    DownstreamBondedChannelsRow,
+    UpstreamBondedChannels,
+    UpstreamBondedChannelsRow,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -245,3 +253,23 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
         return session_id, text
 
     return _expect
+
+
+@register_fixture
+class DownstreamBondedChannelsRowFactory(DataclassFactory):
+    __model__ = DownstreamBondedChannelsRow
+
+
+@register_fixture
+class DownstreamBondedChannelsFactory(DataclassFactory):
+    __model__ = DownstreamBondedChannels
+
+
+@register_fixture
+class UpstreamBondedChannelsRowFactory(DataclassFactory):
+    __model__ = UpstreamBondedChannelsRow
+
+
+@register_fixture
+class UpstreamBondedChannelsFactory(DataclassFactory):
+    __model__ = UpstreamBondedChannels

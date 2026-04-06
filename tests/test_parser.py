@@ -79,7 +79,7 @@ HTML = """
 """
 
 
-def test__upstream_channel_fields():
+def test__parse_upstream_channels__fields():
     channels = parse_upstream_channels(HTML)
 
     assert channels[0].channel_id == 1
@@ -134,7 +134,7 @@ def test__parse_system_time__invalid_format():
     assert math.isnan(parse_system_time(html))
 
 
-def test__channel_fields():
+def test__parse_downstream_channels__fields():
     channels = parse_downstream_channels(HTML)
 
     assert channels[0].channel_id == 1

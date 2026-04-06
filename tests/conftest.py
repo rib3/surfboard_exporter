@@ -188,6 +188,7 @@ def https_server_modem(modem_like_cert):
         assert (
             not server.ordered_handlers
         ), f"unfulfilled ordered requests: {server.ordered_handlers}"
+        server.check()
         logger.info("https_server_modem stopping host=%r", host)
 
 

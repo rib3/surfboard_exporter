@@ -183,7 +183,6 @@ def test__connection_status_get__modem_certificate_path(
     result = client.connection_status_get()
 
     assert result == status_html
-    https_server_modem.server.check_assertions()
 
 
 @pytest.mark.parametrize("client_kwargs", [{}, {"modem_certificate_verify": True}])

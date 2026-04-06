@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from bs4 import BeautifulSoup
@@ -11,22 +11,30 @@ logger = logging.getLogger(__name__)
 class UpstreamChannel:
     channel_id: int
     lock_status: str
+    locked: bool = field(init=False)
     channel_type: str
     frequency_hz: int
     width_hz: int
     power_dbmv: float
+
+    def __post_init__(self):
+        self.locked = self.lock_status == "Locked"
 
 
 @dataclass
 class DownstreamChannel:
     channel_id: int
     lock_status: str
+    locked: bool = field(init=False)
     modulation: str
     frequency_hz: int
     power_dbmv: float
     snr_db: float
     corrected: int
     uncorrectables: int
+
+    def __post_init__(self):
+        self.locked = self.lock_status == "Locked"
 
 
 def parse_system_time(html: str) -> float:

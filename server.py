@@ -59,6 +59,11 @@ class SurfboardCollector:
         logger.info("collect end")
 
     def collect_upstream(self, html: str):
+        us_locked = GaugeMetricFamily(
+            "surfboard_upstream_locked",
+            "Upstream channel lock status (1=Locked, 0=not locked)",
+            labels=["channel_id"],
+        )
         us_frequency = GaugeMetricFamily(
             "surfboard_upstream_frequency_hz",
             "Upstream channel frequency (Hz)",
@@ -76,14 +81,21 @@ class SurfboardCollector:
         )
         for ch in parse_upstream_channels(html):
             cid = [str(ch.channel_id)]
+            us_locked.add_metric(cid, ch.locked)
             us_frequency.add_metric(cid, ch.frequency_hz)
             us_width.add_metric(cid, ch.width_hz)
             us_power.add_metric(cid, ch.power_dbmv)
+        yield us_locked
         yield us_frequency
         yield us_width
         yield us_power
 
     def collect_downstream(self, html: str):
+        ds_locked = GaugeMetricFamily(
+            "surfboard_downstream_locked",
+            "Downstream channel lock status (1=Locked, 0=not locked)",
+            labels=["channel_id"],
+        )
         ds_frequency = GaugeMetricFamily(
             "surfboard_downstream_frequency_hz",
             "Downstream channel frequency (Hz)",
@@ -111,11 +123,13 @@ class SurfboardCollector:
         )
         for ch in parse_downstream_channels(html):
             cid = [str(ch.channel_id)]
+            ds_locked.add_metric(cid, ch.locked)
             ds_frequency.add_metric(cid, ch.frequency_hz)
             ds_power.add_metric(cid, ch.power_dbmv)
             ds_snr.add_metric(cid, ch.snr_db)
             ds_corrected.add_metric(cid, ch.corrected)
             ds_uncorrectables.add_metric(cid, ch.uncorrectables)
+        yield ds_locked
         yield ds_frequency
         yield ds_power
         yield ds_snr

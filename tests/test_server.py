@@ -2,6 +2,8 @@ import math
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
+
 import server
 
 HTML = """
@@ -100,6 +102,24 @@ def test__downstream_gauges():
     assert _get_sample_value(metrics, "surfboard_downstream_snr_db", LABELS) == 43.5
 
 
+@pytest.mark.parametrize(
+    ("lock_status", "expected_locked"),
+    [("Locked", 1), ("Not Locked", 0), ("", 0), ("BOGUS", 0)],
+)
+def test__downstream_gauges__lock_status(lock_status, expected_locked):
+    html = HTML.replace(
+        "<td>1</td><td>Locked</td><td>QAM256</td>",
+        f"<td>1</td><td>{lock_status}</td><td>QAM256</td>",
+    )
+
+    metrics = collect_with(html)
+
+    assert (
+        _get_sample_value(metrics, "surfboard_downstream_locked", LABELS)
+        == expected_locked
+    )
+
+
 def test__upstream_gauges():
     metrics = collect_with(HTML)
 
@@ -109,6 +129,24 @@ def test__upstream_gauges():
     )
     assert _get_sample_value(metrics, "surfboard_upstream_width_hz", LABELS) == 6400000
     assert _get_sample_value(metrics, "surfboard_upstream_power_dbmv", LABELS) == 46.0
+
+
+@pytest.mark.parametrize(
+    ("lock_status", "expected_locked"),
+    [("Locked", 1), ("Not Locked", 0), ("", 0), ("BOGUS", 0)],
+)
+def test__upstream_gauges__lock_status(lock_status, expected_locked):
+    html = HTML.replace(
+        "<td>1</td><td>1</td><td>Locked</td><td>SC-QAM Upstream</td>",
+        f"<td>1</td><td>1</td><td>{lock_status}</td><td>SC-QAM Upstream</td>",
+    )
+
+    metrics = collect_with(html)
+
+    assert (
+        _get_sample_value(metrics, "surfboard_upstream_locked", LABELS)
+        == expected_locked
+    )
 
 
 def test__downstream_counters():

@@ -1,6 +1,8 @@
 import math
 from datetime import datetime
 
+import pytest
+
 from parser import (
     parse_downstream_channels,
     parse_system_time,
@@ -82,6 +84,7 @@ def test__upstream_channel_fields():
 
     assert channels[0].channel_id == 1
     assert channels[0].lock_status == "Locked"
+    assert channels[0].locked is True
     assert channels[0].channel_type == "SC-QAM Upstream"
     assert channels[0].frequency_hz == 16400000
     assert channels[0].width_hz == 6400000
@@ -89,12 +92,29 @@ def test__upstream_channel_fields():
 
     assert channels[1].channel_id == 2
     assert channels[1].lock_status == "Locked"
+    assert channels[1].locked is True
     assert channels[1].channel_type == "SC-QAM Upstream"
     assert channels[1].frequency_hz == 22800000
     assert channels[1].width_hz == 6400000
     assert channels[1].power_dbmv == 48.0
 
     assert not channels[2:]
+
+
+@pytest.mark.parametrize(
+    ("lock_status", "expected_locked"),
+    [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
+)
+def test__parse_upstream_channels__lock_status(lock_status, expected_locked):
+    html = HTML.replace(
+        "<td>1</td>\n  <td>Locked</td>\n  <td>SC-QAM Upstream</td>",
+        f"<td>1</td>\n  <td>{lock_status}</td>\n  <td>SC-QAM Upstream</td>",
+    )
+
+    channels = parse_upstream_channels(html)
+
+    assert channels[0].lock_status == lock_status
+    assert channels[0].locked is expected_locked
 
 
 def test__parse_system_time():
@@ -116,6 +136,7 @@ def test__channel_fields():
 
     assert channels[0].channel_id == 1
     assert channels[0].lock_status == "Locked"
+    assert channels[0].locked is True
     assert channels[0].modulation == "QAM256"
     assert channels[0].frequency_hz == 387000000
     assert channels[0].power_dbmv == -8.2
@@ -125,6 +146,7 @@ def test__channel_fields():
 
     assert channels[1].channel_id == 2
     assert channels[1].lock_status == "Locked"
+    assert channels[1].locked is True
     assert channels[1].modulation == "QAM256"
     assert channels[1].frequency_hz == 393000000
     assert channels[1].power_dbmv == -9.1
@@ -133,3 +155,19 @@ def test__channel_fields():
     assert channels[1].uncorrectables == 400
 
     assert not channels[2:]
+
+
+@pytest.mark.parametrize(
+    ("lock_status", "expected_locked"),
+    [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
+)
+def test__parse_downstream_channels__lock_status(lock_status, expected_locked):
+    html = HTML.replace(
+        "<td>1</td>\n  <td>Locked</td>\n  <td>QAM256</td>",
+        f"<td>1</td>\n  <td>{lock_status}</td>\n  <td>QAM256</td>",
+    )
+
+    channels = parse_downstream_channels(html)
+
+    assert channels[0].lock_status == lock_status
+    assert channels[0].locked is expected_locked

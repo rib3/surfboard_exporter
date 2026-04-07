@@ -79,7 +79,7 @@ HTML = """
 """
 
 
-def test__parse_upstream_channels__fields():
+def test__parse_upstream_channels__fields__static_html():
     channels = parse_upstream_channels(HTML)
 
     assert channels[0].channel_id == 1
@@ -120,7 +120,7 @@ def test__parse_upstream_channels__lock_status(
     assert channels[0].locked is expected_locked
 
 
-def test__parse_system_time():
+def test__parse_system_time__static_html():
     assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
 
 
@@ -134,7 +134,7 @@ def test__parse_system_time__invalid_format():
     assert math.isnan(parse_system_time(html))
 
 
-def test__parse_downstream_channels__fields():
+def test__parse_downstream_channels__fields__static_html():
     channels = parse_downstream_channels(HTML)
 
     assert channels[0].channel_id == 1

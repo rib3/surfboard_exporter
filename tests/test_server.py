@@ -45,8 +45,8 @@ HTML = """
 <p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>
 """
 
-HTML_WITH_BAD_TIME = HTML.replace("Thu Mar 26 14:58:02 2026", "not-a-date")
-HTML_NO_TIME = HTML.replace(
+HTML__BAD_TIME = HTML.replace("Thu Mar 26 14:58:02 2026", "not-a-date")
+HTML__NO_TIME = HTML.replace(
     '<p id="systime">'
     "<strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026"
     "</p>",
@@ -70,7 +70,7 @@ def collect_with(html):
         return list(collector.collect())
 
 
-def test__system_time():
+def test__system_time__static_html():
     metrics = collect_with(HTML)
 
     assert (
@@ -79,19 +79,19 @@ def test__system_time():
     )
 
 
-def test__system_time__missing_element():
-    metrics = collect_with(HTML_NO_TIME)
+def test__system_time__missing_element__static_html__no_tome():
+    metrics = collect_with(HTML__NO_TIME)
 
     assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
 
 
-def test__system_time__invalid_format():
-    metrics = collect_with(HTML_WITH_BAD_TIME)
+def test__system_time__invalid_format__static_html_with_bad_time():
+    metrics = collect_with(HTML__BAD_TIME)
 
     assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
 
 
-def test__downstream_gauges():
+def test__downstream_gauges__static_html():
     metrics = collect_with(HTML)
 
     assert (
@@ -125,7 +125,7 @@ def test__downstream_gauges__locked(
     )
 
 
-def test__upstream_gauges():
+def test__upstream_gauges__static_html():
     metrics = collect_with(HTML)
 
     assert (
@@ -159,7 +159,7 @@ def test__upstream_gauges__locked(
     )
 
 
-def test__downstream_counters():
+def test__downstream_counters__static_html():
     metrics = collect_with(HTML)
 
     assert (

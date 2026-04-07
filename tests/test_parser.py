@@ -1,5 +1,6 @@
 import math
 from datetime import datetime
+from itertools import zip_longest
 
 import pytest
 
@@ -8,6 +9,8 @@ from parser import (
     parse_system_time,
     parse_upstream_channels,
 )
+
+from .test_shared import assert_attrs
 
 HTML = """
 <table class="simpleTable">
@@ -101,6 +104,27 @@ def test__parse_upstream_channels__fields__static_html():
     assert not channels[2:]
 
 
+def test__parse_upstream_channels__fields__factory(
+    upstream_bonded_channels_factory,
+    upstream_bonded_channels_row_factory,
+):
+    rows = upstream_bonded_channels_row_factory.batch(2)
+    html = upstream_bonded_channels_factory.build(rows=rows).to_html()
+
+    channels = parse_upstream_channels(html)
+
+    for channel, row in zip_longest(channels, rows):
+        assert_attrs(
+            channel,
+            channel_id=row.channel_id,
+            lock_status=row.lock_status,
+            channel_type=row.channel_type,
+            frequency_hz=row.frequency_hz,
+            width_hz=row.width_hz,
+            power_dbmv=row.power_dbmv,
+        )
+
+
 @pytest.mark.parametrize(
     ("lock_status", "expected_locked"),
     [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
@@ -158,6 +182,29 @@ def test__parse_downstream_channels__fields__static_html():
     assert channels[1].uncorrectables == 400
 
     assert not channels[2:]
+
+
+def test__parse_downstream_channels__fields__factory(
+    downstream_bonded_channels_factory,
+    downstream_bonded_channels_row_factory,
+):
+    rows = downstream_bonded_channels_row_factory.batch(2)
+    html = downstream_bonded_channels_factory.build(rows=rows).to_html()
+
+    channels = parse_downstream_channels(html)
+
+    for channel, row in zip_longest(channels, rows):
+        assert_attrs(
+            channel,
+            channel_id=row.channel_id,
+            lock_status=row.lock_status,
+            modulation=row.modulation,
+            frequency_hz=row.frequency_hz,
+            power_dbmv=row.power_dbmv,
+            snr_db=row.snr_db,
+            corrected=row.corrected,
+            uncorrectables=row.uncorrectables,
+        )
 
 
 @pytest.mark.parametrize(

@@ -13,12 +13,14 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from mimesis.locales import Locale
 from mimesis.schema import Field
+from polyfactory.decorators import post_generated
 from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
 
 from client import _response_save_dir_get
 from testsupport.modem_html import (
+    ConnectionStatus,
     DownstreamBondedChannels,
     DownstreamBondedChannelsRow,
     UpstreamBondedChannels,
@@ -272,3 +274,18 @@ class UpstreamBondedChannelsRowFactory(DataclassFactory):
 @register_fixture
 class UpstreamBondedChannelsFactory(DataclassFactory):
     __model__ = UpstreamBondedChannels
+
+
+@register_fixture
+class ConnectionStatusFactory(DataclassFactory):
+    __model__ = ConnectionStatus
+    system_time_str = None
+
+    @post_generated
+    @classmethod
+    def system_time(cls, system_time_str):
+        if system_time_str is None:
+            provider = cls.get_provider_map()[datetime]
+            return provider()
+        return None
+        # return Null

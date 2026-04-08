@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 
 @dataclass
@@ -97,4 +98,31 @@ class UpstreamBondedChannels:
             f"{rows_html}\n"
             "</tbody>\n"
             "</table>"
+        )
+
+
+@dataclass
+class ConnectionStatus:
+    system_time: datetime | None
+    system_time_str: str | None = None
+    downstream: DownstreamBondedChannels = field(
+        default_factory=DownstreamBondedChannels
+    )
+    upstream: UpstreamBondedChannels = field(default_factory=UpstreamBondedChannels)
+
+    def __post_init__(self):
+        if self.system_time is not None and self.system_time_str is not None:
+            raise ValueError("provide system_time or system_time_str, not both")
+        if self.system_time_str is None:
+            if self.system_time is None:
+                raise ValueError("provide system_time or system_time_str")
+            self.system_time_str = self.system_time.strftime("%a %b %d %H:%M:%S %Y")
+
+    def to_html(self) -> str:
+        return (
+            f"{self.downstream.to_html()}\n"
+            f"{self.upstream.to_html()}\n"
+            f'<p id="systime">'
+            f"<strong>Current System Time:</strong> {self.system_time_str}"
+            "</p>"
         )

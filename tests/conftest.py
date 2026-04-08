@@ -265,6 +265,12 @@ class DownstreamBondedChannelsRowFactory(DataclassFactory):
 class DownstreamBondedChannelsFactory(DataclassFactory):
     __model__ = DownstreamBondedChannels
 
+    @post_generated
+    @classmethod
+    def rows(cls) -> list[DownstreamBondedChannelsRow]:
+        count = cls.__random__.choice([0, 24, 25])
+        return DownstreamBondedChannelsRowFactory.batch(count)
+
 
 @register_fixture
 class UpstreamBondedChannelsRowFactory(DataclassFactory):
@@ -274,6 +280,8 @@ class UpstreamBondedChannelsRowFactory(DataclassFactory):
 @register_fixture
 class UpstreamBondedChannelsFactory(DataclassFactory):
     __model__ = UpstreamBondedChannels
+    __min_collection_length__ = 0
+    __max_collection_length__ = 4
 
 
 @register_fixture

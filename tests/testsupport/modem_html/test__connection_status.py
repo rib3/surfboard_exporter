@@ -31,3 +31,18 @@ def test__both__raises():
 def test__neither__raises():
     with pytest.raises(ValueError, match="provide system_time or system_time_str"):
         ConnectionStatus(system_time=None, system_time_str=None)
+
+
+def test__to_html(connection_status_factory):
+    page = connection_status_factory.build()
+
+    html = page.to_html()
+
+    expected_html = (
+        f"{page.downstream.to_html()}\n"
+        f"{page.upstream.to_html()}\n"
+        f'<p id="systime">'
+        f"<strong>Current System Time:</strong> {page.system_time_str}"
+        f"</p>"
+    )
+    assert html == expected_html

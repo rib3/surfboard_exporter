@@ -177,7 +177,7 @@ def test__connection_status_get__modem_certificate_path(
         "password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
-        modem_certificate_path=str(https_server_modem.cert_path),
+        modem_certificate_path=https_server_modem.cert_path,
     )
 
     result = client.connection_status_get()
@@ -208,15 +208,15 @@ def test__connection_status_get__modem_certificate_path__none__ssl_fails(
 
 
 def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
-    https_server_modem, modem_like_cert, caplog
+    https_server_modem, key_cert_like_modem, caplog
 ):
-    wrong_cert_path, _ = modem_like_cert()
+    _, wrong_cert_path = key_cert_like_modem()
     client = SurfboardClient(
         "admin",
         "password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
-        modem_certificate_path=str(wrong_cert_path),
+        modem_certificate_path=wrong_cert_path,
     )
 
     result = client.connection_status_get()

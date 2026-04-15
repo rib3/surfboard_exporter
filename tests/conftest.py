@@ -1,11 +1,11 @@
 import base64
 import logging
-import pathlib
 import ssl
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
+from tempfile import NamedTemporaryFile
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -138,40 +138,43 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
 
 
 @pytest.fixture
-def modem_like_cert(tmp_path):
-    _counter = [0]
-
+def key_cert_like_modem(tmp_path):
     def _make():
         # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
-        _counter[0] += 1
         key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
-        name = x509.Name(
-            [x509.NameAttribute(NameOID.COMMON_NAME, "localhost.localdomain")]
+        prefix = "modem-"
+        key_file = NamedTemporaryFile(
+            prefix=prefix, suffix=".key", dir=tmp_path, delete=False
         )
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(name)
-            .issuer_name(name)
-            .public_key(key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.now(UTC))
-            .not_valid_after(datetime.now(UTC) + timedelta(days=1))
-            .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), critical=True
-            )
-            .sign(key, hashes.SHA256())
-        )
-        cert_path = tmp_path / f"modem_{_counter[0]}.crt"
-        cert_path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
-        key_path = tmp_path / f"modem_{_counter[0]}.key"
-        key_path.write_bytes(
+        key_file.write(
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
                 serialization.NoEncryption(),
             )
         )
-        return cert_path, key_path
+        name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "localhost.localdomain")]
+        )
+        now = datetime.now(UTC)
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(name)
+            .issuer_name(name)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now + timedelta(days=1))
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None), critical=True
+            )
+            .sign(key, hashes.SHA256())
+        )
+        cert_file = NamedTemporaryFile(
+            prefix=prefix, suffix=".crt", dir=tmp_path, delete=False
+        )
+        cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
+        return key_file.name, cert_file.name
 
     return _make
 
@@ -179,16 +182,16 @@ def modem_like_cert(tmp_path):
 @dataclass
 class HttpServerModem:
     server: HTTPServer
-    cert_path: pathlib.Path
+    cert_path: str
     host: str
 
 
 @pytest.fixture
-def https_server_modem(modem_like_cert):
-    cert_path, key_path = modem_like_cert()
+def https_server_modem(key_cert_like_modem):
+    key_path, cert_path = key_cert_like_modem()
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
-    ssl_ctx.load_cert_chain(certfile=str(cert_path), keyfile=str(key_path))
+    ssl_ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)
     logger.debug("https_server_modem starting")
     with HTTPServer(host="127.0.0.1", ssl_context=ssl_ctx) as server:
         host = f"{server.host}:{server.port}"

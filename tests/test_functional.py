@@ -8,8 +8,8 @@ from prometheus_client.metrics_core import Metric
 from prometheus_client.parser import text_string_to_metric_families
 from prometheus_client.samples import Sample
 
-import server
-from tests.test_server import HTML, LABELS, _get_sample_value
+from collector import SurfboardCollector
+from tests.test_collector import HTML, LABELS, _get_sample_value
 
 
 def _metric(name, doc, typ, samples):
@@ -234,7 +234,7 @@ def test__generate_latest(
     surfboard_api_mock_get_connectionstatus(token=token, text=HTML)
 
     registry = CollectorRegistry()
-    collector = server.SurfboardCollector("user", "pass")
+    collector = SurfboardCollector("user", "pass")
     registry.register(collector)
 
     output = generate_latest(registry)
@@ -298,7 +298,7 @@ def test__generate_latest__ssl_verify__enabled__certificate_path__none(
     https_server_modem, collector_kwargs
 ):
     registry = CollectorRegistry()
-    collector = server.SurfboardCollector(
+    collector = SurfboardCollector(
         "user", "pass", modem_host=https_server_modem.host, **collector_kwargs
     )
     registry.register(collector)
@@ -321,7 +321,7 @@ def test__generate_latest__ssl_verify__disabled(
     https_server_modem_expect_ordered_request_connectionstatus_get(token=token)
 
     registry = CollectorRegistry()
-    collector = server.SurfboardCollector(
+    collector = SurfboardCollector(
         "user",
         "pass",
         modem_host=https_server_modem.host,
@@ -347,7 +347,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()
-    collector = server.SurfboardCollector("user", "pass")
+    collector = SurfboardCollector("user", "pass")
     registry.register(collector)
 
     output = generate_latest(registry)
@@ -659,7 +659,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()
-    collector = server.SurfboardCollector("user", "pass")
+    collector = SurfboardCollector("user", "pass")
     registry.register(collector)
 
     output = generate_latest(registry)

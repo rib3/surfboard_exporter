@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-import server
+from collector import SurfboardCollector
 
 HTML = """
 <table class="simpleTable">
@@ -71,9 +71,9 @@ def _get_sample_value(metrics, name, labels=None):
 
 
 def collect_with(html):
-    collector = server.SurfboardCollector("user", "pass")
+    c = SurfboardCollector("user", "pass")
     with patch("client.SurfboardClient.connection_status_get", return_value=html):
-        return list(collector.collect())
+        return list(c.collect())
 
 
 def test__system_time__static_html():

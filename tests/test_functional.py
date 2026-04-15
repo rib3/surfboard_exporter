@@ -73,9 +73,9 @@ class UpstreamChannelValues:
 def _metrics_upstream(*channels: UpstreamChannelValues):
     return [
         _metric_upstream_locked(channels),
-        _metric_upstream_frequency_hz(_by_channel_id(channels, "frequency_hz")),
-        _metric_upstream_width_hz(_by_channel_id(channels, "width_hz")),
-        _metric_upstream_power_dbmv(_by_channel_id(channels, "power_dbmv")),
+        _metric_upstream_frequency_hz(channels),
+        _metric_upstream_width_hz(channels),
+        _metric_upstream_power_dbmv(channels),
     ]
 
 
@@ -94,11 +94,11 @@ class DownstreamChannelValues:
 def _metrics_downstream(*channels: DownstreamChannelValues):
     return [
         _metric_downstream_locked(channels),
-        _metric_downstream_frequency_hz(_by_channel_id(channels, "frequency_hz")),
-        _metric_downstream_power_dbmv(_by_channel_id(channels, "power_dbmv")),
-        _metric_downstream_snr_db(_by_channel_id(channels, "snr_db")),
-        _metric_downstream_corrected(_by_channel_id(channels, "corrected")),
-        _metric_downstream_uncorrectables(_by_channel_id(channels, "uncorrectables")),
+        _metric_downstream_frequency_hz(channels),
+        _metric_downstream_power_dbmv(channels),
+        _metric_downstream_snr_db(channels),
+        _metric_downstream_corrected(channels),
+        _metric_downstream_uncorrectables(channels),
     ]
 
 
@@ -120,8 +120,9 @@ def _metric_upstream_locked(channels):
     )
 
 
-def _metric_upstream_frequency_hz(channel_values: dict):
+def _metric_upstream_frequency_hz(channels):
     name = "surfboard_upstream_frequency_hz"
+    channel_values = _by_channel_id(channels, "frequency_hz")
     return _metric(
         name,
         "Upstream channel frequency (Hz)",
@@ -130,8 +131,9 @@ def _metric_upstream_frequency_hz(channel_values: dict):
     )
 
 
-def _metric_upstream_width_hz(channel_values: dict):
+def _metric_upstream_width_hz(channels):
     name = "surfboard_upstream_width_hz"
+    channel_values = _by_channel_id(channels, "width_hz")
     return _metric(
         name,
         "Upstream channel width (Hz)",
@@ -140,8 +142,9 @@ def _metric_upstream_width_hz(channel_values: dict):
     )
 
 
-def _metric_upstream_power_dbmv(channel_values: dict):
+def _metric_upstream_power_dbmv(channels):
     name = "surfboard_upstream_power_dbmv"
+    channel_values = _by_channel_id(channels, "power_dbmv")
     return _metric(
         name,
         "Upstream power (dBmV)",
@@ -168,8 +171,9 @@ def _metric_downstream_locked(channels):
     )
 
 
-def _metric_downstream_frequency_hz(channel_values: dict):
+def _metric_downstream_frequency_hz(channels):
     name = "surfboard_downstream_frequency_hz"
+    channel_values = _by_channel_id(channels, "frequency_hz")
     return _metric(
         name,
         "Downstream channel frequency (Hz)",
@@ -178,8 +182,9 @@ def _metric_downstream_frequency_hz(channel_values: dict):
     )
 
 
-def _metric_downstream_power_dbmv(channel_values: dict):
+def _metric_downstream_power_dbmv(channels):
     name = "surfboard_downstream_power_dbmv"
+    channel_values = _by_channel_id(channels, "power_dbmv")
     return _metric(
         name,
         "Downstream power (dBmV)",
@@ -188,8 +193,9 @@ def _metric_downstream_power_dbmv(channel_values: dict):
     )
 
 
-def _metric_downstream_snr_db(channel_values: dict):
+def _metric_downstream_snr_db(channels):
     name = "surfboard_downstream_snr_db"
+    channel_values = _by_channel_id(channels, "snr_db")
     return _metric(
         name,
         "Downstream SNR/MER (dB)",
@@ -198,8 +204,9 @@ def _metric_downstream_snr_db(channel_values: dict):
     )
 
 
-def _metric_downstream_corrected(channel_values: dict):
+def _metric_downstream_corrected(channels):
     name = "surfboard_downstream_corrected"
+    channel_values = _by_channel_id(channels, "corrected")
     return _metric(
         name,
         "Downstream corrected codewords",
@@ -208,8 +215,9 @@ def _metric_downstream_corrected(channel_values: dict):
     )
 
 
-def _metric_downstream_uncorrectables(channel_values: dict):
+def _metric_downstream_uncorrectables(channels):
     name = "surfboard_downstream_uncorrectables"
+    channel_values = _by_channel_id(channels, "uncorrectables")
     return _metric(
         name,
         "Downstream uncorrectable codewords",

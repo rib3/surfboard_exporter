@@ -1,5 +1,7 @@
 import pytest
 
+from ..test_shared import assert_attrs
+
 
 @pytest.mark.repeat(10)
 def test__no_args(connection_status_factory):
@@ -12,8 +14,11 @@ def test__no_args(connection_status_factory):
 def test__system_time_str(connection_status_factory):
     page = connection_status_factory.build(system_time_str="not-a-date")
 
-    assert page.system_time is None
-    assert page.system_time_str == "not-a-date"
+    assert_attrs(
+        page,
+        system_time=None,
+        system_time_str="not-a-date",
+    )
 
 
 def test__system_time__none(connection_status_factory):

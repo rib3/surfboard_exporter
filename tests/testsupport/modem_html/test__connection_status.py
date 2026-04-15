@@ -4,6 +4,8 @@ import pytest
 
 from testsupport.modem_html import ConnectionStatus
 
+from ...test_shared import assert_attrs
+
 
 def test__system_time__sets_system_time_str():
     dt = datetime(2026, 3, 26, 14, 58, 2)
@@ -15,8 +17,11 @@ def test__system_time__sets_system_time_str():
 def test__system_time_str__sets_system_time_none():
     page = ConnectionStatus(system_time=None, system_time_str="not-a-date")
 
-    assert page.system_time is None
-    assert page.system_time_str == "not-a-date"
+    assert_attrs(
+        page,
+        system_time=None,
+        system_time_str="not-a-date",
+    )
 
 
 def test__both__raises():

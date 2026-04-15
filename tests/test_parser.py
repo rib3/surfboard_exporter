@@ -89,22 +89,26 @@ def _expected_system_time_from_dt(dt: datetime) -> float:
 def test__parse_upstream_channels__fields__static_html():
     channels = parse_upstream_channels(HTML)
 
-    assert channels[0].channel_id == 1
-    assert channels[0].lock_status == "Locked"
-    assert channels[0].locked is True
-    assert channels[0].channel_type == "SC-QAM Upstream"
-    assert channels[0].frequency_hz == 16400000
-    assert channels[0].width_hz == 6400000
-    assert channels[0].power_dbmv == 46.0
-
-    assert channels[1].channel_id == 2
-    assert channels[1].lock_status == "Locked"
-    assert channels[1].locked is True
-    assert channels[1].channel_type == "SC-QAM Upstream"
-    assert channels[1].frequency_hz == 22800000
-    assert channels[1].width_hz == 6400000
-    assert channels[1].power_dbmv == 48.0
-
+    assert_attrs(
+        channels[0],
+        channel_id=1,
+        lock_status="Locked",
+        locked=True,
+        channel_type="SC-QAM Upstream",
+        frequency_hz=16400000,
+        width_hz=6400000,
+        power_dbmv=46.0,
+    )
+    assert_attrs(
+        channels[1],
+        channel_id=2,
+        lock_status="Locked",
+        locked=True,
+        channel_type="SC-QAM Upstream",
+        frequency_hz=22800000,
+        width_hz=6400000,
+        power_dbmv=48.0,
+    )
     assert not channels[2:]
 
 
@@ -144,8 +148,11 @@ def test__parse_upstream_channels__lock_status(
 
     channels = parse_upstream_channels(html)
 
-    assert channels[0].lock_status == lock_status
-    assert channels[0].locked is expected_locked
+    assert_attrs(
+        channels[0],
+        lock_status=lock_status,
+        locked=expected_locked,
+    )
 
 
 def test__parse_system_time__static_html():
@@ -172,26 +179,30 @@ def test__parse_system_time__invalid_format(connection_status_factory):
 def test__parse_downstream_channels__fields__static_html():
     channels = parse_downstream_channels(HTML)
 
-    assert channels[0].channel_id == 1
-    assert channels[0].lock_status == "Locked"
-    assert channels[0].locked is True
-    assert channels[0].modulation == "QAM256"
-    assert channels[0].frequency_hz == 387000000
-    assert channels[0].power_dbmv == -8.2
-    assert channels[0].snr_db == 43.5
-    assert channels[0].corrected == 100
-    assert channels[0].uncorrectables == 200
-
-    assert channels[1].channel_id == 2
-    assert channels[1].lock_status == "Locked"
-    assert channels[1].locked is True
-    assert channels[1].modulation == "QAM256"
-    assert channels[1].frequency_hz == 393000000
-    assert channels[1].power_dbmv == -9.1
-    assert channels[1].snr_db == 42.0
-    assert channels[1].corrected == 300
-    assert channels[1].uncorrectables == 400
-
+    assert_attrs(
+        channels[0],
+        channel_id=1,
+        lock_status="Locked",
+        locked=True,
+        modulation="QAM256",
+        frequency_hz=387000000,
+        power_dbmv=-8.2,
+        snr_db=43.5,
+        corrected=100,
+        uncorrectables=200,
+    )
+    assert_attrs(
+        channels[1],
+        channel_id=2,
+        lock_status="Locked",
+        locked=True,
+        modulation="QAM256",
+        frequency_hz=393000000,
+        power_dbmv=-9.1,
+        snr_db=42.0,
+        corrected=300,
+        uncorrectables=400,
+    )
     assert not channels[2:]
 
 
@@ -233,5 +244,8 @@ def test__parse_downstream_channels__lock_status(
 
     channels = parse_downstream_channels(html)
 
-    assert channels[0].lock_status == lock_status
-    assert channels[0].locked is expected_locked
+    assert_attrs(
+        channels[0],
+        lock_status=lock_status,
+        locked=expected_locked,
+    )

@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 class SurfboardCollector:
     def __init__(
         self,
-        username: str,
+        *,
+        username: str | None = None,
         password: str,
         modem_host: str | None = None,
         modem_certificate_verify: bool = True,
@@ -19,8 +20,8 @@ class SurfboardCollector:
         response_save: bool = False,
     ) -> None:
         self._client = SurfboardClient(
-            username,
-            password,
+            username=username,
+            password=password,
             modem_host=modem_host,
             modem_certificate_verify=modem_certificate_verify,
             modem_certificate_path=modem_certificate_path,

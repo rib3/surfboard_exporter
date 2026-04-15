@@ -36,7 +36,7 @@ def main() -> None:
     args = parser.parse_args()
     logging_config(args)
     logger.info("starting")
-    username = os.environ.get("SURFBOARD_USERNAME", "admin")
+    username = os.environ.get("SURFBOARD_USERNAME")
     password = os.environ["SURFBOARD_PASSWORD"]
     modem_host = os.environ.get("SURFBOARD_MODEM_HOST")
     modem_certificate_verify = json.loads(
@@ -44,8 +44,8 @@ def main() -> None:
     )
     modem_certificate_path = os.environ.get("SURFBOARD_MODEM_CERTIFICATE_PATH") or None
     _, thread = start(
-        username,
-        password,
+        username=username,
+        password=password,
         modem_host=modem_host,
         modem_certificate_verify=modem_certificate_verify,
         modem_certificate_path=modem_certificate_path,

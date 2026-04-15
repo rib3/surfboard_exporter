@@ -70,11 +70,18 @@ def test__response_save(tmp_path, monkeypatch, mimesis):
     assert not files[1:]
 
 
-def test__token_get(surfboard_api_mock_get_login):
+@pytest.mark.parametrize(
+    ("client_kwargs", "expected_username"),
+    [
+        ({}, "admin"),
+        ({"username": "user"}, "user"),
+    ],
+)
+def test__token_get(surfboard_api_mock_get_login, client_kwargs, expected_username):
     surfboard_api_mock_get_login(
-        username="admin", password="password", token="abc123token"
+        username=expected_username, password="password", token="abc123token"
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password", **client_kwargs)
 
     result = client.token_get()
 
@@ -83,7 +90,7 @@ def test__token_get(surfboard_api_mock_get_login):
 
 def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(username="admin", password="password")
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     client.token_get()
     client.token_get()
@@ -93,7 +100,7 @@ def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
 
 def test__token_get__no_session_id(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(username="admin", password="password", session_id=None)
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     with pytest.raises(TokenUnavailableError):
         client.token_get()
@@ -105,7 +112,7 @@ def test__token_get__network_error(surfboard_api_mock_get_login):
         password="password",
         side_effect=httpx.ConnectError("connection refused"),
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     with pytest.raises(TokenUnavailableError):
         client.token_get()
@@ -118,7 +125,7 @@ def test__connection_status_get(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text)
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -134,7 +141,7 @@ def test__connection_status_get__modem_certificate_verify__true(
         password="password",
         side_effect=ssl_error,
     )
-    client = SurfboardClient("admin", "password", modem_certificate_verify=True)
+    client = SurfboardClient(password="password", modem_certificate_verify=True)
 
     result = client.connection_status_get()
 
@@ -154,7 +161,7 @@ def test__connection_status_get__modem_certificate_verify__false(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text)
-    client = SurfboardClient("admin", "password", modem_certificate_verify=False)
+    client = SurfboardClient(password="password", modem_certificate_verify=False)
 
     result = client.connection_status_get()
 
@@ -173,8 +180,7 @@ def test__connection_status_get__modem_certificate_path(
         token=token, session_id=session_id
     )
     client = SurfboardClient(
-        "admin",
-        "password",
+        password="password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
         modem_certificate_path=https_server_modem.cert_path,
@@ -190,8 +196,7 @@ def test__connection_status_get__modem_certificate_path__none__ssl_fails(
     https_server_modem, caplog, client_kwargs
 ):
     client = SurfboardClient(
-        "admin",
-        "password",
+        password="password",
         modem_host=https_server_modem.host,
         **client_kwargs,
     )
@@ -212,8 +217,7 @@ def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
 ):
     _, wrong_cert_path = key_cert_like_modem()
     client = SurfboardClient(
-        "admin",
-        "password",
+        password="password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
         modem_certificate_path=wrong_cert_path,
@@ -249,7 +253,7 @@ def test__connection_status_get__response_save(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text)
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     with time_machine.travel(frozen_dt, tick=False):
         result = client.connection_status_get(response_save=True)
@@ -274,7 +278,7 @@ def test__connection_status_get__token_network_error(surfboard_api_mock_get_logi
         password="password",
         side_effect=httpx.ConnectError("connection refused"),
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -285,7 +289,7 @@ def test__connection_status_get__token_get__fails(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(
         username="admin", password="password", status_code=HTTPStatus.UNAUTHORIZED
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -294,7 +298,7 @@ def test__connection_status_get__token_get__fails(surfboard_api_mock_get_login):
 
 def test__connection_status_get__token_get__no_session_id(surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(username="admin", password="password", session_id=None)
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -309,7 +313,7 @@ def test__connection_status_get__non_200(
     surfboard_api_mock_get_connectionstatus(
         token=token, status_code=HTTPStatus.UNAUTHORIZED
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -324,7 +328,7 @@ def test__connection_status_get__network_error(
     surfboard_api_mock_get_connectionstatus(
         token=token, side_effect=httpx.ConnectError("connection refused")
     )
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -337,7 +341,7 @@ def test__connection_status_get__no_session_after_status(
     token = "abc123token"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, session_id="")
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 
@@ -351,7 +355,7 @@ def test__connection_status_get__no_session_cookie_after_status(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(username="admin", password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text, session_id=None)
-    client = SurfboardClient("admin", "password")
+    client = SurfboardClient(password="password")
 
     result = client.connection_status_get()
 

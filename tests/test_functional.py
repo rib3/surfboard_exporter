@@ -226,15 +226,27 @@ def _metric_downstream_uncorrectables(channels):
     )
 
 
+@pytest.mark.parametrize(
+    ("collector_kwargs", "expected_username"),
+    [
+        ({}, "admin"),
+        ({"username": "user"}, "user"),
+    ],
+)
 def test__generate_latest(
-    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
+    surfboard_api_mock_get_login,
+    surfboard_api_mock_get_connectionstatus,
+    collector_kwargs,
+    expected_username,
 ):
     token = "abc123token"
-    surfboard_api_mock_get_login(username="user", password="pass", token=token)
+    surfboard_api_mock_get_login(
+        username=expected_username, password="pass", token=token
+    )
     surfboard_api_mock_get_connectionstatus(token=token, text=HTML)
 
     registry = CollectorRegistry()
-    collector = SurfboardCollector("user", "pass")
+    collector = SurfboardCollector(password="pass", **collector_kwargs)
     registry.register(collector)
 
     output = generate_latest(registry)
@@ -299,7 +311,10 @@ def test__generate_latest__ssl_verify__enabled__certificate_path__none(
 ):
     registry = CollectorRegistry()
     collector = SurfboardCollector(
-        "user", "pass", modem_host=https_server_modem.host, **collector_kwargs
+        username="user",
+        password="pass",
+        modem_host=https_server_modem.host,
+        **collector_kwargs,
     )
     registry.register(collector)
 
@@ -322,8 +337,8 @@ def test__generate_latest__ssl_verify__disabled(
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(
-        "user",
-        "pass",
+        username="user",
+        password="pass",
         modem_host=https_server_modem.host,
         modem_certificate_verify=False,
     )
@@ -347,7 +362,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()
-    collector = SurfboardCollector("user", "pass")
+    collector = SurfboardCollector(password="pass")
     registry.register(collector)
 
     output = generate_latest(registry)
@@ -659,7 +674,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()
-    collector = SurfboardCollector("user", "pass")
+    collector = SurfboardCollector(password="pass")
     registry.register(collector)
 
     output = generate_latest(registry)

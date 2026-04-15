@@ -90,20 +90,21 @@ class SurfboardClient:
             logger.debug("token (cached)=%r", self._token)
             return self._token
 
-        logger.info("cookies (before)=%r", dict(self._client.cookies))
+        logger.debug("cookies (before)=%r", dict(self._client.cookies))
         auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
         try:
             response = self._client.get(
                 f"cmconnectionstatus.html?login_{auth}",
                 headers={"Authorization": f"Basic {auth}"},
             )
-            logger.info("response=%r, response.text=%r", response, response.text)
+            logger.info("response=%r", response)
+            logger.debug("response.text=%r", response.text)
             response.raise_for_status()
         except httpx.HTTPError as e:
             if "SSL" in str(e):
                 logger.error("ssl problem: %s", e)
             raise TokenUnavailableError from e
-        logger.info("cookies=%r", dict(self._client.cookies))
+        logger.debug("cookies=%r", dict(self._client.cookies))
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
         session_id = self._session_id()
@@ -121,7 +122,7 @@ class SurfboardClient:
             logger.warning("can't get status, token unavailable", exc_info=True)
             return None
 
-        logger.info("cookies (before)=%r", dict(self._client.cookies))
+        logger.debug("cookies (before)=%r", dict(self._client.cookies))
         try:
             response = self._client.get(f"cmconnectionstatus.html?ct_{token}")
         except httpx.HTTPError:
@@ -137,7 +138,7 @@ class SurfboardClient:
             )
             return None
 
-        logger.info("cookies=%r", dict(self._client.cookies))
+        logger.debug("cookies=%r", dict(self._client.cookies))
         session_id = self._session_id()
         if not session_id:
             logger.warning("session_id=%r empty after request", session_id)

@@ -30,7 +30,7 @@ class SurfboardCollector:
         logger.info("response_save=%r", self.response_save)
 
     def collect(self):
-        logger.info("collect start")
+        logger.debug("collect start")
         yield GaugeMetricFamily(
             "surfboard_ssl_verify",
             "Whether SSL verification is enabled (1=enabled, 0=disabled)",
@@ -55,7 +55,7 @@ class SurfboardCollector:
         yield from self.collect_upstream(html)
         yield from self.collect_downstream(html)
 
-        logger.info("collect end")
+        logger.debug("collect end")
 
     def collect_upstream(self, html: str):
         us_locked = GaugeMetricFamily(

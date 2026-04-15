@@ -63,6 +63,7 @@ def _metric_system_time_sample(value):
 @dataclass
 class UpstreamChannelValues:
     channel_id: str
+    lock_status: str
     locked: float
     frequency_hz: float
     width_hz: float
@@ -71,7 +72,7 @@ class UpstreamChannelValues:
 
 def _metrics_upstream(*channels: UpstreamChannelValues):
     return [
-        _metric_upstream_locked(_by_channel_id(channels, "locked")),
+        _metric_upstream_locked(channels),
         _metric_upstream_frequency_hz(_by_channel_id(channels, "frequency_hz")),
         _metric_upstream_width_hz(_by_channel_id(channels, "width_hz")),
         _metric_upstream_power_dbmv(_by_channel_id(channels, "power_dbmv")),
@@ -81,6 +82,7 @@ def _metrics_upstream(*channels: UpstreamChannelValues):
 @dataclass
 class DownstreamChannelValues:
     channel_id: str
+    lock_status: str
     locked: float
     frequency_hz: float
     power_dbmv: float
@@ -91,7 +93,7 @@ class DownstreamChannelValues:
 
 def _metrics_downstream(*channels: DownstreamChannelValues):
     return [
-        _metric_downstream_locked(_by_channel_id(channels, "locked")),
+        _metric_downstream_locked(channels),
         _metric_downstream_frequency_hz(_by_channel_id(channels, "frequency_hz")),
         _metric_downstream_power_dbmv(_by_channel_id(channels, "power_dbmv")),
         _metric_downstream_snr_db(_by_channel_id(channels, "snr_db")),
@@ -100,13 +102,21 @@ def _metrics_downstream(*channels: DownstreamChannelValues):
     ]
 
 
-def _metric_upstream_locked(channel_values: dict):
+def _metric_upstream_locked(channels):
     name = "surfboard_upstream_locked"
+    samples = [
+        _sample(
+            name,
+            {"channel_id": c.channel_id, "lock_status": c.lock_status},
+            c.locked,
+        )
+        for c in channels
+    ]
     return _metric(
         name,
         "Upstream channel lock status (1=Locked, 0=not locked)",
         "gauge",
-        _samples_channel_id(name, channel_values),
+        samples,
     )
 
 
@@ -140,13 +150,21 @@ def _metric_upstream_power_dbmv(channel_values: dict):
     )
 
 
-def _metric_downstream_locked(channel_values: dict):
+def _metric_downstream_locked(channels):
     name = "surfboard_downstream_locked"
+    samples = [
+        _sample(
+            name,
+            {"channel_id": c.channel_id, "lock_status": c.lock_status},
+            c.locked,
+        )
+        for c in channels
+    ]
     return _metric(
         name,
         "Downstream channel lock status (1=Locked, 0=not locked)",
         "gauge",
-        _samples_channel_id(name, channel_values),
+        samples,
     )
 
 
@@ -244,6 +262,7 @@ def test__generate_latest(
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=16400000.0,
                 width_hz=6400000.0,
@@ -253,6 +272,7 @@ def test__generate_latest(
         *_metrics_downstream(
             DownstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=387000000.0,
                 power_dbmv=-8.2,
@@ -333,6 +353,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=16400000.0,
                 width_hz=6400000.0,
@@ -340,6 +361,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             UpstreamChannelValues(
                 channel_id="2",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=22800000.0,
                 width_hz=6400000.0,
@@ -347,6 +369,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             UpstreamChannelValues(
                 channel_id="3",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=29200000.0,
                 width_hz=6400000.0,
@@ -354,6 +377,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             UpstreamChannelValues(
                 channel_id="4",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=35600000.0,
                 width_hz=6400000.0,
@@ -363,6 +387,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
         *_metrics_downstream(
             DownstreamChannelValues(
                 channel_id="20",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=975000000.0,
                 power_dbmv=-7.3,
@@ -372,6 +397,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=387000000.0,
                 power_dbmv=-8.2,
@@ -381,6 +407,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="2",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=393000000.0,
                 power_dbmv=-8.7,
@@ -390,6 +417,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="3",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=399000000.0,
                 power_dbmv=-9.3,
@@ -399,6 +427,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="4",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=405000000.0,
                 power_dbmv=-9.4,
@@ -408,6 +437,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="5",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=411000000.0,
                 power_dbmv=-9.2,
@@ -417,6 +447,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="6",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=417000000.0,
                 power_dbmv=-8.6,
@@ -426,6 +457,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="7",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=423000000.0,
                 power_dbmv=-8.3,
@@ -435,6 +467,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="8",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=429000000.0,
                 power_dbmv=-8.4,
@@ -444,6 +477,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="9",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=435000000.0,
                 power_dbmv=-8.9,
@@ -453,6 +487,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="10",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=441000000.0,
                 power_dbmv=-9.4,
@@ -462,6 +497,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="11",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=447000000.0,
                 power_dbmv=-9.3,
@@ -471,6 +507,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="12",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=453000000.0,
                 power_dbmv=-8.7,
@@ -480,6 +517,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="13",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=459000000.0,
                 power_dbmv=-8.1,
@@ -489,6 +527,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="14",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=465000000.0,
                 power_dbmv=-8.1,
@@ -498,6 +537,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="15",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=471000000.0,
                 power_dbmv=-8.6,
@@ -507,6 +547,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="16",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=477000000.0,
                 power_dbmv=-9.2,
@@ -516,6 +557,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="17",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=957000000.0,
                 power_dbmv=-8.3,
@@ -525,6 +567,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="18",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=963000000.0,
                 power_dbmv=-7.6,
@@ -534,6 +577,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="19",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=969000000.0,
                 power_dbmv=-7.2,
@@ -543,6 +587,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="21",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=981000000.0,
                 power_dbmv=-7.8,
@@ -552,6 +597,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="22",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=987000000.0,
                 power_dbmv=-8.1,
@@ -561,6 +607,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="23",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=993000000.0,
                 power_dbmv=-7.8,
@@ -570,6 +617,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="24",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=999000000.0,
                 power_dbmv=-7.7,
@@ -579,6 +627,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
             ),
             DownstreamChannelValues(
                 channel_id="193",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=774000000.0,
                 power_dbmv=-8.5,
@@ -616,6 +665,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=16400000.0,
                 width_hz=6400000.0,
@@ -623,6 +673,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             UpstreamChannelValues(
                 channel_id="2",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=22800000.0,
                 width_hz=6400000.0,
@@ -630,6 +681,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             UpstreamChannelValues(
                 channel_id="3",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=29200000.0,
                 width_hz=6400000.0,
@@ -637,6 +689,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             UpstreamChannelValues(
                 channel_id="4",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=35600000.0,
                 width_hz=6400000.0,
@@ -646,6 +699,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
         *_metrics_downstream(
             DownstreamChannelValues(
                 channel_id="20",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=975000000.0,
                 power_dbmv=-9.7,
@@ -655,6 +709,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="1",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=387000000.0,
                 power_dbmv=-9.3,
@@ -664,6 +719,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="2",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=393000000.0,
                 power_dbmv=-9.6,
@@ -673,6 +729,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="3",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=399000000.0,
                 power_dbmv=-10.0,
@@ -682,6 +739,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="4",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=405000000.0,
                 power_dbmv=-10.1,
@@ -691,6 +749,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="5",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=411000000.0,
                 power_dbmv=-9.9,
@@ -700,6 +759,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="6",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=417000000.0,
                 power_dbmv=-9.6,
@@ -709,6 +769,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="7",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=423000000.0,
                 power_dbmv=-9.4,
@@ -718,6 +779,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="8",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=429000000.0,
                 power_dbmv=-9.5,
@@ -727,6 +789,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="9",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=435000000.0,
                 power_dbmv=-9.8,
@@ -736,6 +799,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="10",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=441000000.0,
                 power_dbmv=-10.1,
@@ -745,6 +809,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="11",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=447000000.0,
                 power_dbmv=-10.0,
@@ -754,6 +819,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="12",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=453000000.0,
                 power_dbmv=-9.6,
@@ -763,6 +829,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="13",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=459000000.0,
                 power_dbmv=-9.2,
@@ -772,6 +839,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="14",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=465000000.0,
                 power_dbmv=-9.3,
@@ -781,6 +849,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="15",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=471000000.0,
                 power_dbmv=-9.7,
@@ -790,6 +859,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="16",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=477000000.0,
                 power_dbmv=-10.0,
@@ -799,6 +869,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="17",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=957000000.0,
                 power_dbmv=-10.5,
@@ -808,6 +879,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="18",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=963000000.0,
                 power_dbmv=-10.0,
@@ -817,6 +889,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="19",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=969000000.0,
                 power_dbmv=-9.7,
@@ -826,6 +899,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="21",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=981000000.0,
                 power_dbmv=-10.1,
@@ -835,6 +909,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="22",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=987000000.0,
                 power_dbmv=-10.4,
@@ -844,6 +919,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="23",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=993000000.0,
                 power_dbmv=-10.1,
@@ -853,6 +929,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="24",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=999000000.0,
                 power_dbmv=-10.3,
@@ -862,6 +939,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
             ),
             DownstreamChannelValues(
                 channel_id="193",
+                lock_status="Locked",
                 locked=1.0,
                 frequency_hz=774000000.0,
                 power_dbmv=-10.5,

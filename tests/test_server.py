@@ -119,7 +119,9 @@ def test__downstream_gauges__locked(
 
     assert (
         _get_sample_value(
-            metrics, "surfboard_downstream_locked", {"channel_id": str(row.channel_id)}
+            metrics,
+            "surfboard_downstream_locked",
+            {"channel_id": str(row.channel_id), "lock_status": lock_status},
         )
         == expected_locked
     )
@@ -153,7 +155,9 @@ def test__upstream_gauges__locked(
 
     assert (
         _get_sample_value(
-            metrics, "surfboard_upstream_locked", {"channel_id": str(row.channel_id)}
+            metrics,
+            "surfboard_upstream_locked",
+            {"channel_id": str(row.channel_id), "lock_status": lock_status},
         )
         == expected_locked
     )

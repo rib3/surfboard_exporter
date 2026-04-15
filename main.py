@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--response-save", action="store_true", default=False)
+parser.add_argument("-v", "--verbose", action="store_true", default=False)
 
 
-def logging_config() -> None:
+def logging_config(args) -> None:
     format = ":".join(
         [
             "%(created)s",
@@ -27,13 +28,14 @@ def logging_config() -> None:
             "%(message)s",
         ]
     )
-    logging.basicConfig(level=logging.DEBUG, format=format)
+    level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=level, format=format)
 
 
 def main() -> None:
-    logging_config()
-    logger.info("starting")
     args = parser.parse_args()
+    logging_config(args)
+    logger.info("starting")
     username = os.environ.get("SURFBOARD_USERNAME", "admin")
     password = os.environ["SURFBOARD_PASSWORD"]
     modem_host = os.environ.get("SURFBOARD_MODEM_HOST", "192.168.100.1")

@@ -38,7 +38,7 @@ def main() -> None:
     logger.info("starting")
     username = os.environ.get("SURFBOARD_USERNAME", "admin")
     password = os.environ["SURFBOARD_PASSWORD"]
-    modem_host = os.environ.get("SURFBOARD_MODEM_HOST", "192.168.100.1")
+    modem_host = os.environ.get("SURFBOARD_MODEM_HOST")
     modem_certificate_verify = json.loads(
         os.environ.get("SURFBOARD_MODEM_CERTIFICATE_VERIFY", "true")
     )

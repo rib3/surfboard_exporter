@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def start(
     username: str,
     password: str,
-    modem_host: str = "192.168.100.1",
+    modem_host: str | None = None,
     modem_certificate_verify: bool = True,
     modem_certificate_path: str | None = None,
     response_save: bool = False,

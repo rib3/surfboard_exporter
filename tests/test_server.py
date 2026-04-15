@@ -56,12 +56,18 @@ HTML__NO_TIME = HTML.replace(
 LABELS = {"channel_id": "1"}
 
 
-def _get_sample_value(metrics, name, labels=None):
+def _get_sample(metrics, name, labels=None):
+    label_items = (labels or {}).items()
     for metric in metrics:
         for sample in metric.samples:
-            if sample.name == name and (labels is None or sample.labels == labels):
-                return sample.value
-    return None
+            if sample.name == name and label_items <= sample.labels.items():
+                return sample
+
+
+def _get_sample_value(metrics, name, labels=None):
+    sample = _get_sample(metrics, name, labels)
+    if sample is not None:
+        return sample.value
 
 
 def collect_with(html):
@@ -73,10 +79,8 @@ def collect_with(html):
 def test__system_time__static_html():
     metrics = collect_with(HTML)
 
-    assert (
-        _get_sample_value(metrics, "surfboard_system_time")
-        == datetime(2026, 3, 26, 14, 58, 2).timestamp()
-    )
+    sample_value = _get_sample_value(metrics, "surfboard_system_time")
+    assert sample_value == datetime(2026, 3, 26, 14, 58, 2).timestamp()
 
 
 def test__system_time__missing_element__static_html__no_tome():
@@ -117,14 +121,13 @@ def test__downstream_gauges__locked(
 
     metrics = collect_with(html)
 
-    assert (
-        _get_sample_value(
-            metrics,
-            "surfboard_downstream_locked",
-            {"channel_id": str(row.channel_id), "lock_status": lock_status},
-        )
-        == expected_locked
+    sample = _get_sample(
+        metrics,
+        "surfboard_downstream_locked",
+        {"channel_id": str(row.channel_id)},
     )
+    assert sample.labels["lock_status"] == lock_status
+    assert sample.value == expected_locked
 
 
 def test__upstream_gauges__static_html():
@@ -153,24 +156,24 @@ def test__upstream_gauges__locked(
 
     metrics = collect_with(html)
 
-    assert (
-        _get_sample_value(
-            metrics,
-            "surfboard_upstream_locked",
-            {"channel_id": str(row.channel_id), "lock_status": lock_status},
-        )
-        == expected_locked
+    sample = _get_sample(
+        metrics,
+        "surfboard_upstream_locked",
+        {"channel_id": str(row.channel_id)},
     )
+    assert sample.labels["lock_status"] == lock_status
+    assert sample.value == expected_locked
 
 
 def test__downstream_counters__static_html():
     metrics = collect_with(HTML)
 
-    assert (
-        _get_sample_value(metrics, "surfboard_downstream_corrected_total", LABELS)
-        == 100
+    corrected = _get_sample_value(
+        metrics, "surfboard_downstream_corrected_total", LABELS
     )
-    assert (
-        _get_sample_value(metrics, "surfboard_downstream_uncorrectables_total", LABELS)
-        == 200
+    assert corrected == 100
+
+    uncorrectables = _get_sample_value(
+        metrics, "surfboard_downstream_uncorrectables_total", LABELS
     )
+    assert uncorrectables == 200

@@ -21,6 +21,7 @@ dev = [
   "polyfactory>=3.3.0",
   "pre-commit>=4.5.1",
   "pytest>=9.0.2",
+  "pytest-cov>=7.1.0",
   "pytest-httpserver>=1.1.5",
   "pytest-httpx>=0.36.0",
   "pytest-repeat>=0.9.4",

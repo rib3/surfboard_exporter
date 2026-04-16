@@ -42,6 +42,7 @@ known_first_party = ["parser"]
 
 [tool.pytest.ini_options]
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
+pythonpath = ["src"]
 
 [tool.pytest-watcher]
 now = true

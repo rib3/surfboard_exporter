@@ -81,7 +81,7 @@ def response_save_dir_get__cache_clear():
 def surfboard_api_mock_get_login(httpx_mock, mimesis):
     def _mock(
         *,
-        username,
+        username="admin",
         password,
         status_code=HTTPStatus.OK,
         session_id=UNSPECIFIED,

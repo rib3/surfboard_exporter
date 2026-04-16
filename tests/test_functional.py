@@ -358,7 +358,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
         encoding="windows-1252"
     )
     token = "abc123token"
-    surfboard_api_mock_get_login(username="user", password="pass", token=token)
+    surfboard_api_mock_get_login(password="pass", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()
@@ -670,7 +670,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
         encoding="windows-1252"
     )
     token = "abc123token"
-    surfboard_api_mock_get_login(username="user", password="pass", token=token)
+    surfboard_api_mock_get_login(password="pass", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=html)
 
     registry = CollectorRegistry()

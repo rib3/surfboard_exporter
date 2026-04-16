@@ -10,22 +10,21 @@ from parser import (
     parse_system_time,
     parse_upstream_channels,
 )
+from testsupport.modem_html import (
+    DOWNSTREAM__BEGIN_TITLE_HEADERS,
+    DOWNSTREAM__TABLE_BEGIN,
+    DOWNSTREAM__TABLE_END,
+    DOWNSTREAM__TITLE_ROW,
+    UPSTREAM__BEGIN_TITLE_HEADERS,
+    UPSTREAM__TABLE_BEGIN,
+    UPSTREAM__TABLE_END,
+    UPSTREAM__TITLE_ROW,
+)
 
 from .test_shared import assert_attrs
 
-HTML = """
-<table class="simpleTable">
-<tbody>
-<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>
-  <td><strong>Channel ID</strong></td>
-  <td><strong>Lock Status</strong></td>
-  <td><strong>Modulation</strong></td>
-  <td><strong>Frequency</strong></td>
-  <td><strong>Power</strong></td>
-  <td><strong>SNR/MER</strong></td>
-  <td><strong>Corrected</strong></td>
-  <td><strong>Uncorrectables</strong></td>
-</tr>
+HTML = f"""
+{DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td>
   <td>Locked</td>
@@ -46,19 +45,8 @@ HTML = """
   <td>300</td>
   <td>400</td>
 </tr>
-</tbody>
-</table>
-<table class="simpleTable">
-<tbody>
-<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>
-  <td><strong>Channel</strong></td>
-  <td><strong>Channel ID</strong></td>
-  <td><strong>Lock Status</strong></td>
-  <td><strong>US Channel Type</td>
-  <td><strong>Frequency</strong></td>
-  <td><strong>Width</strong></td>
-  <td><strong>Power</strong></td>
-</tr>
+{DOWNSTREAM__TABLE_END}
+{UPSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td>
   <td>1</td>
@@ -77,8 +65,7 @@ HTML = """
   <td>6400000 Hz</td>
   <td>48.0 dBmV</td>
 </tr>
-</tbody>
-</table>
+{UPSTREAM__TABLE_END}
 <p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>
 """
 
@@ -139,10 +126,10 @@ def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
     cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
     malformed_row = f"<tr>{cells_html}</tr>"
     html = (
-        '<table class="simpleTable"><tbody>'
-        "<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>"
+        f"{UPSTREAM__TABLE_BEGIN}"
+        f"{UPSTREAM__TITLE_ROW}"
         f"{malformed_row}"
-        "</tbody></table>"
+        f"{UPSTREAM__TABLE_END}"
     )
 
     channels = parse_upstream_channels(html)
@@ -257,10 +244,10 @@ def test__parse_downstream_channels__wrong_cell_count(cell_count, caplog):
     cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
     malformed_row = f"<tr>{cells_html}</tr>"
     html = (
-        '<table class="simpleTable"><tbody>'
-        "<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>"
+        f"{DOWNSTREAM__TABLE_BEGIN}"
+        f"{DOWNSTREAM__TITLE_ROW}"
         f"{malformed_row}"
-        "</tbody></table>"
+        f"{DOWNSTREAM__TABLE_END}"
     )
 
     channels = parse_downstream_channels(html)

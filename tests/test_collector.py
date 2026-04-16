@@ -5,43 +5,26 @@ from unittest.mock import patch
 import pytest
 
 from collector import SurfboardCollector
+from testsupport.modem_html import (
+    DOWNSTREAM__BEGIN_TITLE_HEADERS,
+    DOWNSTREAM__TABLE_END,
+    UPSTREAM__BEGIN_TITLE_HEADERS,
+    UPSTREAM__TABLE_END,
+)
 
-HTML = """
-<table class="simpleTable">
-<tbody>
-<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>
-      <td><strong>Channel ID</strong></td>
-      <td><strong>Lock Status</strong></td>
-      <td><strong>Modulation</strong></td>
-      <td><strong>Frequency</strong></td>
-      <td><strong>Power</strong></td>
-      <td><strong>SNR/MER</strong></td>
-      <td><strong>Corrected</strong></td>
-      <td><strong>Uncorrectables</strong></td>
-   </tr>
+HTML = f"""
+{DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td><td>Locked</td><td>QAM256</td><td>387000000 Hz</td>
   <td>-8.2 dBmV</td><td>43.5 dB</td><td>100</td><td>200</td>
 </tr>
-</tbody>
-</table>
-<table class="simpleTable">
-<tbody>
-<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>
-      <td><strong>Channel</strong></td>
-      <td><strong>Channel ID</strong></td>
-      <td><strong>Lock Status</strong></td>
-      <td><strong>US Channel Type</td>
-      <td><strong>Frequency</strong></td>
-      <td><strong>Width</strong></td>
-      <td><strong>Power</strong></td>
-   </tr>
+{DOWNSTREAM__TABLE_END}
+{UPSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td><td>1</td><td>Locked</td><td>SC-QAM Upstream</td>
   <td>16400000 Hz</td><td>6400000 Hz</td><td>46.0 dBmV</td>
 </tr>
-</tbody>
-</table>
+{UPSTREAM__TABLE_END}
 <p id="systime"><strong>Current System Time:</strong> Thu Mar 26 14:58:02 2026</p>
 """
 

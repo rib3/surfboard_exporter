@@ -1,6 +1,49 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
+DOWNSTREAM__TABLE_BEGIN = '<table class="simpleTable">\n<tbody>'
+DOWNSTREAM__TITLE_ROW = (
+    "<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>"
+)
+DOWNSTREAM__COLUMN_HEADERS_ROW = (
+    "      <td><strong>Channel ID</strong></td>\n"
+    "      <td><strong>Lock Status</strong></td>\n"
+    "      <td><strong>Modulation</strong></td>\n"
+    "      <td><strong>Frequency</strong></td>\n"
+    "      <td><strong>Power</strong></td>\n"
+    "      <td><strong>SNR/MER</strong></td>\n"
+    "      <td><strong>Corrected</strong></td>\n"
+    "      <td><strong>Uncorrectables</strong></td>\n"
+    "   </tr>"
+)
+DOWNSTREAM__TABLE_END = "</tbody>\n</table>"
+DOWNSTREAM__BEGIN_TITLE_HEADERS = (
+    f"{DOWNSTREAM__TABLE_BEGIN}\n"
+    f"{DOWNSTREAM__TITLE_ROW}\n"
+    f"{DOWNSTREAM__COLUMN_HEADERS_ROW}"
+)
+
+UPSTREAM__TABLE_BEGIN = '<table class="simpleTable">\n<tbody>'
+UPSTREAM__TITLE_ROW = (
+    "<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>"
+)
+UPSTREAM__COLUMN_HEADERS_ROW = (
+    "      <td><strong>Channel</strong></td>\n"
+    "      <td><strong>Channel ID</strong></td>\n"
+    "      <td><strong>Lock Status</strong></td>\n"
+    "      <td><strong>US Channel Type</td>\n"
+    "      <td><strong>Frequency</strong></td>\n"
+    "      <td><strong>Width</strong></td>\n"
+    "      <td><strong>Power</strong></td>\n"
+    "   </tr>"
+)
+UPSTREAM__TABLE_END = "</tbody>\n</table>"
+UPSTREAM__BEGIN_TITLE_HEADERS = (
+    f"{UPSTREAM__TABLE_BEGIN}\n"
+    f"{UPSTREAM__TITLE_ROW}\n"
+    f"{UPSTREAM__COLUMN_HEADERS_ROW}"
+)
+
 
 @dataclass
 class UpstreamBondedChannelsRow:
@@ -59,21 +102,9 @@ class DownstreamBondedChannels:
     def to_html(self) -> str:
         rows_html = "\n".join(row.to_html() for row in self.rows)
         return (
-            '<table class="simpleTable">\n'
-            "<tbody>\n"
-            "<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>\n"
-            "      <td><strong>Channel ID</strong></td>\n"
-            "      <td><strong>Lock Status</strong></td>\n"
-            "      <td><strong>Modulation</strong></td>\n"
-            "      <td><strong>Frequency</strong></td>\n"
-            "      <td><strong>Power</strong></td>\n"
-            "      <td><strong>SNR/MER</strong></td>\n"
-            "      <td><strong>Corrected</strong></td>\n"
-            "      <td><strong>Uncorrectables</strong></td>\n"
-            "   </tr>\n"
+            f"{DOWNSTREAM__BEGIN_TITLE_HEADERS}\n"
             f"{rows_html}\n"
-            "</tbody>\n"
-            "</table>"
+            f"{DOWNSTREAM__TABLE_END}"
         )
 
 
@@ -84,20 +115,9 @@ class UpstreamBondedChannels:
     def to_html(self) -> str:
         rows_html = "\n".join(row.to_html() for row in self.rows)
         return (
-            '<table class="simpleTable">\n'
-            "<tbody>\n"
-            "<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>\n"
-            "      <td><strong>Channel</strong></td>\n"
-            "      <td><strong>Channel ID</strong></td>\n"
-            "      <td><strong>Lock Status</strong></td>\n"
-            "      <td><strong>US Channel Type</td>\n"
-            "      <td><strong>Frequency</strong></td>\n"
-            "      <td><strong>Width</strong></td>\n"
-            "      <td><strong>Power</strong></td>\n"
-            "   </tr>\n"
+            f"{UPSTREAM__BEGIN_TITLE_HEADERS}\n"
             f"{rows_html}\n"
-            "</tbody>\n"
-            "</table>"
+            f"{UPSTREAM__TABLE_END}"
         )
 
 

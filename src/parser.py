@@ -65,6 +65,9 @@ def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
     for row in table.find_all("tr")[1:]:
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 7:
+            logger.warning(
+                "skipping row, len(cells)=%d != 7:\n%r", len(cells), str(row)
+            )
             continue
         channels.append(
             UpstreamChannel(
@@ -93,6 +96,9 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
     for row in table.find_all("tr")[1:]:
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 8:
+            logger.warning(
+                "skipping row, len(cells)=%d != 8:\n%r", len(cells), str(row)
+            )
             continue
         channels.append(
             DownstreamChannel(

@@ -1,3 +1,4 @@
+import logging
 import math
 from datetime import datetime
 from itertools import zip_longest
@@ -133,6 +134,28 @@ def test__parse_upstream_channels__fields__factory(
         )
 
 
+@pytest.mark.parametrize("cell_count", [0, 6, 8])
+def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
+    cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
+    malformed_row = f"<tr>{cells_html}</tr>"
+    html = (
+        '<table class="simpleTable"><tbody>'
+        "<tr><th colspan=7><strong>Upstream Bonded Channels</strong></th></tr>"
+        f"{malformed_row}"
+        "</tbody></table>"
+    )
+
+    channels = parse_upstream_channels(html)
+
+    assert not channels
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"skipping row, len(cells)={cell_count} != 7:\n{malformed_row!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
 @pytest.mark.parametrize(
     ("lock_status", "expected_locked"),
     [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
@@ -227,6 +250,28 @@ def test__parse_downstream_channels__fields__factory(
             corrected=row.corrected,
             uncorrectables=row.uncorrectables,
         )
+
+
+@pytest.mark.parametrize("cell_count", [0, 7, 9])
+def test__parse_downstream_channels__wrong_cell_count(cell_count, caplog):
+    cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
+    malformed_row = f"<tr>{cells_html}</tr>"
+    html = (
+        '<table class="simpleTable"><tbody>'
+        "<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>"
+        f"{malformed_row}"
+        "</tbody></table>"
+    )
+
+    channels = parse_downstream_channels(html)
+
+    assert not channels
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"skipping row, len(cells)={cell_count} != 8:\n{malformed_row!r}",
+    )
+    assert expected_log in caplog.record_tuples
 
 
 @pytest.mark.parametrize(

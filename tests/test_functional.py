@@ -226,6 +226,20 @@ def _metric_downstream_uncorrectables(channels):
     )
 
 
+def test__init__username__empty():
+    with pytest.raises(
+        ValueError, match="^username='' is not valid, pass a real value, or None$"
+    ):
+        SurfboardCollector(username="", password="pass")
+
+
+def test__init__modem_host__empty():
+    with pytest.raises(
+        ValueError, match="^modem_host='' is not valid, pass a real value, or None$"
+    ):
+        SurfboardCollector(password="pass", modem_host="")
+
+
 @pytest.mark.parametrize(
     ("collector_kwargs", "expected_username"),
     [

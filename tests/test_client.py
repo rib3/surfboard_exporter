@@ -88,6 +88,20 @@ def test__token_get(surfboard_api_mock_get_login, client_kwargs, expected_userna
     assert result == "abc123token"
 
 
+def test__init__username__empty():
+    with pytest.raises(
+        ValueError, match="^username='' is not valid, pass a real value, or None$"
+    ):
+        SurfboardClient(username="", password="password")
+
+
+def test__init__modem_host__empty():
+    with pytest.raises(
+        ValueError, match="^modem_host='' is not valid, pass a real value, or None$"
+    ):
+        SurfboardClient(password="password", modem_host="")
+
+
 def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(password="password")
     client = SurfboardClient(password="password")

@@ -40,7 +40,7 @@ def main() -> None:
     password = os.environ["SURFBOARD_PASSWORD"]
     modem_host = os.environ.get("SURFBOARD_MODEM_HOST")
     modem_certificate_verify = json.loads(
-        os.environ.get("SURFBOARD_MODEM_CERTIFICATE_VERIFY", "true")
+        os.environ.get("SURFBOARD_MODEM_CERTIFICATE_VERIFY", "null")
     )
     modem_certificate_path = os.environ.get("SURFBOARD_MODEM_CERTIFICATE_PATH") or None
     _, thread = start(

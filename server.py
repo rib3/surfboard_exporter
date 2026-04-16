@@ -12,7 +12,7 @@ def start(
     username: str | None = None,
     password: str,
     modem_host: str | None = None,
-    modem_certificate_verify: bool = True,
+    modem_certificate_verify: bool | None = None,
     modem_certificate_path: str | None = None,
     response_save: bool = False,
 ):

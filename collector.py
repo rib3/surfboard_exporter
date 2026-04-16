@@ -15,7 +15,7 @@ class SurfboardCollector:
         username: str | None = None,
         password: str,
         modem_host: str | None = None,
-        modem_certificate_verify: bool = True,
+        modem_certificate_verify: bool | None = None,
         modem_certificate_path: str | None = None,
         response_save: bool = False,
     ) -> None:
@@ -27,7 +27,6 @@ class SurfboardCollector:
             modem_certificate_path=modem_certificate_path,
         )
         self.response_save = response_save
-        self._modem_certificate_verify = modem_certificate_verify
         logger.info("response_save=%r", self.response_save)
 
     def collect(self):
@@ -35,7 +34,7 @@ class SurfboardCollector:
         yield GaugeMetricFamily(
             "surfboard_ssl_verify",
             "Whether SSL verification is enabled (1=enabled, 0=disabled)",
-            value=1 if self._modem_certificate_verify else 0,
+            value=1 if self._client.verify else 0,
         )
         html = self._client.connection_status_get(response_save=self.response_save)
         scrape_success = GaugeMetricFamily(

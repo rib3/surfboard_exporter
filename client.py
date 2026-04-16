@@ -43,7 +43,7 @@ class SurfboardClient:
         username: str | None = None,
         password: str,
         modem_host: str | None = None,
-        modem_certificate_verify: bool = True,
+        modem_certificate_verify: bool | None = None,
         modem_certificate_path: str | None = None,
     ) -> None:
         if username is None:
@@ -54,14 +54,19 @@ class SurfboardClient:
             )
         self._username = username
         self._password = password
+
         if modem_host is None:
             modem_host = "192.168.100.1"
         if not modem_host:
             raise ValueError(
                 f"modem_host={modem_host!r} is not valid, pass a real value, or None"
             )
-        verify = self._verify_get(modem_certificate_verify, modem_certificate_path)
-        self._client = httpx.Client(base_url=f"https://{modem_host}", verify=verify)
+        base_url = f"https://{modem_host}"
+
+        if modem_certificate_verify is None:
+            modem_certificate_verify = True
+        self.verify = self._verify_get(modem_certificate_verify, modem_certificate_path)
+        self._client = httpx.Client(base_url=base_url, verify=self.verify)
         self._token: str | None = None
 
     def _verify_get(

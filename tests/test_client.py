@@ -102,6 +102,14 @@ def test__init__modem_host__empty():
         SurfboardClient(password="password", modem_host="")
 
 
+def test__init__modem_certificate_path__does_not_exist(tmp_path):
+    missing = str(tmp_path / "missing.crt")
+    expected = f"modem_certificate_path={missing!r} does not exist"
+
+    with pytest.raises(FileNotFoundError, match=f"^{re.escape(expected)}$"):
+        SurfboardClient(password="password", modem_certificate_path=missing)
+
+
 def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
     surfboard_api_mock_get_login(password="password")
     client = SurfboardClient(password="password")

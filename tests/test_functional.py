@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -238,6 +239,14 @@ def test__init__modem_host__empty():
         ValueError, match="^modem_host='' is not valid, pass a real value, or None$"
     ):
         SurfboardCollector(password="pass", modem_host="")
+
+
+def test__init__modem_certificate_path__does_not_exist(tmp_path):
+    missing = str(tmp_path / "missing.crt")
+    expected = f"modem_certificate_path={missing!r} does not exist"
+
+    with pytest.raises(FileNotFoundError, match=f"^{re.escape(expected)}$"):
+        SurfboardCollector(password="pass", modem_certificate_path=missing)
 
 
 @pytest.mark.parametrize(

@@ -44,9 +44,9 @@ def test__response_save_dir_get__once(tmp_path, monkeypatch):
     assert not dirs[1:]
 
 
-def test__response_save(tmp_path, monkeypatch, mimesis):
+def test__response_save(tmp_path, monkeypatch, faker):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
-    frozen_dt = mimesis("datetime", timezone="UTC")
+    frozen_dt = faker.date_time_utc()
     content = b"<html>status</html>"
     request = httpx.Request(
         "GET", "https://192.168.100.1/cmconnectionstatus.html?ct_token"
@@ -263,12 +263,12 @@ def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
 def test__connection_status_get__response_save(
     tmp_path,
     monkeypatch,
-    mimesis,
+    faker,
     surfboard_api_mock_get_login,
     surfboard_api_mock_get_connectionstatus,
 ):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
-    frozen_dt = mimesis("datetime", timezone="UTC")
+    frozen_dt = faker.date_time_utc()
     token = "abc123token"
     text = "<html>status</html>"
     surfboard_api_mock_get_login(password="password", token=token)

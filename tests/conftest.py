@@ -1,18 +1,16 @@
 import base64
 import logging
 import ssl
-from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from tempfile import NamedTemporaryFile
 
+import pytest
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
-from mimesis.locales import Locale
-from mimesis.schema import Field
 from polyfactory.decorators import post_generated
 from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
@@ -26,50 +24,17 @@ from testsupport.modem_html import (
     UpstreamBondedChannels,
     UpstreamBondedChannelsRow,
 )
+from testsupport.surfboard_provider import SurfboardProvider
 
 logger = logging.getLogger(__name__)
 
 UNSPECIFIED = object()
 
-# mimesis pytest plugin BEGIN
-# removed in mimesis 0.19????
-# https://github.com/lk-geimfari/mimesis/issues/1670#issuecomment-3421030253
-# https://github.com/lk-geimfari/mimesis/commit/2d11f31501bbf9ca69c8c6aa233285f737e2509e
-# https://github.com/lk-geimfari/mimesis/pull/1660
-
-try:
-    import pytest
-except ImportError as e:
-    raise ImportError("pytest is required to use this plugin") from e
-
-_CacheCallable = Callable[[Locale], Field]
-
 
 @pytest.fixture(scope="session")
-def _mimesis_cache() -> _CacheCallable:
-    cached_instances: dict[Locale, Field] = {}
-
-    def factory(locale: Locale) -> Field:
-        if locale not in cached_instances:
-            cached_instances[locale] = Field(locale)
-        return cached_instances[locale]
-
-    return factory
-
-
-@pytest.fixture
-def mimesis_locale() -> Locale:
-    """Specifies which locale to use."""
-    return Locale.DEFAULT
-
-
-@pytest.fixture
-def mimesis(_mimesis_cache: _CacheCallable, mimesis_locale: Locale) -> Field:
-    """Mimesis fixture to provide fake data using all built-in providers."""
-    return _mimesis_cache(mimesis_locale)
-
-
-# mimesis pytest plugin END
+def _session_faker(_session_faker):
+    _session_faker.add_provider(SurfboardProvider)
+    return _session_faker
 
 
 @pytest.fixture(autouse=True)
@@ -78,7 +43,7 @@ def response_save_dir_get__cache_clear():
 
 
 @pytest.fixture
-def surfboard_api_mock_get_login(httpx_mock, mimesis):
+def surfboard_api_mock_get_login(httpx_mock, faker):
     def _mock(
         *,
         username="admin",
@@ -89,9 +54,9 @@ def surfboard_api_mock_get_login(httpx_mock, mimesis):
         side_effect=None,
     ):
         if session_id is UNSPECIFIED:
-            session_id = mimesis("token_hex")
+            session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
-            token = mimesis("token_hex")
+            token = faker.surfboard_token()
         auth = base64.b64encode(f"{username}:{password}".encode()).decode()
         url = f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
         if side_effect is not None:
@@ -109,7 +74,7 @@ def surfboard_api_mock_get_login(httpx_mock, mimesis):
 
 
 @pytest.fixture
-def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
+def surfboard_api_mock_get_connectionstatus(httpx_mock, faker):
     def _mock(
         *,
         token,
@@ -119,13 +84,13 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, mimesis):
         side_effect=None,
     ):
         if session_id is UNSPECIFIED:
-            session_id = mimesis("token_hex")
+            session_id = faker.surfboard_session_id()
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:
             headers = None
         if text is UNSPECIFIED:
-            text = mimesis("token_hex")
+            text = faker.text()
         url = f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
         if side_effect is not None:
             httpx_mock.add_exception(side_effect, url=url)
@@ -205,7 +170,7 @@ def https_server_modem(key_cert_like_modem):
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_login_get(https_server_modem, mimesis):
+def https_server_modem_expect_ordered_request_login_get(https_server_modem, faker):
     def _expect(
         *,
         username,
@@ -214,9 +179,9 @@ def https_server_modem_expect_ordered_request_login_get(https_server_modem, mime
         token=UNSPECIFIED,
     ):
         if session_id is UNSPECIFIED:
-            session_id = mimesis("token_hex")
+            session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
-            token = mimesis("token_hex")
+            token = faker.surfboard_token()
         auth = base64.b64encode(f"{username}:{password}".encode()).decode()
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
@@ -233,7 +198,7 @@ def https_server_modem_expect_ordered_request_login_get(https_server_modem, mime
 
 @pytest.fixture
 def https_server_modem_expect_ordered_request_connectionstatus_get(
-    https_server_modem, mimesis
+    https_server_modem, faker
 ):
     def _expect(
         *,
@@ -243,13 +208,13 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
         text=UNSPECIFIED,
     ):
         if session_id is UNSPECIFIED:
-            session_id = mimesis("token_hex")
+            session_id = faker.surfboard_session_id()
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:
             headers = None
         if text is UNSPECIFIED:
-            text = mimesis("token_hex")
+            text = faker.text()
         https_server_modem.server.expect_ordered_request(
             "/cmconnectionstatus.html",
             query_string=f"ct_{token}",

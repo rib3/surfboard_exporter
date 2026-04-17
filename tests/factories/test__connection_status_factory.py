@@ -31,10 +31,10 @@ def test__system_time__none__system_time_str__none(connection_status_factory):
         connection_status_factory.build(system_time=None, system_time_str=None)
 
 
-def test__system_time__system_time_str(connection_status_factory, mimesis):
+def test__system_time__system_time_str(connection_status_factory, faker):
     msg = "provide system_time or system_time_str, not both"
     with pytest.raises(ValueError, match=msg):
         connection_status_factory.build(
-            system_time=mimesis("datetime.datetime"),
+            system_time=faker.date_time(),
             system_time_str="not-a-date",
         )

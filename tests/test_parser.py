@@ -74,6 +74,27 @@ def _expected_system_time_from_dt(dt: datetime) -> float:
     return dt.replace(microsecond=0).timestamp()
 
 
+def test__parse_system_time__static_html():
+    assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
+
+
+def test__parse_system_time__factory(connection_status_factory):
+    page = connection_status_factory.build()
+    html = page.to_html()
+
+    assert parse_system_time(html) == _expected_system_time_from_dt(page.system_time)
+
+
+def test__parse_system_time__missing_element():
+    assert math.isnan(parse_system_time("<html></html>"))
+
+
+def test__parse_system_time__invalid_format(connection_status_factory):
+    html = connection_status_factory.build(system_time_str="not-a-date").to_html()
+
+    assert math.isnan(parse_system_time(html))
+
+
 def test__parse_downstream_channels__fields__static_html():
     channels = parse_downstream_channels(HTML)
 
@@ -169,27 +190,6 @@ def test__parse_downstream_channels__lock_status(
         lock_status=lock_status,
         locked=expected_locked,
     )
-
-
-def test__parse_system_time__static_html():
-    assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
-
-
-def test__parse_system_time__factory(connection_status_factory):
-    page = connection_status_factory.build()
-    html = page.to_html()
-
-    assert parse_system_time(html) == _expected_system_time_from_dt(page.system_time)
-
-
-def test__parse_system_time__missing_element():
-    assert math.isnan(parse_system_time("<html></html>"))
-
-
-def test__parse_system_time__invalid_format(connection_status_factory):
-    html = connection_status_factory.build(system_time_str="not-a-date").to_html()
-
-    assert math.isnan(parse_system_time(html))
 
 
 def test__parse_upstream_channels__fields__static_html():

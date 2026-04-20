@@ -63,38 +63,35 @@ def parse_system_time(html: str) -> float:
     return float("nan")
 
 
-def parse_connectivity_state(html: str) -> ConnectivityState:
+def _parse_startup_row(
+    html: str,
+    row_label: str,
+    truthy_status: str,
+) -> tuple[float, str]:
     soup = BeautifulSoup(html, "html.parser")
     header = soup.find("th", string=lambda t: t and "Startup Procedure" in t)
     if header is None:
         logger.warning("Startup Procedure header not found:\n%r", html)
-        return ConnectivityState(ok=float("nan"), comment="")
+        return float("nan"), ""
     table = header.find_parent("table")
     for row in table.find_all("tr"):
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if cells[:1] == ["Connectivity State"] and cells[1:2]:
-            ok = 1.0 if cells[1] == "OK" else 0.0
+        if cells[:1] == [row_label] and cells[1:2]:
+            value = 1.0 if cells[1] == truthy_status else 0.0
             comment = cells[2] if cells[2:3] else ""
-            return ConnectivityState(ok=ok, comment=comment)
-    logger.warning("Connectivity State row not found:\n%r", html)
-    return ConnectivityState(ok=float("nan"), comment="")
+            return value, comment
+    logger.warning("%s row not found:\n%r", row_label, html)
+    return float("nan"), ""
+
+
+def parse_connectivity_state(html: str) -> ConnectivityState:
+    ok, comment = _parse_startup_row(html, "Connectivity State", "OK")
+    return ConnectivityState(ok=ok, comment=comment)
 
 
 def parse_security(html: str) -> Security:
-    soup = BeautifulSoup(html, "html.parser")
-    header = soup.find("th", string=lambda t: t and "Startup Procedure" in t)
-    if header is None:
-        logger.warning("Startup Procedure header not found:\n%r", html)
-        return Security(enabled=float("nan"), comment="")
-    table = header.find_parent("table")
-    for row in table.find_all("tr"):
-        cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if cells[:1] == ["Security"] and cells[1:2]:
-            enabled = 1.0 if cells[1] == "Enabled" else 0.0
-            comment = cells[2] if cells[2:3] else ""
-            return Security(enabled=enabled, comment=comment)
-    logger.warning("Security row not found:\n%r", html)
-    return Security(enabled=float("nan"), comment="")
+    enabled, comment = _parse_startup_row(html, "Security", "Enabled")
+    return Security(enabled=enabled, comment=comment)
 
 
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:

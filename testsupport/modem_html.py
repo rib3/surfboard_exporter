@@ -1,6 +1,24 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
+STARTUP_PROCEDURE__TABLE_BEGIN = '<table class="simpleTable">\n<tbody>'
+STARTUP_PROCEDURE__TITLE_ROW = (
+    "<tr><th colspan=3><strong>Startup Procedure</strong></th></tr>"
+)
+STARTUP_PROCEDURE__COLUMN_HEADERS_ROW = (
+    "<tr>\n"
+    '      <td width="44%"><strong><u>Procedure</u></strong></td>\n'
+    '      <td width="31%"><strong><u>Status</u></strong></td>\n'
+    '      <td width="25%"><strong><u>Comment</u></strong></td>\n'
+    "   </tr>"
+)
+STARTUP_PROCEDURE__TABLE_END = "</tbody>\n</table>"
+STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS = (
+    f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"
+    f"{STARTUP_PROCEDURE__TITLE_ROW}\n"
+    f"{STARTUP_PROCEDURE__COLUMN_HEADERS_ROW}"
+)
+
 DOWNSTREAM__TABLE_BEGIN = '<table class="simpleTable">\n<tbody>'
 DOWNSTREAM__TITLE_ROW = (
     "<tr><th colspan=8><strong>Downstream Bonded Channels</strong></th></tr>"
@@ -43,6 +61,47 @@ UPSTREAM__BEGIN_TITLE_HEADERS = (
     f"{UPSTREAM__TITLE_ROW}\n"
     f"{UPSTREAM__COLUMN_HEADERS_ROW}"
 )
+
+
+@dataclass
+class StartupProcedure:
+    connectivity_state: str
+
+    def to_html(self) -> str:
+        return (
+            f"{STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS}\n"
+            "   <tr>\n"
+            "      <td>Acquire Downstream Channel</td>\n"
+            "      <td>975000000 Hz</td>\n"
+            "      <td>Locked</td>\n"
+            "   </tr>\n"
+            "   <tr>\n"
+            "      <td>Connectivity State</td>\n"
+            f"      <td>{self.connectivity_state}</td>\n"
+            "      <td>Operational</td>\n"
+            "   </tr>\n"
+            "   <tr>\n"
+            "      <td>Boot State</td>\n"
+            "      <td>OK</td>\n"
+            "      <td>Operational</td>\n"
+            "   </tr>\n"
+            "   <tr>\n"
+            "      <td>Configuration File</td>\n"
+            "      <td>OK</td>\n"
+            "      <td></td>\n"
+            "   </tr>\n"
+            "   <tr>\n"
+            "      <td>Security</td>\n"
+            "      <td>Enabled</td>\n"
+            "      <td>BPI+</td>\n"
+            "   </tr>\n"
+            "   <tr>\n"
+            "      <td>DOCSIS Network Access Enabled</td>\n"
+            "      <td>Allowed</td>\n"
+            "      <td></td>\n"
+            "   </tr>\n"
+            f"{STARTUP_PROCEDURE__TABLE_END}"
+        )
 
 
 @dataclass
@@ -124,6 +183,7 @@ class UpstreamBondedChannels:
 @dataclass
 class ConnectionStatus:
     system_time: datetime | None
+    startup: StartupProcedure
     system_time_str: str | None = None
     downstream: DownstreamBondedChannels = field(
         default_factory=DownstreamBondedChannels
@@ -140,6 +200,7 @@ class ConnectionStatus:
 
     def to_html(self) -> str:
         return (
+            f"{self.startup.to_html()}\n"
             f"{self.downstream.to_html()}\n"
             f"{self.upstream.to_html()}\n"
             f'<p id="systime">'

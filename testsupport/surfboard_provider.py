@@ -60,6 +60,21 @@ class SurfboardProvider(BaseProvider):
             raise TypeError("date_time_utc forces tzinfo=UTC; do not pass tzinfo")
         return self.generator.date_time(*args, tzinfo=UTC, **kwargs)
 
+    def surfboard_connectivity_state(self) -> str:
+        # real modems effectively always report "OK"; keep BOGUS rare but
+        # non-zero so non-OK code paths still get exercised in batches.
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("OK", 0.9),  # observed: only value seen in captures
+                    (
+                        "BOGUS_TEST_VALUE",
+                        0.1,
+                    ),  # synthetic sentinel for non-OK paths
+                ]
+            )
+        )
+
     def surfboard_downstream_channel_id(self) -> int:
         return self.generator.random_element([*range(1, 25), 193])
 

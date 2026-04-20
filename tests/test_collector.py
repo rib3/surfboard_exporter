@@ -8,11 +8,20 @@ from collector import SurfboardCollector
 from testsupport.modem_html import (
     DOWNSTREAM__BEGIN_TITLE_HEADERS,
     DOWNSTREAM__TABLE_END,
+    STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS,
+    STARTUP_PROCEDURE__TABLE_END,
     UPSTREAM__BEGIN_TITLE_HEADERS,
     UPSTREAM__TABLE_END,
 )
 
 HTML = f"""
+{STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS}
+   <tr>
+      <td>Connectivity State</td>
+      <td>OK</td>
+      <td>Operational</td>
+   </tr>
+{STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td><td>Locked</td><td>QAM256</td><td>387000000 Hz</td>
@@ -76,6 +85,36 @@ def test__system_time__invalid_format__static_html_with_bad_time():
     metrics = collect_with(HTML__BAD_TIME)
 
     assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
+
+
+def test__connectivity_state_ok__static_html():
+    metrics = collect_with(HTML)
+
+    assert _get_sample_value(metrics, "surfboard_connectivity_state_ok") == 1.0
+
+
+@pytest.mark.parametrize(
+    ("connectivity_state", "expected"),
+    [("OK", 1.0), ("Not Synchronized", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__connectivity_state_ok__factory(
+    connectivity_state,
+    expected,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(connectivity_state=connectivity_state)
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    metrics = collect_with(html)
+
+    assert _get_sample_value(metrics, "surfboard_connectivity_state_ok") == expected
+
+
+def test__connectivity_state_ok__missing_table():
+    metrics = collect_with("<html></html>")
+
+    assert math.isnan(_get_sample_value(metrics, "surfboard_connectivity_state_ok"))
 
 
 def test__downstream_gauges__static_html():

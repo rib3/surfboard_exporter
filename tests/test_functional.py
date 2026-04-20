@@ -61,6 +61,16 @@ def _metric_system_time_sample(value):
     )
 
 
+def _metric_connectivity_state_ok_sample(value):
+    name = "surfboard_connectivity_state_ok"
+    return _metric(
+        name,
+        "Startup Procedure connectivity state (1=OK, 0=not OK, NaN=unknown)",
+        "gauge",
+        [_sample(name, {}, value)],
+    )
+
+
 @dataclass
 class DownstreamChannelValues:
     channel_id: str
@@ -302,6 +312,7 @@ def test__generate_latest(
         _metric_ssl_verify_sample(1.0),
         _metric_scrape_success_sample(1.0),
         _metric_system_time_sample(expected_system_time),
+        _metric_connectivity_state_ok_sample(1.0),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
@@ -396,6 +407,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
         _metric_ssl_verify_sample(1.0),
         _metric_scrape_success_sample(1.0),
         _metric_system_time_sample(expected_system_time),
+        _metric_connectivity_state_ok_sample(1.0),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
@@ -708,6 +720,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
         _metric_ssl_verify_sample(1.0),
         _metric_scrape_success_sample(1.0),
         _metric_system_time_sample(expected_system_time),
+        _metric_connectivity_state_ok_sample(1.0),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",

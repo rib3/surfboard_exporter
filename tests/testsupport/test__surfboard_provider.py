@@ -24,6 +24,13 @@ def test__date_time_utc__tzinfo__raises(faker):
 
 
 @pytest.mark.repeat(20)
+def test__surfboard_connectivity_state(faker):
+    result = faker.surfboard_connectivity_state()
+
+    assert result in {"OK", "BOGUS_TEST_VALUE"}
+
+
+@pytest.mark.repeat(20)
 def test__surfboard_downstream_corrected(faker):
     result = faker.surfboard_downstream_corrected()
 

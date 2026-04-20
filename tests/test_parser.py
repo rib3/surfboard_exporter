@@ -6,6 +6,7 @@ from itertools import zip_longest
 import pytest
 
 from parser import (
+    parse_connectivity_state_ok,
     parse_downstream_channels,
     parse_system_time,
     parse_upstream_channels,
@@ -15,6 +16,10 @@ from testsupport.modem_html import (
     DOWNSTREAM__TABLE_BEGIN,
     DOWNSTREAM__TABLE_END,
     DOWNSTREAM__TITLE_ROW,
+    STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS,
+    STARTUP_PROCEDURE__TABLE_BEGIN,
+    STARTUP_PROCEDURE__TABLE_END,
+    STARTUP_PROCEDURE__TITLE_ROW,
     UPSTREAM__BEGIN_TITLE_HEADERS,
     UPSTREAM__TABLE_BEGIN,
     UPSTREAM__TABLE_END,
@@ -24,6 +29,13 @@ from testsupport.modem_html import (
 from .test_shared import assert_attrs
 
 HTML = f"""
+{STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS}
+   <tr>
+      <td>Connectivity State</td>
+      <td>OK</td>
+      <td>Operational</td>
+   </tr>
+{STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
   <td>1</td>
@@ -93,6 +105,54 @@ def test__parse_system_time__invalid_format(connection_status_factory):
     html = connection_status_factory.build(system_time_str="not-a-date").to_html()
 
     assert math.isnan(parse_system_time(html))
+
+
+def test__parse_connectivity_state_ok__ok__static_html():
+    assert parse_connectivity_state_ok(HTML) == 1.0
+
+
+@pytest.mark.parametrize(
+    ("connectivity_state", "expected"),
+    [("OK", 1.0), ("Not Synchronized", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__parse_connectivity_state_ok__factory(
+    connectivity_state,
+    expected,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(connectivity_state=connectivity_state)
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    assert parse_connectivity_state_ok(html) == expected
+
+
+def test__parse_connectivity_state_ok__missing_table(caplog):
+    html = "<html></html>"
+
+    assert math.isnan(parse_connectivity_state_ok(html))
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"Startup Procedure header not found:\n{html!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+def test__parse_connectivity_state_ok__missing_row(caplog):
+    html = (
+        f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"
+        f"{STARTUP_PROCEDURE__TITLE_ROW}\n"
+        f"{STARTUP_PROCEDURE__TABLE_END}"
+    )
+
+    assert math.isnan(parse_connectivity_state_ok(html))
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"Connectivity State row not found:\n{html!r}",
+    )
+    assert expected_log in caplog.record_tuples
 
 
 def test__parse_downstream_channels__fields__static_html():

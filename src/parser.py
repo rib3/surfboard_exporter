@@ -51,6 +51,21 @@ def parse_system_time(html: str) -> float:
     return float("nan")
 
 
+def parse_connectivity_state_ok(html: str) -> float:
+    soup = BeautifulSoup(html, "html.parser")
+    header = soup.find("th", string=lambda t: t and "Startup Procedure" in t)
+    if header is None:
+        logger.warning("Startup Procedure header not found:\n%r", html)
+        return float("nan")
+    table = header.find_parent("table")
+    for row in table.find_all("tr"):
+        cells = [td.get_text(strip=True) for td in row.find_all("td")]
+        if cells[:1] == ["Connectivity State"] and cells[1:2]:
+            return 1.0 if cells[1] == "OK" else 0.0
+    logger.warning("Connectivity State row not found:\n%r", html)
+    return float("nan")
+
+
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
     soup = BeautifulSoup(html, "html.parser")
 

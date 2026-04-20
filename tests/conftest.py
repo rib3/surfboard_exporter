@@ -23,6 +23,7 @@ from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,
     DownstreamBondedChannelsRow,
+    StartupProcedure,
     UpstreamBondedChannels,
     UpstreamBondedChannelsRow,
 )
@@ -232,6 +233,12 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
         return session_id, text
 
     return _expect
+
+
+@register_fixture
+class StartupProcedureFactory(DataclassFactory):
+    __model__ = StartupProcedure
+    connectivity_state = UseFaker("surfboard_connectivity_state")
 
 
 @register_fixture

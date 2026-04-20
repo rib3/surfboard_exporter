@@ -66,6 +66,7 @@ UPSTREAM__BEGIN_TITLE_HEADERS = (
 @dataclass
 class StartupProcedure:
     connectivity_state: str
+    connectivity_state_comment: str
 
     def to_html(self) -> str:
         return (
@@ -78,7 +79,7 @@ class StartupProcedure:
             "   <tr>\n"
             "      <td>Connectivity State</td>\n"
             f"      <td>{self.connectivity_state}</td>\n"
-            "      <td>Operational</td>\n"
+            f"      <td>{self.connectivity_state_comment}</td>\n"
             "   </tr>\n"
             "   <tr>\n"
             "      <td>Boot State</td>\n"

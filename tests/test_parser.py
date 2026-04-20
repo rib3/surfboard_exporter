@@ -6,7 +6,7 @@ from itertools import zip_longest
 import pytest
 
 from parser import (
-    parse_connectivity_state_ok,
+    parse_connectivity_state,
     parse_downstream_channels,
     parse_system_time,
     parse_upstream_channels,
@@ -107,30 +107,45 @@ def test__parse_system_time__invalid_format(connection_status_factory):
     assert math.isnan(parse_system_time(html))
 
 
-def test__parse_connectivity_state_ok__ok__static_html():
-    assert parse_connectivity_state_ok(HTML) == 1.0
+def test__parse_connectivity_state__static_html():
+    state = parse_connectivity_state(HTML)
+
+    assert_attrs(
+        state,
+        ok=1.0,
+        comment="Operational",
+    )
 
 
 @pytest.mark.parametrize(
-    ("connectivity_state", "expected"),
+    ("connectivity_state", "expected_ok"),
     [("OK", 1.0), ("Not Synchronized", 0.0), ("", 0.0), ("BOGUS", 0.0)],
 )
-def test__parse_connectivity_state_ok__factory(
+def test__parse_connectivity_state__factory(
     connectivity_state,
-    expected,
+    expected_ok,
     connection_status_factory,
     startup_procedure_factory,
 ):
     startup = startup_procedure_factory.build(connectivity_state=connectivity_state)
     html = connection_status_factory.build(startup=startup).to_html()
 
-    assert parse_connectivity_state_ok(html) == expected
+    state = parse_connectivity_state(html)
+
+    assert_attrs(
+        state,
+        ok=expected_ok,
+        comment=startup.connectivity_state_comment,
+    )
 
 
-def test__parse_connectivity_state_ok__missing_table(caplog):
+def test__parse_connectivity_state__missing_table(caplog):
     html = "<html></html>"
 
-    assert math.isnan(parse_connectivity_state_ok(html))
+    state = parse_connectivity_state(html)
+
+    assert math.isnan(state.ok)
+    assert state.comment == ""
     expected_log = (
         "parser",
         logging.WARNING,
@@ -139,14 +154,17 @@ def test__parse_connectivity_state_ok__missing_table(caplog):
     assert expected_log in caplog.record_tuples
 
 
-def test__parse_connectivity_state_ok__missing_row(caplog):
+def test__parse_connectivity_state__missing_row(caplog):
     html = (
         f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"
         f"{STARTUP_PROCEDURE__TITLE_ROW}\n"
         f"{STARTUP_PROCEDURE__TABLE_END}"
     )
 
-    assert math.isnan(parse_connectivity_state_ok(html))
+    state = parse_connectivity_state(html)
+
+    assert math.isnan(state.ok)
+    assert state.comment == ""
     expected_log = (
         "parser",
         logging.WARNING,

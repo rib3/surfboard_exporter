@@ -4,7 +4,7 @@ from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
 from client import SurfboardClient
 from parser import (
-    parse_connectivity_state_ok,
+    parse_connectivity_state,
     parse_downstream_channels,
     parse_system_time,
     parse_upstream_channels,
@@ -57,11 +57,14 @@ class SurfboardCollector:
             "System time (Unix timestamp)",
             value=parse_system_time(html),
         )
-        yield GaugeMetricFamily(
+        state = parse_connectivity_state(html)
+        conn_ok = GaugeMetricFamily(
             "surfboard_connectivity_state_ok",
             "Startup Procedure connectivity state (1=OK, 0=not OK, NaN=unknown)",
-            value=parse_connectivity_state_ok(html),
+            labels=["comment"],
         )
+        conn_ok.add_metric([state.comment], state.ok)
+        yield conn_ok
         yield from self.collect_upstream(html)
         yield from self.collect_downstream(html)
 

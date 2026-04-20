@@ -239,6 +239,7 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
 class StartupProcedureFactory(DataclassFactory):
     __model__ = StartupProcedure
     connectivity_state = UseFaker("surfboard_connectivity_state")
+    connectivity_state_comment = UseFaker("surfboard_connectivity_state_comment")
 
 
 @register_fixture

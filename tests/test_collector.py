@@ -14,6 +14,8 @@ from testsupport.modem_html import (
     UPSTREAM__TABLE_END,
 )
 
+from .test_shared import assert_attrs
+
 HTML = f"""
 {STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS}
    <tr>
@@ -90,16 +92,22 @@ def test__system_time__invalid_format__static_html_with_bad_time():
 def test__connectivity_state_ok__static_html():
     metrics = collect_with(HTML)
 
-    assert _get_sample_value(metrics, "surfboard_connectivity_state_ok") == 1.0
+    sample = _get_sample(metrics, "surfboard_connectivity_state_ok")
+
+    assert_attrs(
+        sample,
+        value=1.0,
+        labels={"comment": "Operational"},
+    )
 
 
 @pytest.mark.parametrize(
-    ("connectivity_state", "expected"),
+    ("connectivity_state", "expected_ok"),
     [("OK", 1.0), ("Not Synchronized", 0.0), ("", 0.0), ("BOGUS", 0.0)],
 )
 def test__connectivity_state_ok__factory(
     connectivity_state,
-    expected,
+    expected_ok,
     connection_status_factory,
     startup_procedure_factory,
 ):
@@ -108,13 +116,22 @@ def test__connectivity_state_ok__factory(
 
     metrics = collect_with(html)
 
-    assert _get_sample_value(metrics, "surfboard_connectivity_state_ok") == expected
+    sample = _get_sample(metrics, "surfboard_connectivity_state_ok")
+
+    assert_attrs(
+        sample,
+        value=expected_ok,
+        labels={"comment": startup.connectivity_state_comment},
+    )
 
 
 def test__connectivity_state_ok__missing_table():
     metrics = collect_with("<html></html>")
 
-    assert math.isnan(_get_sample_value(metrics, "surfboard_connectivity_state_ok"))
+    sample = _get_sample(metrics, "surfboard_connectivity_state_ok")
+
+    assert math.isnan(sample.value)
+    assert sample.labels == {"comment": ""}
 
 
 def test__downstream_gauges__static_html():

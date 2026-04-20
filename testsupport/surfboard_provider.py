@@ -75,6 +75,16 @@ class SurfboardProvider(BaseProvider):
             )
         )
 
+    def surfboard_connectivity_state_comment(self) -> str:
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("Operational", 0.9),  # observed: only value seen in captures
+                    ("BOGUS_TEST_COMMENT", 0.1),  # synthetic sentinel
+                ]
+            )
+        )
+
     def surfboard_downstream_channel_id(self) -> int:
         return self.generator.random_element([*range(1, 25), 193])
 

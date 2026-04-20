@@ -73,14 +73,12 @@ class SurfboardClient:
         self, modem_certificate_verify: bool, modem_certificate_path: str | None
     ) -> bool | ssl.SSLContext:
         logger.info("modem_certificate_verify=%r", modem_certificate_verify)
-        if modem_certificate_verify:
-            logger.info("modem_certificate_path=%r", modem_certificate_path)
-            if modem_certificate_path:
-                return self._ssl_context_get_modem(modem_certificate_path)
-            else:
-                return True
-        else:
+        if not modem_certificate_verify:
             return False
+        logger.info("modem_certificate_path=%r", modem_certificate_path)
+        if modem_certificate_path:
+            return self._ssl_context_get_modem(modem_certificate_path)
+        return True
 
     def _ssl_context_get_modem(self, path: str) -> ssl.SSLContext:
         if not pathlib.Path(path).is_file():

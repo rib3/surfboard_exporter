@@ -87,16 +87,17 @@ def _text_rows_for_table(
     tds_required: int,
 ) -> Iterator[list[str]]:
     for row in _trs_for_table(html, title_substring, skip=skip):
-        cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if len(cells) != tds_required:
+        tds = row.find_all("td")
+        if len(tds) != tds_required:
             logger.warning(
-                "skipping row, len(cells)=%d != %d:\n%r",
-                len(cells),
+                "skipping row, len(tds)=%d != %d:\n%r",
+                len(tds),
                 tds_required,
                 str(row),
             )
             continue
-        yield cells
+        texts = [td.get_text(strip=True) for td in tds]
+        yield texts
 
 
 def _parse_startup_row(

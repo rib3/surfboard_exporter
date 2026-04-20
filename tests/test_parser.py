@@ -315,7 +315,7 @@ def test__parse_downstream_channels__wrong_cell_count(cell_count, caplog):
     expected_log = (
         "parser",
         logging.WARNING,
-        f"skipping row, len(cells)={cell_count} != 8:\n{malformed_row!r}",
+        f"skipping row, len(tds)={cell_count} != 8:\n{malformed_row!r}",
     )
     assert expected_log in caplog.record_tuples
 
@@ -406,7 +406,7 @@ def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
     expected_log = (
         "parser",
         logging.WARNING,
-        f"skipping row, len(cells)={cell_count} != 7:\n{malformed_row!r}",
+        f"skipping row, len(tds)={cell_count} != 7:\n{malformed_row!r}",
     )
     assert expected_log in caplog.record_tuples
 

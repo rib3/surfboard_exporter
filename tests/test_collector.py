@@ -113,6 +113,20 @@ def test__downstream_gauges__locked(
     assert sample.value == expected_locked
 
 
+def test__downstream_counters__static_html():
+    metrics = collect_with(HTML)
+
+    corrected = _get_sample_value(
+        metrics, "surfboard_downstream_corrected_total", LABELS
+    )
+    assert corrected == 100
+
+    uncorrectables = _get_sample_value(
+        metrics, "surfboard_downstream_uncorrectables_total", LABELS
+    )
+    assert uncorrectables == 200
+
+
 def test__upstream_gauges__static_html():
     metrics = collect_with(HTML)
 
@@ -146,17 +160,3 @@ def test__upstream_gauges__locked(
     )
     assert sample.labels["lock_status"] == lock_status
     assert sample.value == expected_locked
-
-
-def test__downstream_counters__static_html():
-    metrics = collect_with(HTML)
-
-    corrected = _get_sample_value(
-        metrics, "surfboard_downstream_corrected_total", LABELS
-    )
-    assert corrected == 100
-
-    uncorrectables = _get_sample_value(
-        metrics, "surfboard_downstream_uncorrectables_total", LABELS
-    )
-    assert uncorrectables == 200

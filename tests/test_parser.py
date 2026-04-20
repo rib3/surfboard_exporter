@@ -74,118 +74,6 @@ def _expected_system_time_from_dt(dt: datetime) -> float:
     return dt.replace(microsecond=0).timestamp()
 
 
-def test__parse_upstream_channels__fields__static_html():
-    channels = parse_upstream_channels(HTML)
-
-    assert_attrs(
-        channels[0],
-        channel_id=1,
-        lock_status="Locked",
-        locked=True,
-        channel_type="SC-QAM Upstream",
-        frequency_hz=16400000,
-        width_hz=6400000,
-        power_dbmv=46.0,
-    )
-    assert_attrs(
-        channels[1],
-        channel_id=2,
-        lock_status="Locked",
-        locked=True,
-        channel_type="SC-QAM Upstream",
-        frequency_hz=22800000,
-        width_hz=6400000,
-        power_dbmv=48.0,
-    )
-    assert not channels[2:]
-
-
-def test__parse_upstream_channels__fields__factory(
-    upstream_bonded_channels_factory,
-    upstream_bonded_channels_row_factory,
-):
-    rows = upstream_bonded_channels_row_factory.batch(2)
-    html = upstream_bonded_channels_factory.build(rows=rows).to_html()
-
-    channels = parse_upstream_channels(html)
-
-    for channel, row in zip_longest(channels, rows):
-        assert_attrs(
-            channel,
-            channel_id=row.channel_id,
-            lock_status=row.lock_status,
-            channel_type=row.channel_type,
-            frequency_hz=row.frequency_hz,
-            width_hz=row.width_hz,
-            power_dbmv=row.power_dbmv,
-        )
-
-
-@pytest.mark.parametrize("cell_count", [0, 6, 8])
-def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
-    cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
-    malformed_row = f"<tr>{cells_html}</tr>"
-    html = (
-        f"{UPSTREAM__TABLE_BEGIN}"
-        f"{UPSTREAM__TITLE_ROW}"
-        f"{malformed_row}"
-        f"{UPSTREAM__TABLE_END}"
-    )
-
-    channels = parse_upstream_channels(html)
-
-    assert not channels
-    expected_log = (
-        "parser",
-        logging.WARNING,
-        f"skipping row, len(cells)={cell_count} != 7:\n{malformed_row!r}",
-    )
-    assert expected_log in caplog.record_tuples
-
-
-@pytest.mark.parametrize(
-    ("lock_status", "expected_locked"),
-    [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
-)
-def test__parse_upstream_channels__lock_status(
-    lock_status,
-    expected_locked,
-    upstream_bonded_channels_factory,
-    upstream_bonded_channels_row_factory,
-):
-    row = upstream_bonded_channels_row_factory.build(lock_status=lock_status)
-    html = upstream_bonded_channels_factory.build(rows=[row]).to_html()
-
-    channels = parse_upstream_channels(html)
-
-    assert_attrs(
-        channels[0],
-        lock_status=lock_status,
-        locked=expected_locked,
-    )
-
-
-def test__parse_system_time__static_html():
-    assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
-
-
-def test__parse_system_time__factory(connection_status_factory):
-    page = connection_status_factory.build()
-    html = page.to_html()
-
-    assert parse_system_time(html) == _expected_system_time_from_dt(page.system_time)
-
-
-def test__parse_system_time__missing_element():
-    assert math.isnan(parse_system_time("<html></html>"))
-
-
-def test__parse_system_time__invalid_format(connection_status_factory):
-    html = connection_status_factory.build(system_time_str="not-a-date").to_html()
-
-    assert math.isnan(parse_system_time(html))
-
-
 def test__parse_downstream_channels__fields__static_html():
     channels = parse_downstream_channels(HTML)
 
@@ -275,6 +163,118 @@ def test__parse_downstream_channels__lock_status(
     html = downstream_bonded_channels_factory.build(rows=[row]).to_html()
 
     channels = parse_downstream_channels(html)
+
+    assert_attrs(
+        channels[0],
+        lock_status=lock_status,
+        locked=expected_locked,
+    )
+
+
+def test__parse_system_time__static_html():
+    assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
+
+
+def test__parse_system_time__factory(connection_status_factory):
+    page = connection_status_factory.build()
+    html = page.to_html()
+
+    assert parse_system_time(html) == _expected_system_time_from_dt(page.system_time)
+
+
+def test__parse_system_time__missing_element():
+    assert math.isnan(parse_system_time("<html></html>"))
+
+
+def test__parse_system_time__invalid_format(connection_status_factory):
+    html = connection_status_factory.build(system_time_str="not-a-date").to_html()
+
+    assert math.isnan(parse_system_time(html))
+
+
+def test__parse_upstream_channels__fields__static_html():
+    channels = parse_upstream_channels(HTML)
+
+    assert_attrs(
+        channels[0],
+        channel_id=1,
+        lock_status="Locked",
+        locked=True,
+        channel_type="SC-QAM Upstream",
+        frequency_hz=16400000,
+        width_hz=6400000,
+        power_dbmv=46.0,
+    )
+    assert_attrs(
+        channels[1],
+        channel_id=2,
+        lock_status="Locked",
+        locked=True,
+        channel_type="SC-QAM Upstream",
+        frequency_hz=22800000,
+        width_hz=6400000,
+        power_dbmv=48.0,
+    )
+    assert not channels[2:]
+
+
+def test__parse_upstream_channels__fields__factory(
+    upstream_bonded_channels_factory,
+    upstream_bonded_channels_row_factory,
+):
+    rows = upstream_bonded_channels_row_factory.batch(2)
+    html = upstream_bonded_channels_factory.build(rows=rows).to_html()
+
+    channels = parse_upstream_channels(html)
+
+    for channel, row in zip_longest(channels, rows):
+        assert_attrs(
+            channel,
+            channel_id=row.channel_id,
+            lock_status=row.lock_status,
+            channel_type=row.channel_type,
+            frequency_hz=row.frequency_hz,
+            width_hz=row.width_hz,
+            power_dbmv=row.power_dbmv,
+        )
+
+
+@pytest.mark.parametrize("cell_count", [0, 6, 8])
+def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
+    cells_html = "".join(f"<td>x{i}</td>" for i in range(cell_count))
+    malformed_row = f"<tr>{cells_html}</tr>"
+    html = (
+        f"{UPSTREAM__TABLE_BEGIN}"
+        f"{UPSTREAM__TITLE_ROW}"
+        f"{malformed_row}"
+        f"{UPSTREAM__TABLE_END}"
+    )
+
+    channels = parse_upstream_channels(html)
+
+    assert not channels
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"skipping row, len(cells)={cell_count} != 7:\n{malformed_row!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+@pytest.mark.parametrize(
+    ("lock_status", "expected_locked"),
+    [("Locked", True), ("Not Locked", False), ("", False), ("BOGUS", False)],
+)
+def test__parse_upstream_channels__lock_status(
+    lock_status,
+    expected_locked,
+    upstream_bonded_channels_factory,
+    upstream_bonded_channels_row_factory,
+):
+    row = upstream_bonded_channels_row_factory.build(lock_status=lock_status)
+    html = upstream_bonded_channels_factory.build(rows=[row]).to_html()
+
+    channels = parse_upstream_channels(html)
 
     assert_attrs(
         channels[0],

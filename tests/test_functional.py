@@ -62,25 +62,6 @@ def _metric_system_time_sample(value):
 
 
 @dataclass
-class UpstreamChannelValues:
-    channel_id: str
-    lock_status: str
-    locked: float
-    frequency_hz: float
-    width_hz: float
-    power_dbmv: float
-
-
-def _metrics_upstream(*channels: UpstreamChannelValues):
-    return [
-        _metric_upstream_locked(channels),
-        _metric_upstream_frequency_hz(channels),
-        _metric_upstream_width_hz(channels),
-        _metric_upstream_power_dbmv(channels),
-    ]
-
-
-@dataclass
 class DownstreamChannelValues:
     channel_id: str
     lock_status: str
@@ -103,55 +84,23 @@ def _metrics_downstream(*channels: DownstreamChannelValues):
     ]
 
 
-def _metric_upstream_locked(channels):
-    name = "surfboard_upstream_locked"
-    samples = [
-        _sample(
-            name,
-            {"channel_id": c.channel_id, "lock_status": c.lock_status},
-            c.locked,
-        )
-        for c in channels
+@dataclass
+class UpstreamChannelValues:
+    channel_id: str
+    lock_status: str
+    locked: float
+    frequency_hz: float
+    width_hz: float
+    power_dbmv: float
+
+
+def _metrics_upstream(*channels: UpstreamChannelValues):
+    return [
+        _metric_upstream_locked(channels),
+        _metric_upstream_frequency_hz(channels),
+        _metric_upstream_width_hz(channels),
+        _metric_upstream_power_dbmv(channels),
     ]
-    return _metric(
-        name,
-        "Upstream channel lock status (1=Locked, 0=not locked)",
-        "gauge",
-        samples,
-    )
-
-
-def _metric_upstream_frequency_hz(channels):
-    name = "surfboard_upstream_frequency_hz"
-    channel_values = _by_channel_id(channels, "frequency_hz")
-    return _metric(
-        name,
-        "Upstream channel frequency (Hz)",
-        "gauge",
-        _samples_channel_id(name, channel_values),
-    )
-
-
-def _metric_upstream_width_hz(channels):
-    name = "surfboard_upstream_width_hz"
-    channel_values = _by_channel_id(channels, "width_hz")
-    return _metric(
-        name,
-        "Upstream channel width (Hz)",
-        "gauge",
-        _samples_channel_id(name, channel_values),
-    )
-
-
-def _metric_upstream_power_dbmv(channels):
-    name = "surfboard_upstream_power_dbmv"
-    channel_values = _by_channel_id(channels, "power_dbmv")
-    return _metric(
-        name,
-        "Upstream power (dBmV)",
-        "gauge",
-        _samples_channel_id(name, channel_values),
-    )
 
 
 def _metric_downstream_locked(channels):
@@ -224,6 +173,57 @@ def _metric_downstream_uncorrectables(channels):
         "Downstream uncorrectable codewords",
         "counter",
         _samples_channel_id(f"{name}_total", channel_values),
+    )
+
+
+def _metric_upstream_locked(channels):
+    name = "surfboard_upstream_locked"
+    samples = [
+        _sample(
+            name,
+            {"channel_id": c.channel_id, "lock_status": c.lock_status},
+            c.locked,
+        )
+        for c in channels
+    ]
+    return _metric(
+        name,
+        "Upstream channel lock status (1=Locked, 0=not locked)",
+        "gauge",
+        samples,
+    )
+
+
+def _metric_upstream_frequency_hz(channels):
+    name = "surfboard_upstream_frequency_hz"
+    channel_values = _by_channel_id(channels, "frequency_hz")
+    return _metric(
+        name,
+        "Upstream channel frequency (Hz)",
+        "gauge",
+        _samples_channel_id(name, channel_values),
+    )
+
+
+def _metric_upstream_width_hz(channels):
+    name = "surfboard_upstream_width_hz"
+    channel_values = _by_channel_id(channels, "width_hz")
+    return _metric(
+        name,
+        "Upstream channel width (Hz)",
+        "gauge",
+        _samples_channel_id(name, channel_values),
+    )
+
+
+def _metric_upstream_power_dbmv(channels):
+    name = "surfboard_upstream_power_dbmv"
+    channel_values = _by_channel_id(channels, "power_dbmv")
+    return _metric(
+        name,
+        "Upstream power (dBmV)",
+        "gauge",
+        _samples_channel_id(name, channel_values),
     )
 
 

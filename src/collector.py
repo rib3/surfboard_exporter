@@ -101,11 +101,11 @@ class SurfboardCollector:
             labels=["channel_id"],
         )
         for ch in parse_upstream_channels(html):
-            cid = [str(ch.channel_id)]
-            us_locked.add_metric(cid + [ch.lock_status], ch.locked)
-            us_frequency.add_metric(cid, ch.frequency_hz)
-            us_width.add_metric(cid, ch.width_hz)
-            us_power.add_metric(cid, ch.power_dbmv)
+            labels = [str(ch.channel_id)]
+            us_locked.add_metric(labels + [ch.lock_status], ch.locked)
+            us_frequency.add_metric(labels, ch.frequency_hz)
+            us_width.add_metric(labels, ch.width_hz)
+            us_power.add_metric(labels, ch.power_dbmv)
         yield us_locked
         yield us_frequency
         yield us_width
@@ -143,13 +143,13 @@ class SurfboardCollector:
             labels=["channel_id"],
         )
         for ch in parse_downstream_channels(html):
-            cid = [str(ch.channel_id)]
-            ds_locked.add_metric(cid + [ch.lock_status], ch.locked)
-            ds_frequency.add_metric(cid, ch.frequency_hz)
-            ds_power.add_metric(cid, ch.power_dbmv)
-            ds_snr.add_metric(cid, ch.snr_db)
-            ds_corrected.add_metric(cid, ch.corrected)
-            ds_uncorrectables.add_metric(cid, ch.uncorrectables)
+            labels = [str(ch.channel_id)]
+            ds_locked.add_metric(labels + [ch.lock_status], ch.locked)
+            ds_frequency.add_metric(labels, ch.frequency_hz)
+            ds_power.add_metric(labels, ch.power_dbmv)
+            ds_snr.add_metric(labels, ch.snr_db)
+            ds_corrected.add_metric(labels, ch.corrected)
+            ds_uncorrectables.add_metric(labels, ch.uncorrectables)
         yield ds_locked
         yield ds_frequency
         yield ds_power

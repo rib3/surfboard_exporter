@@ -240,6 +240,8 @@ class StartupProcedureFactory(DataclassFactory):
     __model__ = StartupProcedure
     connectivity_state = UseFaker("surfboard_connectivity_state")
     connectivity_state_comment = UseFaker("surfboard_connectivity_state_comment")
+    security = UseFaker("surfboard_security")
+    security_comment = UseFaker("surfboard_security_comment")
 
 
 @register_fixture

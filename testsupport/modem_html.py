@@ -67,6 +67,8 @@ UPSTREAM__BEGIN_TITLE_HEADERS = (
 class StartupProcedure:
     connectivity_state: str
     connectivity_state_comment: str
+    security: str
+    security_comment: str
 
     def to_html(self) -> str:
         return (
@@ -93,8 +95,8 @@ class StartupProcedure:
             "   </tr>\n"
             "   <tr>\n"
             "      <td>Security</td>\n"
-            "      <td>Enabled</td>\n"
-            "      <td>BPI+</td>\n"
+            f"      <td>{self.security}</td>\n"
+            f"      <td>{self.security_comment}</td>\n"
             "   </tr>\n"
             "   <tr>\n"
             "      <td>DOCSIS Network Access Enabled</td>\n"

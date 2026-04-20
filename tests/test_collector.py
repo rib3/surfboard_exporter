@@ -23,6 +23,11 @@ HTML = f"""
       <td>OK</td>
       <td>Operational</td>
    </tr>
+   <tr>
+      <td>Security</td>
+      <td>Enabled</td>
+      <td>BPI+</td>
+   </tr>
 {STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
@@ -129,6 +134,51 @@ def test__connectivity_state_ok__missing_table():
     metrics = collect_with("<html></html>")
 
     sample = _get_sample(metrics, "surfboard_connectivity_state_ok")
+
+    assert math.isnan(sample.value)
+    assert sample.labels == {"comment": ""}
+
+
+def test__security_enabled__static_html():
+    metrics = collect_with(HTML)
+
+    sample = _get_sample(metrics, "surfboard_security_enabled")
+
+    assert_attrs(
+        sample,
+        value=1.0,
+        labels={"comment": "BPI+"},
+    )
+
+
+@pytest.mark.parametrize(
+    ("security", "expected_enabled"),
+    [("Enabled", 1.0), ("Disabled", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__security_enabled__factory(
+    security,
+    expected_enabled,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(security=security)
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    metrics = collect_with(html)
+
+    sample = _get_sample(metrics, "surfboard_security_enabled")
+
+    assert_attrs(
+        sample,
+        value=expected_enabled,
+        labels={"comment": startup.security_comment},
+    )
+
+
+def test__security_enabled__missing_table():
+    metrics = collect_with("<html></html>")
+
+    sample = _get_sample(metrics, "surfboard_security_enabled")
 
     assert math.isnan(sample.value)
     assert sample.labels == {"comment": ""}

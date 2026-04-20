@@ -85,6 +85,31 @@ class SurfboardProvider(BaseProvider):
             )
         )
 
+    def surfboard_security(self) -> str:
+        # real modems effectively always report "Enabled"; keep BOGUS rare but
+        # non-zero so non-Enabled code paths still get exercised in batches.
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("Enabled", 0.9),  # observed: only value seen in captures
+                    (
+                        "BOGUS_TEST_VALUE",
+                        0.1,
+                    ),  # synthetic sentinel for non-Enabled paths
+                ]
+            )
+        )
+
+    def surfboard_security_comment(self) -> str:
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("BPI+", 0.9),  # observed: only value seen in captures
+                    ("BOGUS_TEST_COMMENT", 0.1),  # synthetic sentinel
+                ]
+            )
+        )
+
     def surfboard_downstream_channel_id(self) -> int:
         return self.generator.random_element([*range(1, 25), 193])
 

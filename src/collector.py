@@ -6,6 +6,7 @@ from client import SurfboardClient
 from parser import (
     parse_connectivity_state,
     parse_downstream_channels,
+    parse_security,
     parse_system_time,
     parse_upstream_channels,
 )
@@ -65,6 +66,14 @@ class SurfboardCollector:
         )
         conn_ok.add_metric([state.comment], state.ok)
         yield conn_ok
+        security = parse_security(html)
+        security_enabled = GaugeMetricFamily(
+            "surfboard_security_enabled",
+            "Startup Procedure security (1=Enabled, 0=not enabled, NaN=unknown)",
+            labels=["comment"],
+        )
+        security_enabled.add_metric([security.comment], security.enabled)
+        yield security_enabled
         yield from self.collect_upstream(html)
         yield from self.collect_downstream(html)
 

@@ -8,6 +8,7 @@ import pytest
 from parser import (
     parse_connectivity_state,
     parse_downstream_channels,
+    parse_security,
     parse_system_time,
     parse_upstream_channels,
 )
@@ -34,6 +35,11 @@ HTML = f"""
       <td>Connectivity State</td>
       <td>OK</td>
       <td>Operational</td>
+   </tr>
+   <tr>
+      <td>Security</td>
+      <td>Enabled</td>
+      <td>BPI+</td>
    </tr>
 {STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
@@ -169,6 +175,72 @@ def test__parse_connectivity_state__missing_row(caplog):
         "parser",
         logging.WARNING,
         f"Connectivity State row not found:\n{html!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+def test__parse_security__static_html():
+    security = parse_security(HTML)
+
+    assert_attrs(
+        security,
+        enabled=1.0,
+        comment="BPI+",
+    )
+
+
+@pytest.mark.parametrize(
+    ("security", "expected_enabled"),
+    [("Enabled", 1.0), ("Disabled", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__parse_security__factory(
+    security,
+    expected_enabled,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(security=security)
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    parsed = parse_security(html)
+
+    assert_attrs(
+        parsed,
+        enabled=expected_enabled,
+        comment=startup.security_comment,
+    )
+
+
+def test__parse_security__missing_table(caplog):
+    html = "<html></html>"
+
+    security = parse_security(html)
+
+    assert math.isnan(security.enabled)
+    assert security.comment == ""
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"Startup Procedure header not found:\n{html!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+def test__parse_security__missing_row(caplog):
+    html = (
+        f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"
+        f"{STARTUP_PROCEDURE__TITLE_ROW}\n"
+        f"{STARTUP_PROCEDURE__TABLE_END}"
+    )
+
+    security = parse_security(html)
+
+    assert math.isnan(security.enabled)
+    assert security.comment == ""
+    expected_log = (
+        "parser",
+        logging.WARNING,
+        f"Security row not found:\n{html!r}",
     )
     assert expected_log in caplog.record_tuples
 

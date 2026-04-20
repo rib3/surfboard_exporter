@@ -38,6 +38,20 @@ def test__surfboard_connectivity_state_comment(faker):
 
 
 @pytest.mark.repeat(20)
+def test__surfboard_security(faker):
+    result = faker.surfboard_security()
+
+    assert result in {"Enabled", "BOGUS_TEST_VALUE"}
+
+
+@pytest.mark.repeat(20)
+def test__surfboard_security_comment(faker):
+    result = faker.surfboard_security_comment()
+
+    assert result in {"BPI+", "BOGUS_TEST_COMMENT"}
+
+
+@pytest.mark.repeat(20)
 def test__surfboard_downstream_corrected(faker):
     result = faker.surfboard_downstream_corrected()
 

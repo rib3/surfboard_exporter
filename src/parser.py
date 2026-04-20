@@ -14,6 +14,12 @@ class ConnectivityState:
 
 
 @dataclass
+class Security:
+    enabled: float
+    comment: str
+
+
+@dataclass
 class DownstreamChannel:
     channel_id: int
     lock_status: str
@@ -72,6 +78,23 @@ def parse_connectivity_state(html: str) -> ConnectivityState:
             return ConnectivityState(ok=ok, comment=comment)
     logger.warning("Connectivity State row not found:\n%r", html)
     return ConnectivityState(ok=float("nan"), comment="")
+
+
+def parse_security(html: str) -> Security:
+    soup = BeautifulSoup(html, "html.parser")
+    header = soup.find("th", string=lambda t: t and "Startup Procedure" in t)
+    if header is None:
+        logger.warning("Startup Procedure header not found:\n%r", html)
+        return Security(enabled=float("nan"), comment="")
+    table = header.find_parent("table")
+    for row in table.find_all("tr"):
+        cells = [td.get_text(strip=True) for td in row.find_all("td")]
+        if cells[:1] == ["Security"] and cells[1:2]:
+            enabled = 1.0 if cells[1] == "Enabled" else 0.0
+            comment = cells[2] if cells[2:3] else ""
+            return Security(enabled=enabled, comment=comment)
+    logger.warning("Security row not found:\n%r", html)
+    return Security(enabled=float("nan"), comment="")
 
 
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:

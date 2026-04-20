@@ -43,12 +43,11 @@ class SurfboardCollector:
             value=1 if self._client.verify else 0,
         )
         html = self._client.connection_status_get(response_save=self.response_save)
-        scrape_success = GaugeMetricFamily(
+        yield GaugeMetricFamily(
             "surfboard_scrape_success",
             "Whether the scrape was successful (1=success, 0=failure)",
+            value=1 if html else 0,
         )
-        scrape_success.add_metric([], 1 if html else 0)
-        yield scrape_success
         if not html:
             logger.warning("skipping collect, html=%r", html)
             return

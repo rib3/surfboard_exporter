@@ -79,6 +79,26 @@ def _trs_for_table(
     yield from table.find_all("tr")[skip:]
 
 
+def _text_rows_for_table(
+    html: str,
+    title_substring: str,
+    *,
+    skip: int = 0,
+    tds_required: int,
+) -> Iterator[list[str]]:
+    for row in _trs_for_table(html, title_substring, skip=skip):
+        cells = [td.get_text(strip=True) for td in row.find_all("td")]
+        if len(cells) != tds_required:
+            logger.warning(
+                "skipping row, len(cells)=%d != %d:\n%r",
+                len(cells),
+                tds_required,
+                str(row),
+            )
+            continue
+        yield cells
+
+
 def _parse_startup_row(
     html: str,
     row_label: str,
@@ -105,48 +125,36 @@ def parse_security(html: str) -> Security:
 
 
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
-    channels = []
     # skip header row(s); malformed html combines title and column headers in one tr
-    for row in _trs_for_table(html, "Downstream Bonded Channels", skip=1):
-        cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if len(cells) != 8:
-            logger.warning(
-                "skipping row, len(cells)=%d != 8:\n%r", len(cells), str(row)
-            )
-            continue
-        channels.append(
-            DownstreamChannel(
-                channel_id=int(cells[0]),
-                lock_status=cells[1],
-                modulation=cells[2],
-                frequency_hz=int(cells[3].removesuffix(" Hz")),
-                power_dbmv=float(cells[4].removesuffix(" dBmV")),
-                snr_db=float(cells[5].removesuffix(" dB")),
-                corrected=int(cells[6]),
-                uncorrectables=int(cells[7]),
-            )
+    return [
+        DownstreamChannel(
+            channel_id=int(cells[0]),
+            lock_status=cells[1],
+            modulation=cells[2],
+            frequency_hz=int(cells[3].removesuffix(" Hz")),
+            power_dbmv=float(cells[4].removesuffix(" dBmV")),
+            snr_db=float(cells[5].removesuffix(" dB")),
+            corrected=int(cells[6]),
+            uncorrectables=int(cells[7]),
         )
-    return channels
+        for cells in _text_rows_for_table(
+            html, "Downstream Bonded Channels", skip=1, tds_required=8
+        )
+    ]
 
 
 def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
-    channels = []
     # skip header row(s); malformed html combines title and column headers in one tr
-    for row in _trs_for_table(html, "Upstream Bonded Channels", skip=1):
-        cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if len(cells) != 7:
-            logger.warning(
-                "skipping row, len(cells)=%d != 7:\n%r", len(cells), str(row)
-            )
-            continue
-        channels.append(
-            UpstreamChannel(
-                channel_id=int(cells[1]),
-                lock_status=cells[2],
-                channel_type=cells[3],
-                frequency_hz=int(cells[4].removesuffix(" Hz")),
-                width_hz=int(cells[5].removesuffix(" Hz")),
-                power_dbmv=float(cells[6].removesuffix(" dBmV")),
-            )
+    return [
+        UpstreamChannel(
+            channel_id=int(cells[1]),
+            lock_status=cells[2],
+            channel_type=cells[3],
+            frequency_hz=int(cells[4].removesuffix(" Hz")),
+            width_hz=int(cells[5].removesuffix(" Hz")),
+            power_dbmv=float(cells[6].removesuffix(" dBmV")),
         )
-    return channels
+        for cells in _text_rows_for_table(
+            html, "Upstream Bonded Channels", skip=1, tds_required=7
+        )
+    ]

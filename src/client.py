@@ -127,7 +127,7 @@ class SurfboardClient:
         if session_id:
             self._token = token
         else:
-            self._token = None
+            self._token = None  # so next call refreshes
             raise TokenUnavailableError
         return self._token
 

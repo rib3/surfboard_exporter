@@ -124,19 +124,31 @@ def parse_security(html: str) -> Security:
     return Security(enabled=enabled, comment=comment)
 
 
+def _hz_from_str(s: str) -> int:
+    return int(s.removesuffix(" Hz"))
+
+
+def _dbmv_from_str(s: str) -> float:
+    return float(s.removesuffix(" dBmV"))
+
+
+def _db_from_str(s: str) -> float:
+    return float(s.removesuffix(" dB"))
+
+
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
-    # skip header row(s); malformed html combines title and column headers in one tr
     return [
         DownstreamChannel(
             channel_id=int(cells[0]),
             lock_status=cells[1],
             modulation=cells[2],
-            frequency_hz=int(cells[3].removesuffix(" Hz")),
-            power_dbmv=float(cells[4].removesuffix(" dBmV")),
-            snr_db=float(cells[5].removesuffix(" dB")),
+            frequency_hz=_hz_from_str(cells[3]),
+            power_dbmv=_dbmv_from_str(cells[4]),
+            snr_db=_db_from_str(cells[5]),
             corrected=int(cells[6]),
             uncorrectables=int(cells[7]),
         )
+        # skip header row(s); malformed html combines title and column headers in one tr
         for cells in _text_rows_for_table(
             html, "Downstream Bonded Channels", skip=1, tds_required=8
         )
@@ -144,16 +156,16 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
 
 
 def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
-    # skip header row(s); malformed html combines title and column headers in one tr
     return [
         UpstreamChannel(
             channel_id=int(cells[1]),
             lock_status=cells[2],
             channel_type=cells[3],
-            frequency_hz=int(cells[4].removesuffix(" Hz")),
-            width_hz=int(cells[5].removesuffix(" Hz")),
-            power_dbmv=float(cells[6].removesuffix(" dBmV")),
+            frequency_hz=_hz_from_str(cells[4]),
+            width_hz=_hz_from_str(cells[5]),
+            power_dbmv=_dbmv_from_str(cells[6]),
         )
+        # skip header row(s); malformed html combines title and column headers in one tr
         for cells in _text_rows_for_table(
             html, "Upstream Bonded Channels", skip=1, tds_required=7
         )

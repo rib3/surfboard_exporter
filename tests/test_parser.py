@@ -155,7 +155,7 @@ def test__parse_connectivity_state__missing_table(caplog):
     expected_log = (
         "parser",
         logging.WARNING,
-        f"Startup Procedure header not found:\n{html!r}",
+        "table with th content 'Startup Procedure' not found",
     )
     assert expected_log in caplog.record_tuples
 
@@ -221,7 +221,7 @@ def test__parse_security__missing_table(caplog):
     expected_log = (
         "parser",
         logging.WARNING,
-        f"Startup Procedure header not found:\n{html!r}",
+        "table with th content 'Startup Procedure' not found",
     )
     assert expected_log in caplog.record_tuples
 

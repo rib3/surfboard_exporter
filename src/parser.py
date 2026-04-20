@@ -1,8 +1,9 @@
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 logger = logging.getLogger(__name__)
 
@@ -63,18 +64,27 @@ def parse_system_time(html: str) -> float:
     return float("nan")
 
 
+def _trs_for_table(
+    html: str,
+    title_substring: str,
+    *,
+    skip: int = 0,
+) -> Iterator[Tag]:
+    soup = BeautifulSoup(html, "html.parser")
+    header = soup.find("th", string=lambda t: t and title_substring in t)
+    if header is None:
+        logger.warning("table with th content %r not found", title_substring)
+        return
+    table = header.find_parent("table")
+    yield from table.find_all("tr")[skip:]
+
+
 def _parse_startup_row(
     html: str,
     row_label: str,
     truthy_status: str,
 ) -> tuple[float, str]:
-    soup = BeautifulSoup(html, "html.parser")
-    header = soup.find("th", string=lambda t: t and "Startup Procedure" in t)
-    if header is None:
-        logger.warning("Startup Procedure header not found:\n%r", html)
-        return float("nan"), ""
-    table = header.find_parent("table")
-    for row in table.find_all("tr"):
+    for row in _trs_for_table(html, "Startup Procedure"):
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if cells[:1] == [row_label] and cells[1:2]:
             value = 1.0 if cells[1] == truthy_status else 0.0
@@ -95,17 +105,9 @@ def parse_security(html: str) -> Security:
 
 
 def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
-    soup = BeautifulSoup(html, "html.parser")
-
-    header = soup.find("th", string=lambda t: t and "Downstream Bonded Channels" in t)
-    if header is None:
-        logger.warning("header not found:\n%r", html)
-        return []
-    table = header.find_parent("table")
-
     channels = []
     # skip header row(s); malformed html combines title and column headers in one tr
-    for row in table.find_all("tr")[1:]:
+    for row in _trs_for_table(html, "Downstream Bonded Channels", skip=1):
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 8:
             logger.warning(
@@ -128,17 +130,9 @@ def parse_downstream_channels(html: str) -> list[DownstreamChannel]:
 
 
 def parse_upstream_channels(html: str) -> list[UpstreamChannel]:
-    soup = BeautifulSoup(html, "html.parser")
-
-    header = soup.find("th", string=lambda t: t and "Upstream Bonded Channels" in t)
-    if header is None:
-        logger.warning("header not found:\n%r", html)
-        return []
-    table = header.find_parent("table")
-
     channels = []
     # skip header row(s); malformed html combines title and column headers in one tr
-    for row in table.find_all("tr")[1:]:
+    for row in _trs_for_table(html, "Upstream Bonded Channels", skip=1):
         cells = [td.get_text(strip=True) for td in row.find_all("td")]
         if len(cells) != 7:
             logger.warning(

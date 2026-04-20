@@ -11,7 +11,9 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
+from polyfactory import Use
 from polyfactory.decorators import post_generated
+from polyfactory.factories.base import BaseFactory
 from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
@@ -31,9 +33,17 @@ logger = logging.getLogger(__name__)
 UNSPECIFIED = object()
 
 
+class UseFaker(Use):
+    def __init__(self, method_name: str, *args, **kwargs) -> None:
+        super().__init__(
+            lambda: getattr(BaseFactory.__faker__, method_name)(*args, **kwargs)
+        )
+
+
 @pytest.fixture(scope="session")
 def _session_faker(_session_faker):
     _session_faker.add_provider(SurfboardProvider)
+    BaseFactory.__faker__.add_provider(SurfboardProvider)
     return _session_faker
 
 
@@ -227,6 +237,14 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
 @register_fixture
 class DownstreamBondedChannelsRowFactory(DataclassFactory):
     __model__ = DownstreamBondedChannelsRow
+    channel_id = UseFaker("surfboard_downstream_channel_id")
+    lock_status = UseFaker("surfboard_downstream_lock_status")
+    modulation = UseFaker("surfboard_downstream_modulation")
+    frequency_hz = UseFaker("surfboard_downstream_frequency_hz")
+    power_dbmv = UseFaker("surfboard_downstream_power_dbmv")
+    snr_db = UseFaker("surfboard_downstream_snr_db")
+    corrected = UseFaker("surfboard_downstream_corrected")
+    uncorrectables = UseFaker("surfboard_downstream_uncorrectables")
 
 
 @register_fixture
@@ -243,6 +261,13 @@ class DownstreamBondedChannelsFactory(DataclassFactory):
 @register_fixture
 class UpstreamBondedChannelsRowFactory(DataclassFactory):
     __model__ = UpstreamBondedChannelsRow
+    channel = UseFaker("surfboard_upstream_channel")
+    channel_id = UseFaker("surfboard_upstream_channel_id")
+    lock_status = UseFaker("surfboard_upstream_lock_status")
+    channel_type = UseFaker("surfboard_upstream_channel_type")
+    frequency_hz = UseFaker("surfboard_upstream_frequency_hz")
+    width_hz = UseFaker("surfboard_upstream_width_hz")
+    power_dbmv = UseFaker("surfboard_upstream_power_dbmv")
 
 
 @register_fixture

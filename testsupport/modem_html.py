@@ -46,30 +46,6 @@ UPSTREAM__BEGIN_TITLE_HEADERS = (
 
 
 @dataclass
-class UpstreamBondedChannelsRow:
-    channel: int
-    channel_id: int
-    lock_status: str
-    channel_type: str
-    frequency_hz: int
-    width_hz: int
-    power_dbmv: float
-
-    def to_html(self) -> str:
-        return (
-            f"   <tr align='left'>\n"
-            f"      <td>{self.channel}</td>\n"
-            f"      <td>{self.channel_id}</td>\n"
-            f"      <td>{self.lock_status}</td>\n"
-            f"      <td>{self.channel_type}</td>\n"
-            f"      <td>{self.frequency_hz} Hz</td>\n"
-            f"      <td>{self.width_hz} Hz</td>\n"
-            f"      <td>{self.power_dbmv} dBmV</td>\n"
-            f"   </tr>"
-        )
-
-
-@dataclass
 class DownstreamBondedChannelsRow:
     channel_id: int
     lock_status: str
@@ -105,6 +81,30 @@ class DownstreamBondedChannels:
             f"{DOWNSTREAM__BEGIN_TITLE_HEADERS}\n"
             f"{rows_html}\n"
             f"{DOWNSTREAM__TABLE_END}"
+        )
+
+
+@dataclass
+class UpstreamBondedChannelsRow:
+    channel: int
+    channel_id: int
+    lock_status: str
+    channel_type: str
+    frequency_hz: int
+    width_hz: int
+    power_dbmv: float
+
+    def to_html(self) -> str:
+        return (
+            f"   <tr align='left'>\n"
+            f"      <td>{self.channel}</td>\n"
+            f"      <td>{self.channel_id}</td>\n"
+            f"      <td>{self.lock_status}</td>\n"
+            f"      <td>{self.channel_type}</td>\n"
+            f"      <td>{self.frequency_hz} Hz</td>\n"
+            f"      <td>{self.width_hz} Hz</td>\n"
+            f"      <td>{self.power_dbmv} dBmV</td>\n"
+            f"   </tr>"
         )
 
 

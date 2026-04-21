@@ -65,9 +65,15 @@ class SurfboardClient:
 
         if modem_certificate_verify is None:
             modem_certificate_verify = True
-        self.verify = self._verify_get(modem_certificate_verify, modem_certificate_path)
-        self._client = httpx.Client(base_url=base_url, verify=self.verify)
+        self._verify = self._verify_get(
+            modem_certificate_verify, modem_certificate_path
+        )
+        self._client = httpx.Client(base_url=base_url, verify=self._verify)
         self._token: str | None = None
+
+    @property
+    def ssl_verify_enabled(self) -> bool:
+        return bool(self._verify)
 
     def _verify_get(
         self, modem_certificate_verify: bool, modem_certificate_path: str | None

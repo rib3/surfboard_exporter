@@ -40,7 +40,7 @@ class SurfboardCollector:
         yield GaugeMetricFamily(
             "surfboard_ssl_verify",
             "Whether SSL verification is enabled (1=enabled, 0=disabled)",
-            value=1 if self._client.verify else 0,
+            value=1 if self._client.ssl_verify_enabled else 0,
         )
         html = self._client.connection_status_get(response_save=self.response_save)
         yield GaugeMetricFamily(

@@ -12,6 +12,8 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+_CONNECTION_STATUS_PATH = "cmconnectionstatus.html"
+
 
 class TokenUnavailableError(Exception):
     pass
@@ -129,7 +131,7 @@ class SurfboardClient:
         auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
         try:
             response = self._client.get(
-                f"cmconnectionstatus.html?login_{auth}",
+                f"{_CONNECTION_STATUS_PATH}?login_{auth}",
                 headers={"Authorization": f"Basic {auth}"},
             )
             logger.info("response=%r", response)
@@ -151,7 +153,7 @@ class SurfboardClient:
 
         logger.debug("cookies (before)=%r", dict(self._client.cookies))
         try:
-            response = self._client.get(f"cmconnectionstatus.html?ct_{token}")
+            response = self._client.get(f"{_CONNECTION_STATUS_PATH}?ct_{token}")
         except httpx.HTTPError:
             logger.warning("connection status request failed", exc_info=True)
             return None

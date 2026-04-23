@@ -100,13 +100,16 @@ class SurfboardClient:
         ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
         return ssl_context
 
-    def _session_id(self) -> str | None:
+    def _session_id_get(self) -> str | None:
         return self._client.cookies.get("sessionId")
 
     def token_get(self) -> str:
-        session_id = self._session_id()
-        if not session_id:
-            logger.debug("no session_id, clearing token=%r", self._token)
+        if not self._session_id_get():
+            logger.debug(
+                "no session_id (%r), clearing token=%r",
+                self._session_id_get(),
+                self._token,
+            )
             self._token = None
         if self._token:
             logger.debug("token (cached)=%r", self._token)
@@ -115,13 +118,11 @@ class SurfboardClient:
         response = self._token_get_request()
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
-        session_id = self._session_id()
-        if session_id:
-            self._token = token
-        else:
+        if not self._session_id_get():
             self._token = None  # so next call refreshes
             raise TokenUnavailableError
-        return self._token
+        self._token = token
+        return token
 
     def _token_get_request(self) -> httpx.Response:
         logger.debug("cookies (before)=%r", dict(self._client.cookies))
@@ -165,7 +166,7 @@ class SurfboardClient:
             return None
 
         logger.debug("cookies=%r", dict(self._client.cookies))
-        session_id = self._session_id()
+        session_id = self._session_id_get()
         if not session_id:
             logger.warning("session_id=%r empty after request", session_id)
             return None

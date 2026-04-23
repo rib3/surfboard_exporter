@@ -1,7 +1,5 @@
 import base64
-import functools
 import logging
-import os
 import pathlib
 import ssl
 import tempfile
@@ -9,6 +7,8 @@ from datetime import datetime
 from http import HTTPStatus
 
 import httpx
+
+from instance import instance_dir_get
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +19,6 @@ class TokenUnavailableError(Exception):
     pass
 
 
-@functools.cache
-def _response_save_dir_get() -> str:
-    prefix = f"surfboard_exporter.{os.getpid()}."
-    return tempfile.mkdtemp(prefix=prefix)
-
-
 def _response_save(response: httpx.Response) -> None:
     # time.time() (at least under time_machine) may have additional digits compared to
     # datetime.timestamp() used in tests
@@ -32,7 +26,7 @@ def _response_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
-    save_dir = _response_save_dir_get()
+    save_dir = instance_dir_get()
     with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=save_dir) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)

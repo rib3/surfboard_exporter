@@ -18,7 +18,7 @@ from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
 
-from client import _response_save_dir_get
+from instance import instance_dir_get
 from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,
@@ -49,8 +49,8 @@ def _session_faker(_session_faker):
 
 
 @pytest.fixture(autouse=True)
-def response_save_dir_get__cache_clear():
-    _response_save_dir_get.cache_clear()
+def instance_dir_get__cache_clear():
+    instance_dir_get.cache_clear()
 
 
 @pytest.fixture

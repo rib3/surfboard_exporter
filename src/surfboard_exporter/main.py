@@ -61,7 +61,3 @@ def main() -> None:
         response_save=args.response_save,
     )
     thread.join()
-
-
-if __name__ == "__main__":
-    main()

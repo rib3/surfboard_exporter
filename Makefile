@@ -1,6 +1,6 @@
 .PHONY: http
 http:
-	python main.py
+	PYTHONPATH=src python -m surfboard_exporter
 
 .PHONY: http-dev
 http-dev:

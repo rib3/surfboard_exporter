@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-surfboard_exporter = "surfboard_exporter.main:main"
+surfboard_exporter = "surfboard_exporter.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.5,<0.12"]

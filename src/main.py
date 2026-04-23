@@ -2,12 +2,15 @@ import argparse
 import json
 import logging
 import os
+from pathlib import Path
 
+from instance import instance_dir_get
 from server import start
 
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--log-file", action="store_true", default=False)
 parser.add_argument("--response-save", action="store_true", default=False)
 parser.add_argument("-v", "--verbose", action="store_true", default=False)
 
@@ -30,6 +33,12 @@ def logging_config(args) -> None:
     )
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format=format)
+    if args.log_file:
+        log_file_path = str(Path(instance_dir_get()) / "exporter.log")
+        logger.info("logging to %r", log_file_path)
+        handler = logging.FileHandler(log_file_path)
+        handler.setFormatter(logging.Formatter(format))
+        logging.root.addHandler(handler)
 
 
 def main() -> None:

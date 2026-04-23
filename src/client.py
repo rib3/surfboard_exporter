@@ -112,6 +112,18 @@ class SurfboardClient:
             logger.debug("token (cached)=%r", self._token)
             return self._token
 
+        response = self._token_get_request()
+        token = response.text
+        logger.debug("token=%r (self._token=%r)", token, self._token)
+        session_id = self._session_id()
+        if session_id:
+            self._token = token
+        else:
+            self._token = None  # so next call refreshes
+            raise TokenUnavailableError
+        return self._token
+
+    def _token_get_request(self) -> httpx.Response:
         logger.debug("cookies (before)=%r", dict(self._client.cookies))
         auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
         try:
@@ -127,15 +139,7 @@ class SurfboardClient:
                 logger.error("ssl problem: %s", e)
             raise TokenUnavailableError from e
         logger.debug("cookies=%r", dict(self._client.cookies))
-        token = response.text
-        logger.debug("token=%r (self._token=%r)", token, self._token)
-        session_id = self._session_id()
-        if session_id:
-            self._token = token
-        else:
-            self._token = None  # so next call refreshes
-            raise TokenUnavailableError
-        return self._token
+        return response
 
     def connection_status_get(self, response_save: bool = False) -> str | None:
         try:

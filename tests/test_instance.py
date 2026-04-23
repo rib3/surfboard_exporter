@@ -4,7 +4,7 @@ from pathlib import Path
 
 from re_assert import Matches
 
-from instance import instance_dir_get
+from surfboard_exporter.instance import instance_dir_get
 
 
 def test__instance_dir_get(tmp_path, monkeypatch):

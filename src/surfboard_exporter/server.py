@@ -2,7 +2,7 @@ import logging
 
 from prometheus_client import REGISTRY, start_http_server
 
-from collector import SurfboardCollector
+from .collector import SurfboardCollector
 
 logger = logging.getLogger(__name__)
 

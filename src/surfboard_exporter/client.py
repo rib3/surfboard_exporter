@@ -8,7 +8,7 @@ from http import HTTPStatus
 
 import httpx
 
-from instance import instance_dir_get
+from .instance import instance_dir_get
 
 logger = logging.getLogger(__name__)
 

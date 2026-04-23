@@ -2,8 +2,8 @@ import logging
 
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
-from client import SurfboardClient
-from parser import (
+from .client import SurfboardClient
+from .parser import (
     parse_connectivity_state,
     parse_downstream_channels,
     parse_security,

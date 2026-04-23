@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from collector import SurfboardCollector
+from surfboard_exporter.collector import SurfboardCollector
 from testsupport.modem_html import (
     DOWNSTREAM__BEGIN_TITLE_HEADERS,
     DOWNSTREAM__TABLE_END,
@@ -71,7 +71,10 @@ def _get_sample_value(metrics, name, labels=None):
 
 def collect_with(html):
     c = SurfboardCollector(username="user", password="pass")
-    with patch("client.SurfboardClient.connection_status_get", return_value=html):
+    with patch(
+        "surfboard_exporter.client.SurfboardClient.connection_status_get",
+        return_value=html,
+    ):
         return list(c.collect())
 
 

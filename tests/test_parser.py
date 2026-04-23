@@ -5,7 +5,7 @@ from itertools import zip_longest
 
 import pytest
 
-from parser import (
+from surfboard_exporter.parser import (
     parse_connectivity_state,
     parse_downstream_channels,
     parse_security,
@@ -153,7 +153,7 @@ def test__parse_connectivity_state__missing_table(caplog):
     assert math.isnan(state.ok)
     assert state.comment == ""
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         "table with th content 'Startup Procedure' not found",
     )
@@ -172,7 +172,7 @@ def test__parse_connectivity_state__missing_row(caplog):
     assert math.isnan(state.ok)
     assert state.comment == ""
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         f"Connectivity State row not found:\n{html!r}",
     )
@@ -219,7 +219,7 @@ def test__parse_security__missing_table(caplog):
     assert math.isnan(security.enabled)
     assert security.comment == ""
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         "table with th content 'Startup Procedure' not found",
     )
@@ -238,7 +238,7 @@ def test__parse_security__missing_row(caplog):
     assert math.isnan(security.enabled)
     assert security.comment == ""
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         f"Security row not found:\n{html!r}",
     )
@@ -313,7 +313,7 @@ def test__parse_downstream_channels__wrong_cell_count(cell_count, caplog):
 
     assert not channels
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         f"skipping row, len(tds)={cell_count} != 8:\n{malformed_row!r}",
     )
@@ -404,7 +404,7 @@ def test__parse_upstream_channels__wrong_cell_count(cell_count, caplog):
 
     assert not channels
     expected_log = (
-        "parser",
+        "surfboard_exporter.parser",
         logging.WARNING,
         f"skipping row, len(tds)={cell_count} != 7:\n{malformed_row!r}",
     )

@@ -4,8 +4,8 @@ import logging
 import os
 from pathlib import Path
 
-from instance import instance_dir_get
-from server import start
+from .instance import instance_dir_get
+from .server import start
 
 logger = logging.getLogger(__name__)
 

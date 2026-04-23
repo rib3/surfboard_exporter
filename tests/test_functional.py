@@ -9,7 +9,7 @@ from prometheus_client.metrics_core import Metric
 from prometheus_client.parser import text_string_to_metric_families
 from prometheus_client.samples import Sample
 
-from collector import SurfboardCollector
+from surfboard_exporter.collector import SurfboardCollector
 from tests.test_collector import HTML, LABELS, _get_sample_value
 
 

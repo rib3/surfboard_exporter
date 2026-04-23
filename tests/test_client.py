@@ -8,7 +8,7 @@ import pytest
 import time_machine
 from re_assert import Matches
 
-from client import (
+from surfboard_exporter.client import (
     SurfboardClient,
     TokenUnavailableError,
     _response_save,
@@ -138,7 +138,7 @@ def test__connection_status_get__modem_certificate_verify__true(
 
     assert result is None
     expected_log_tuple_ssl = (
-        "client",
+        "surfboard_exporter.client",
         logging.ERROR,
         Matches(f"ssl problem:.*{ssl_error}"),
     )
@@ -196,7 +196,7 @@ def test__connection_status_get__modem_certificate_path__none__ssl_fails(
 
     assert result is None
     expected_log_tuple_ssl = (
-        "client",
+        "surfboard_exporter.client",
         logging.ERROR,
         Matches("ssl problem:.*CERTIFICATE_VERIFY_FAILED.*EE certificate key too weak"),
     )
@@ -218,13 +218,13 @@ def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
 
     assert result is None
     expected_log_tuple_ssl = (
-        "client",
+        "surfboard_exporter.client",
         logging.ERROR,
         Matches("ssl problem:.*CERTIFICATE_VERIFY_FAILED.*self-signed certificate"),
     )
     assert expected_log_tuple_ssl in caplog.record_tuples
     expected_log_tuple = (
-        "client",
+        "surfboard_exporter.client",
         logging.WARNING,
         "can't get status, token unavailable",
     )

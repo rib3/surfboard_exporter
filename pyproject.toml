@@ -11,6 +11,13 @@ dependencies = [
   "prometheus-client>=0.24.1",
 ]
 
+[project.scripts]
+surfboard_exporter = "surfboard_exporter.main:main"
+
+[build-system]
+requires = ["uv_build>=0.5,<0.12"]
+build-backend = "uv_build"
+
 [dependency-groups]
 dev = [
   "black>=26.3.1",
@@ -38,8 +45,6 @@ target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
-# parser was a stdlib module removed in Python 3.12, but isort's static known_stdlib list still includes it
-known_first_party = ["parser"]
 
 [tool.pytest.ini_options]
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"

@@ -18,7 +18,7 @@ from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
 
-from instance import instance_dir_get
+from surfboard_exporter.instance import instance_dir_get
 from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,

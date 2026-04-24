@@ -50,3 +50,9 @@ Logs/files are written to a per-pid temp dir
 - `surfboard_downstream_snr_db{channel_id}`
 - `surfboard_downstream_corrected{channel_id}`
 - `surfboard_downstream_uncorrectables{channel_id}`
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
+
+Copyright 2026 Bob Black

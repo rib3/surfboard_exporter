@@ -1,7 +1,7 @@
 [project]
 name = "surfboard-exporter"
 version = "0.1.0"
-description = "Add your description here"
+description = "Prometheus exporter for Arris SURFBoard SB8200 cable modems"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

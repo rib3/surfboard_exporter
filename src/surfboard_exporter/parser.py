@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup, Tag
 
 logger = logging.getLogger(__name__)
 
+LOCK_STATUS__LOCKED = "Locked"
+
 
 @dataclass
 class ConnectivityState:
@@ -33,7 +35,7 @@ class DownstreamChannel:
     uncorrectables: int
 
     def __post_init__(self):
-        self.locked = self.lock_status == "Locked"
+        self.locked = self.lock_status == LOCK_STATUS__LOCKED
 
 
 @dataclass
@@ -47,7 +49,7 @@ class UpstreamChannel:
     power_dbmv: float
 
     def __post_init__(self):
-        self.locked = self.lock_status == "Locked"
+        self.locked = self.lock_status == LOCK_STATUS__LOCKED
 
 
 def parse_system_time(html: str) -> float:

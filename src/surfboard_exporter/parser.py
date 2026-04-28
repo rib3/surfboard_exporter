@@ -70,14 +70,14 @@ def parse_system_time(html: str) -> float:
 
 def _trs_for_table(
     html: str,
-    title_substring: str,
+    title: str,
     *,
     skip: int = 0,
 ) -> Iterator[Tag]:
     soup = BeautifulSoup(html, "html.parser")
-    header = soup.find("th", string=lambda t: t and title_substring in t)
+    header = soup.find("th", string=lambda t: t and t.strip() == title)
     if header is None:
-        logger.warning("table with th content %r not found", title_substring)
+        logger.warning("table with th content %r not found", title)
         return
     table = header.find_parent("table")
     yield from table.find_all("tr")[skip:]
@@ -85,12 +85,12 @@ def _trs_for_table(
 
 def _text_rows_for_table(
     html: str,
-    title_substring: str,
+    title: str,
     *,
     skip: int = 0,
     tds_required: int,
 ) -> Iterator[list[str]]:
-    for row in _trs_for_table(html, title_substring, skip=skip):
+    for row in _trs_for_table(html, title, skip=skip):
         tds = row.find_all("td")
         if len(tds) != tds_required:
             logger.warning(

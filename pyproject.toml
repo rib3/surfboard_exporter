@@ -51,6 +51,12 @@ profile = "black"
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
 pythonpath = ["src"]
 
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.run]
+source = ["src"]
+
 [tool.pytest-watcher]
 now = true
 # clear = true

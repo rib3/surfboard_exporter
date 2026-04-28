@@ -117,10 +117,18 @@ def test__parse_system_time__missing_element(caplog):
     assert expected_log in caplog.record_tuples
 
 
-def test__parse_system_time__invalid_format(connection_status_factory):
+def test__parse_system_time__invalid_format(caplog, connection_status_factory):
     html = connection_status_factory.build(system_time_str="not-a-date").to_html()
 
-    assert math.isnan(parse_system_time(html))
+    result = parse_system_time(html)
+
+    assert math.isnan(result)
+    expected_log = (
+        "surfboard_exporter.parser",
+        logging.ERROR,
+        "failed to parse system time",
+    )
+    assert expected_log in caplog.record_tuples
 
 
 def test__parse_connectivity_state__static_html():

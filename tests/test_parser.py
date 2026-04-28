@@ -103,8 +103,18 @@ def test__parse_system_time__factory(connection_status_factory):
     assert parse_system_time(html) == _expected_system_time_from_dt(page.system_time)
 
 
-def test__parse_system_time__missing_element():
-    assert math.isnan(parse_system_time("<html></html>"))
+def test__parse_system_time__missing_element(caplog):
+    html = "<html></html>"
+
+    result = parse_system_time(html)
+
+    assert math.isnan(result)
+    expected_log = (
+        "surfboard_exporter.parser",
+        logging.WARNING,
+        "systime tag not found",
+    )
+    assert expected_log in caplog.record_tuples
 
 
 def test__parse_system_time__invalid_format(connection_status_factory):

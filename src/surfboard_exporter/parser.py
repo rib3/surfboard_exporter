@@ -55,7 +55,9 @@ class UpstreamChannel:
 def parse_system_time(html: str) -> float:
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("p", id="systime")
-    if tag is not None:
+    if tag is None:
+        logger.warning("systime tag not found")
+    else:
         try:
             text = tag.get_text(strip=True)
             time_str = text.removeprefix("Current System Time:").strip()

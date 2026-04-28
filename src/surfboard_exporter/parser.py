@@ -80,7 +80,8 @@ def _trs_for_table(
         logger.warning("table with th content %r not found", title)
         return
     table = header.find_parent("table")
-    yield from table.find_all("tr")[skip:]
+    rows = table.find_all("tr")
+    yield from rows[skip:]
 
 
 def _text_rows_for_table(

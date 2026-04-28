@@ -107,12 +107,12 @@ def _parse_startup_row(
     row_label: str,
     truthy_status: str,
 ) -> tuple[float, str]:
-    for row in _trs_for_table(html, "Startup Procedure"):
-        cells = [td.get_text(strip=True) for td in row.find_all("td")]
-        if cells[:1] == [row_label] and cells[1:2]:
+    for cells in _text_rows_for_table(
+        html, "Startup Procedure", skip=1, tds_required=3
+    ):
+        if cells[0] == row_label:
             value = 1.0 if cells[1] == truthy_status else 0.0
-            comment = cells[2] if cells[2:3] else ""
-            return value, comment
+            return value, cells[2]
     logger.warning("%s row not found:\n%r", row_label, html)
     return float("nan"), ""
 

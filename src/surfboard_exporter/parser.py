@@ -95,10 +95,7 @@ def _text_rows_for_table(
         tds = row.find_all("td")
         if len(tds) != tds_required:
             logger.warning(
-                "skipping row, len(tds)=%d != %d:\n%r",
-                len(tds),
-                tds_required,
-                str(row),
+                "skipping row, len(tds)=%d != %d:\n%r", len(tds), tds_required, str(row)
             )
             continue
         texts = [td.get_text(strip=True) for td in tds]

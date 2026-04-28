@@ -1,13 +1,40 @@
+import pytest
+
 from testsupport.modem_html import StartupProcedure
+
+MISSING = object()
+
+
+def _resolve_value(value, obj, attr: str, default):
+    if value is not MISSING:
+        return value
+    if obj is not None:
+        return getattr(obj, attr)
+    return default
+
+
+def _resolve_with(obj):
+    def resolve(value, attr, default):
+        return _resolve_value(value, obj, attr, default)
+
+    return resolve
 
 
 def _expected_html(
+    startup_procedure: StartupProcedure | None = None,
     *,
-    connectivity_state: str = "OK",
-    connectivity_state_comment: str = "Operational",
-    security: str = "Enabled",
-    security_comment: str = "BPI+",
+    connectivity_state=MISSING,
+    connectivity_state_comment=MISSING,
+    security=MISSING,
+    security_comment=MISSING,
 ) -> str:
+    resolve = _resolve_with(startup_procedure)
+    connectivity_state = resolve(connectivity_state, "connectivity_state", "OK")
+    connectivity_state_comment = resolve(
+        connectivity_state_comment, "connectivity_state_comment", "Operational"
+    )
+    security = resolve(security, "security", "Enabled")
+    security_comment = resolve(security_comment, "security_comment", "BPI+")
     return (
         '<table class="simpleTable">\n'
         "<tbody>\n"
@@ -52,66 +79,29 @@ def _expected_html(
     )
 
 
-def test__to_html__connectivity_state__ok():
-    page = StartupProcedure(
-        connectivity_state="OK",
-        connectivity_state_comment="Operational",
-        security="Enabled",
-        security_comment="BPI+",
-    )
+def test__to_html__factory(startup_procedure_factory):
+    startup = startup_procedure_factory.build()
 
-    html = page.to_html()
+    html = startup.to_html()
 
-    assert html == _expected_html(connectivity_state="OK")
+    assert html == _expected_html(startup)
 
 
-def test__to_html__connectivity_state__not_synchronized():
-    page = StartupProcedure(
-        connectivity_state="Not Synchronized",
-        connectivity_state_comment="Operational",
-        security="Enabled",
-        security_comment="BPI+",
-    )
+@pytest.mark.parametrize(
+    "attrs",
+    [
+        dict(connectivity_state="OK"),
+        dict(connectivity_state="Not Synchronized"),
+        dict(connectivity_state_comment="BOGUS_TEST_COMMENT"),
+        dict(security="Disabled"),
+        dict(security_comment="BOGUS_TEST_COMMENT"),
+    ],
+    ids=repr,
+)
+def test__to_html__attr(attrs, startup_procedure_factory):
+    startup = startup_procedure_factory.build(**attrs)
 
-    html = page.to_html()
+    html = startup.to_html()
 
-    assert html == _expected_html(connectivity_state="Not Synchronized")
-
-
-def test__to_html__connectivity_state_comment__varied():
-    page = StartupProcedure(
-        connectivity_state="OK",
-        connectivity_state_comment="BOGUS_TEST_COMMENT",
-        security="Enabled",
-        security_comment="BPI+",
-    )
-
-    html = page.to_html()
-
-    assert html == _expected_html(connectivity_state_comment="BOGUS_TEST_COMMENT")
-
-
-def test__to_html__security__disabled():
-    page = StartupProcedure(
-        connectivity_state="OK",
-        connectivity_state_comment="Operational",
-        security="Disabled",
-        security_comment="BPI+",
-    )
-
-    html = page.to_html()
-
-    assert html == _expected_html(security="Disabled")
-
-
-def test__to_html__security_comment__varied():
-    page = StartupProcedure(
-        connectivity_state="OK",
-        connectivity_state_comment="Operational",
-        security="Enabled",
-        security_comment="BOGUS_TEST_COMMENT",
-    )
-
-    html = page.to_html()
-
-    assert html == _expected_html(security_comment="BOGUS_TEST_COMMENT")
+    assert html == _expected_html(startup, **attrs)
+    assert html == _expected_html(startup)

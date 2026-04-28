@@ -34,6 +34,24 @@ logger = logging.getLogger(__name__)
 UNSPECIFIED = object()
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "only: run only this test (dev-only, do not commit)"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    focused = [i for i in items if i.get_closest_marker("only")]
+    if focused:
+        config.hook.pytest_deselected(items=[i for i in items if i not in focused])
+        items[:] = focused
+        terminal = config.pluginmanager.getplugin("terminalreporter")
+        if terminal:
+            terminal.write_sep(
+                "!", f"only mode: {len(focused)} test(s) selected", red=True, bold=True
+            )
+
+
 class UseFaker(Use):
     def __init__(self, method_name: str, *args, **kwargs) -> None:
         super().__init__(

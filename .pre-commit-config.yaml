@@ -21,3 +21,12 @@ repos:
     rev: v0.15.8
     hooks:
       - id: ruff
+
+  - repo: local
+    hooks:
+      - id: no-pytest-mark-only
+        name: forbid active @pytest.mark.only in committed code
+        entry: '^\s*@pytest\.mark\.only'
+        language: pygrep
+        types: [python]
+        files: ^tests/

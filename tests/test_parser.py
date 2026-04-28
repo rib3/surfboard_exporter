@@ -1,7 +1,6 @@
 import logging
 import math
 from datetime import datetime
-from itertools import zip_longest
 
 import pytest
 
@@ -27,7 +26,7 @@ from testsupport.modem_html import (
     UPSTREAM__TITLE_ROW,
 )
 
-from .test_shared import assert_attrs
+from .test_shared import assert_attrs, assert_attrs_list
 
 HTML = f"""
 {STARTUP_PROCEDURE__BEGIN_TITLE_HEADERS}
@@ -266,31 +265,31 @@ def test__parse_security__missing_row(caplog):
 def test__parse_downstream_channels__fields__static_html():
     channels = parse_downstream_channels(HTML)
 
-    assert_attrs(
-        channels[0],
-        channel_id=1,
-        lock_status="Locked",
-        locked=True,
-        modulation="QAM256",
-        frequency_hz=387000000,
-        power_dbmv=-8.2,
-        snr_db=43.5,
-        corrected=100,
-        uncorrectables=200,
+    assert_attrs_list(
+        channels,
+        dict(
+            channel_id=1,
+            lock_status="Locked",
+            locked=True,
+            modulation="QAM256",
+            frequency_hz=387000000,
+            power_dbmv=-8.2,
+            snr_db=43.5,
+            corrected=100,
+            uncorrectables=200,
+        ),
+        dict(
+            channel_id=2,
+            lock_status="Locked",
+            locked=True,
+            modulation="QAM256",
+            frequency_hz=393000000,
+            power_dbmv=-9.1,
+            snr_db=42.0,
+            corrected=300,
+            uncorrectables=400,
+        ),
     )
-    assert_attrs(
-        channels[1],
-        channel_id=2,
-        lock_status="Locked",
-        locked=True,
-        modulation="QAM256",
-        frequency_hz=393000000,
-        power_dbmv=-9.1,
-        snr_db=42.0,
-        corrected=300,
-        uncorrectables=400,
-    )
-    assert not channels[2:]
 
 
 def test__parse_downstream_channels__fields__factory(
@@ -302,9 +301,8 @@ def test__parse_downstream_channels__fields__factory(
 
     channels = parse_downstream_channels(html)
 
-    for channel, row in zip_longest(channels, rows):
-        assert_attrs(
-            channel,
+    expected_attrs_list = [
+        dict(
             channel_id=row.channel_id,
             lock_status=row.lock_status,
             modulation=row.modulation,
@@ -314,6 +312,9 @@ def test__parse_downstream_channels__fields__factory(
             corrected=row.corrected,
             uncorrectables=row.uncorrectables,
         )
+        for row in rows
+    ]
+    assert_attrs_list(channels, *expected_attrs_list)
 
 
 @pytest.mark.parametrize("cell_count", [0, 7, 9])
@@ -353,37 +354,39 @@ def test__parse_downstream_channels__lock_status(
 
     channels = parse_downstream_channels(html)
 
-    assert_attrs(
-        channels[0],
-        lock_status=lock_status,
-        locked=expected_locked,
+    assert_attrs_list(
+        channels,
+        dict(
+            lock_status=lock_status,
+            locked=expected_locked,
+        ),
     )
 
 
 def test__parse_upstream_channels__fields__static_html():
     channels = parse_upstream_channels(HTML)
 
-    assert_attrs(
-        channels[0],
-        channel_id=1,
-        lock_status="Locked",
-        locked=True,
-        channel_type="SC-QAM Upstream",
-        frequency_hz=16400000,
-        width_hz=6400000,
-        power_dbmv=46.0,
+    assert_attrs_list(
+        channels,
+        dict(
+            channel_id=1,
+            lock_status="Locked",
+            locked=True,
+            channel_type="SC-QAM Upstream",
+            frequency_hz=16400000,
+            width_hz=6400000,
+            power_dbmv=46.0,
+        ),
+        dict(
+            channel_id=2,
+            lock_status="Locked",
+            locked=True,
+            channel_type="SC-QAM Upstream",
+            frequency_hz=22800000,
+            width_hz=6400000,
+            power_dbmv=48.0,
+        ),
     )
-    assert_attrs(
-        channels[1],
-        channel_id=2,
-        lock_status="Locked",
-        locked=True,
-        channel_type="SC-QAM Upstream",
-        frequency_hz=22800000,
-        width_hz=6400000,
-        power_dbmv=48.0,
-    )
-    assert not channels[2:]
 
 
 def test__parse_upstream_channels__fields__factory(
@@ -395,9 +398,8 @@ def test__parse_upstream_channels__fields__factory(
 
     channels = parse_upstream_channels(html)
 
-    for channel, row in zip_longest(channels, rows):
-        assert_attrs(
-            channel,
+    expected_attrs_list = [
+        dict(
             channel_id=row.channel_id,
             lock_status=row.lock_status,
             channel_type=row.channel_type,
@@ -405,6 +407,9 @@ def test__parse_upstream_channels__fields__factory(
             width_hz=row.width_hz,
             power_dbmv=row.power_dbmv,
         )
+        for row in rows
+    ]
+    assert_attrs_list(channels, *expected_attrs_list)
 
 
 @pytest.mark.parametrize("cell_count", [0, 6, 8])

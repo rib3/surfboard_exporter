@@ -12,19 +12,19 @@ LOCK_STATUS__LOCKED = "Locked"
 
 @dataclass
 class ConnectivityState:
-    ok: float
+    ok: bool | None
     comment: str
 
 
 @dataclass
 class Security:
-    enabled: float
+    enabled: bool | None
     comment: str
 
 
 @dataclass
 class DocsisNetworkAccess:
-    allowed: float
+    allowed: bool | None
     comment: str
 
 
@@ -112,15 +112,15 @@ def _parse_startup_row(
     html: str,
     row_label: str,
     truthy_status: str,
-) -> tuple[float, str]:
+) -> tuple[bool | None, str]:
     for cells in _text_rows_for_table(
         html, "Startup Procedure", skip=1, tds_required=3
     ):
         if cells[0] == row_label:
-            value = 1.0 if cells[1] == truthy_status else 0.0
+            value = cells[1] == truthy_status
             return value, cells[2]
     logger.warning("%s row not found:\n%r", row_label, html)
-    return float("nan"), ""
+    return None, ""
 
 
 def parse_connectivity_state(html: str) -> ConnectivityState:

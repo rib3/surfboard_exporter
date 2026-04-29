@@ -141,14 +141,14 @@ def test__parse_connectivity_state__static_html():
 
     assert_attrs(
         state,
-        ok=1.0,
+        ok=True,
         comment="Operational",
     )
 
 
 @pytest.mark.parametrize(
     ("connectivity_state", "expected_ok"),
-    [("OK", 1.0), ("Not Synchronized", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+    [("OK", True), ("Not Synchronized", False), ("", False), ("BOGUS", False)],
 )
 def test__parse_connectivity_state__factory(
     connectivity_state,
@@ -173,8 +173,11 @@ def test__parse_connectivity_state__missing_table(caplog):
 
     state = parse_connectivity_state(html)
 
-    assert math.isnan(state.ok)
-    assert state.comment == ""
+    assert_attrs(
+        state,
+        ok=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,
@@ -192,8 +195,11 @@ def test__parse_connectivity_state__missing_row(caplog):
 
     state = parse_connectivity_state(html)
 
-    assert math.isnan(state.ok)
-    assert state.comment == ""
+    assert_attrs(
+        state,
+        ok=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,
@@ -207,14 +213,14 @@ def test__parse_security__static_html():
 
     assert_attrs(
         security,
-        enabled=1.0,
+        enabled=True,
         comment="BPI+",
     )
 
 
 @pytest.mark.parametrize(
     ("security", "expected_enabled"),
-    [("Enabled", 1.0), ("Disabled", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+    [("Enabled", True), ("Disabled", False), ("", False), ("BOGUS", False)],
 )
 def test__parse_security__factory(
     security,
@@ -239,8 +245,11 @@ def test__parse_security__missing_table(caplog):
 
     security = parse_security(html)
 
-    assert math.isnan(security.enabled)
-    assert security.comment == ""
+    assert_attrs(
+        security,
+        enabled=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,
@@ -258,8 +267,11 @@ def test__parse_security__missing_row(caplog):
 
     security = parse_security(html)
 
-    assert math.isnan(security.enabled)
-    assert security.comment == ""
+    assert_attrs(
+        security,
+        enabled=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,
@@ -273,14 +285,14 @@ def test__parse_docsis_network_access__static_html():
 
     assert_attrs(
         docsis,
-        allowed=1.0,
+        allowed=True,
         comment="",
     )
 
 
 @pytest.mark.parametrize(
     ("docsis_network_access_enabled", "expected_allowed"),
-    [("Allowed", 1.0), ("Denied", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+    [("Allowed", True), ("Denied", False), ("", False), ("BOGUS", False)],
 )
 def test__parse_docsis_network_access__factory(
     docsis_network_access_enabled,
@@ -307,8 +319,11 @@ def test__parse_docsis_network_access__missing_table(caplog):
 
     docsis = parse_docsis_network_access(html)
 
-    assert math.isnan(docsis.allowed)
-    assert docsis.comment == ""
+    assert_attrs(
+        docsis,
+        allowed=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,
@@ -326,8 +341,11 @@ def test__parse_docsis_network_access__missing_row(caplog):
 
     docsis = parse_docsis_network_access(html)
 
-    assert math.isnan(docsis.allowed)
-    assert docsis.comment == ""
+    assert_attrs(
+        docsis,
+        allowed=None,
+        comment="",
+    )
     expected_log = (
         "surfboard_exporter.parser",
         logging.WARNING,

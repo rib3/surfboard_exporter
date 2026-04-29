@@ -15,6 +15,12 @@ from .parser import (
 logger = logging.getLogger(__name__)
 
 
+def _float_from_bool_none(value: bool | None) -> float:
+    if value is None:
+        return float("nan")
+    return float(value)
+
+
 class SurfboardCollector:
     def __init__(
         self,
@@ -64,7 +70,7 @@ class SurfboardCollector:
             "Startup Procedure connectivity state (1=OK, 0=not OK, NaN=unknown)",
             labels=["comment"],
         )
-        conn_ok.add_metric([state.comment], state.ok)
+        conn_ok.add_metric([state.comment], _float_from_bool_none(state.ok))
         yield conn_ok
         security = parse_security(html)
         security_enabled = GaugeMetricFamily(
@@ -72,7 +78,9 @@ class SurfboardCollector:
             "Startup Procedure security (1=Enabled, 0=not enabled, NaN=unknown)",
             labels=["comment"],
         )
-        security_enabled.add_metric([security.comment], security.enabled)
+        security_enabled.add_metric(
+            [security.comment], _float_from_bool_none(security.enabled)
+        )
         yield security_enabled
         docsis = parse_docsis_network_access(html)
         docsis_allowed = GaugeMetricFamily(
@@ -83,7 +91,9 @@ class SurfboardCollector:
             ),
             labels=["comment"],
         )
-        docsis_allowed.add_metric([docsis.comment], docsis.allowed)
+        docsis_allowed.add_metric(
+            [docsis.comment], _float_from_bool_none(docsis.allowed)
+        )
         yield docsis_allowed
         yield from self.collect_upstream(html)
         yield from self.collect_downstream(html)

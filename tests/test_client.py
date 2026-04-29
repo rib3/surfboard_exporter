@@ -299,10 +299,10 @@ def test__connection_status_get__response_save(
     text = "<html>status</html>"
     surfboard_api_mock_get_login(password="password", token=token)
     surfboard_api_mock_get_connectionstatus(token=token, text=text)
-    client = SurfboardClient(password="password")
+    client = SurfboardClient(password="password", response_save=True)
 
     with time_machine.travel(frozen_dt, tick=False):
-        result = client.connection_status_get(response_save=True)
+        result = client.connection_status_get()
 
     assert result == text
     dirs = list(tmp_path.iterdir())

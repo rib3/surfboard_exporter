@@ -41,6 +41,7 @@ class SurfboardClient:
         modem_host: str | None = None,
         modem_certificate_verify: bool | None = None,
         modem_certificate_path: str | None = None,
+        response_save: bool = False,
     ) -> None:
         if username is None:
             username = "admin"
@@ -66,6 +67,9 @@ class SurfboardClient:
         )
         self._client = httpx.Client(base_url=base_url, verify=self._verify)
         self._token: str | None = None
+        # excludes token responses to avoid persisting tokens to disk
+        logger.info("response_save=%r", response_save)
+        self._response_save = response_save
 
     @property
     def ssl_verify_enabled(self) -> bool:
@@ -144,7 +148,7 @@ class SurfboardClient:
         response.raise_for_status()
         return response
 
-    def connection_status_get(self, response_save: bool = False) -> str | None:
+    def connection_status_get(self) -> str | None:
         try:
             token = self.token_get()
         except TokenUnavailableError:
@@ -158,7 +162,7 @@ class SurfboardClient:
             logger.warning("connection status request failed", exc_info=True)
             return None
         logger.info("response=%r", response)
-        if response_save:
+        if self._response_save:
             _response_save(response)
 
         if response.status_code != HTTPStatus.OK:

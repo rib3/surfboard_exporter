@@ -118,7 +118,6 @@ class SurfboardClient:
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
         if not self._session_id_get():
-            self._token = None  # so next call refreshes
             raise TokenUnavailableError
         self._token = token
         return token

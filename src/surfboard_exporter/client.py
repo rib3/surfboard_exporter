@@ -111,7 +111,10 @@ class SurfboardClient:
             logger.debug("token (cached)=%r", self._token)
             return self._token
 
-        response = self._token_get_request()
+        try:
+            response = self._token_get_request()
+        except httpx.HTTPError as e:
+            raise TokenUnavailableError from e
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
         if not self._session_id_get():
@@ -134,7 +137,7 @@ class SurfboardClient:
         except httpx.HTTPError as e:
             if "SSL" in str(e):
                 logger.error("ssl problem: %s", e)
-            raise TokenUnavailableError from e
+            raise
         logger.debug("cookies=%r", dict(self._client.cookies))
         return response
 

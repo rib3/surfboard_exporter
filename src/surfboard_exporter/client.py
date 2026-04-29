@@ -100,15 +100,15 @@ class SurfboardClient:
         return self._client.cookies.get("sessionId")
 
     def token_get(self) -> str:
+        logger.debug("token (cached)=%r", self._token)
         if not self._session_id_get():
             logger.debug(
-                "no session_id (%r), clearing token=%r",
+                "no existing session_id (%r), ensuring no cached token",
                 self._session_id_get(),
-                self._token,
             )
             self._token = None
         if self._token:
-            logger.debug("token (cached)=%r", self._token)
+            logger.debug("using cached token=%r", self._token)
             return self._token
 
         try:
@@ -118,6 +118,10 @@ class SurfboardClient:
         token = response.text
         logger.debug("token=%r (self._token=%r)", token, self._token)
         if not self._session_id_get():
+            logger.debug(
+                "no session_id (%r) after request, not using token",
+                self._session_id_get(),
+            )
             raise TokenUnavailableError
         self._token = token
         return token

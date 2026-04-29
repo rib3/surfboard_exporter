@@ -81,22 +81,77 @@ def test__init__modem_certificate_path__does_not_exist(tmp_path):
         SurfboardClient(password="password", modem_certificate_path=missing)
 
 
-def test__token_get__cached(httpx_mock, surfboard_api_mock_get_login):
-    surfboard_api_mock_get_login(password="password")
+def test__token_get__cached(caplog, faker, httpx_mock, surfboard_api_mock_get_login):
+    caplog.set_level(logging.DEBUG, logger="surfboard_exporter.client")
+    token = faker.surfboard_token()
+    surfboard_api_mock_get_login(password="password", token=token)
     client = SurfboardClient(password="password")
 
     client.token_get()
+
+    assert len(httpx_mock.get_requests()) == 1
+    expected_cached_log_tuple = (
+        "surfboard_exporter.client",
+        logging.DEBUG,
+        f"using cached token={token!r}",
+    )
+    assert expected_cached_log_tuple not in caplog.record_tuples
+
     client.token_get()
 
     assert len(httpx_mock.get_requests()) == 1
+    assert expected_cached_log_tuple in caplog.record_tuples
 
 
-def test__token_get__no_session_id(surfboard_api_mock_get_login):
-    surfboard_api_mock_get_login(password="password", session_id=None)
+@pytest.mark.parametrize("session_id", [None, ""])
+def test__token_get__no_session_id(caplog, session_id, surfboard_api_mock_get_login):
+    caplog.set_level(logging.DEBUG, logger="surfboard_exporter.client")
+    surfboard_api_mock_get_login(password="password", session_id=session_id)
     client = SurfboardClient(password="password")
 
     with pytest.raises(TokenUnavailableError):
         client.token_get()
+
+    expected_log_tuple = (
+        "surfboard_exporter.client",
+        logging.DEBUG,
+        f"no session_id ({session_id!r}) after request, not using token",
+    )
+    assert expected_log_tuple in caplog.record_tuples
+
+
+def test__token_get__session_cleared__refetches(
+    caplog,
+    faker,
+    surfboard_api_mock_get_connectionstatus,
+    surfboard_api_mock_get_login,
+):
+    caplog.set_level(logging.DEBUG, logger="surfboard_exporter.client")
+    client = SurfboardClient(password="password")
+
+    token1 = faker.surfboard_token()
+    surfboard_api_mock_get_login(password="password", token=token1)
+
+    first = client.token_get()
+
+    assert first == token1
+
+    surfboard_api_mock_get_connectionstatus(token=token1, session_id="")
+
+    client.connection_status_get()
+
+    token2 = faker.surfboard_token()
+    surfboard_api_mock_get_login(password="password", token=token2)
+
+    second = client.token_get()
+
+    assert second == token2
+    expected_log_tuple = (
+        "surfboard_exporter.client",
+        logging.DEBUG,
+        "no existing session_id (''), ensuring no cached token",
+    )
+    assert expected_log_tuple in caplog.record_tuples
 
 
 def test__token_get__network_error(surfboard_api_mock_get_login):

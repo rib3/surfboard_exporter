@@ -131,14 +131,14 @@ class SurfboardClient:
                 f"{_CONNECTION_STATUS_PATH}?login_{auth}",
                 headers={"Authorization": f"Basic {auth}"},
             )
-            logger.info("response=%r", response)
-            logger.debug("response.text=%r", response.text)
-            response.raise_for_status()
         except httpx.HTTPError as e:
             if "SSL" in str(e):
                 logger.error("ssl problem: %s", e)
             raise
+        logger.info("response=%r", response)
+        logger.debug("response.text=%r", response.text)
         logger.debug("cookies=%r", dict(self._client.cookies))
+        response.raise_for_status()
         return response
 
     def connection_status_get(self, response_save: bool = False) -> str | None:

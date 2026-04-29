@@ -191,9 +191,9 @@ def https_server_modem(key_cert_like_modem):
         host = f"{server.host}:{server.port}"
         logger.info("https_server_modem started host=%r", host)
         yield HttpServerModem(server=server, cert_path=cert_path, host=host)
-        assert (
-            not server.ordered_handlers
-        ), f"unfulfilled ordered requests: {server.ordered_handlers}"
+        assert not server.ordered_handlers, (
+            f"unfulfilled ordered requests: {server.ordered_handlers}"
+        )
         server.check()
         logger.info("https_server_modem stopping host=%r", host)
 

@@ -13,11 +13,9 @@ lint:
 	ruff check # --diff excludes unfixable violations
 	ruff check --diff
 	isort --diff .
-	black --diff .
 
 .PHONY: lint-fix
 lint-fix:
 	ruff format # address formatting errors (Line too long) before they error under check (--fix does not address them)
 	ruff check --fix
 	isort .
-	black .

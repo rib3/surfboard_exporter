@@ -57,9 +57,7 @@ UPSTREAM__COLUMN_HEADERS_ROW = (
 )
 UPSTREAM__TABLE_END = "</tbody>\n</table>"
 UPSTREAM__BEGIN_TITLE_HEADERS = (
-    f"{UPSTREAM__TABLE_BEGIN}\n"
-    f"{UPSTREAM__TITLE_ROW}\n"
-    f"{UPSTREAM__COLUMN_HEADERS_ROW}"
+    f"{UPSTREAM__TABLE_BEGIN}\n{UPSTREAM__TITLE_ROW}\n{UPSTREAM__COLUMN_HEADERS_ROW}"
 )
 
 
@@ -142,9 +140,7 @@ class DownstreamBondedChannels:
     def to_html(self) -> str:
         rows_html = "\n".join(row.to_html() for row in self.rows)
         return (
-            f"{DOWNSTREAM__BEGIN_TITLE_HEADERS}\n"
-            f"{rows_html}\n"
-            f"{DOWNSTREAM__TABLE_END}"
+            f"{DOWNSTREAM__BEGIN_TITLE_HEADERS}\n{rows_html}\n{DOWNSTREAM__TABLE_END}"
         )
 
 
@@ -178,11 +174,7 @@ class UpstreamBondedChannels:
 
     def to_html(self) -> str:
         rows_html = "\n".join(row.to_html() for row in self.rows)
-        return (
-            f"{UPSTREAM__BEGIN_TITLE_HEADERS}\n"
-            f"{rows_html}\n"
-            f"{UPSTREAM__TABLE_END}"
-        )
+        return f"{UPSTREAM__BEGIN_TITLE_HEADERS}\n{rows_html}\n{UPSTREAM__TABLE_END}"
 
 
 @dataclass

@@ -40,6 +40,7 @@ Logs/files are written to a per-pid temp dir
 - `surfboard_system_time`
 - `surfboard_connectivity_state_ok{comment}`
 - `surfboard_security_enabled{comment}`
+- `surfboard_docsis_network_access_allowed{comment}`
 - `surfboard_upstream_locked{channel_id,lock_status}`
 - `surfboard_upstream_frequency_hz{channel_id}`
 - `surfboard_upstream_width_hz{channel_id}`

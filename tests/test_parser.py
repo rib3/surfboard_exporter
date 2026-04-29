@@ -6,6 +6,7 @@ import pytest
 
 from surfboard_exporter.parser import (
     parse_connectivity_state,
+    parse_docsis_network_access,
     parse_downstream_channels,
     parse_security,
     parse_system_time,
@@ -39,6 +40,11 @@ HTML = f"""
       <td>Security</td>
       <td>Enabled</td>
       <td>BPI+</td>
+   </tr>
+   <tr>
+      <td>DOCSIS Network Access Enabled</td>
+      <td>Allowed</td>
+      <td></td>
    </tr>
 {STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
@@ -258,6 +264,74 @@ def test__parse_security__missing_row(caplog):
         "surfboard_exporter.parser",
         logging.WARNING,
         f"Security row not found:\n{html!r}",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+def test__parse_docsis_network_access__static_html():
+    docsis = parse_docsis_network_access(HTML)
+
+    assert_attrs(
+        docsis,
+        allowed=1.0,
+        comment="",
+    )
+
+
+@pytest.mark.parametrize(
+    ("docsis_network_access_enabled", "expected_allowed"),
+    [("Allowed", 1.0), ("Denied", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__parse_docsis_network_access__factory(
+    docsis_network_access_enabled,
+    expected_allowed,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(
+        docsis_network_access_enabled=docsis_network_access_enabled
+    )
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    parsed = parse_docsis_network_access(html)
+
+    assert_attrs(
+        parsed,
+        allowed=expected_allowed,
+        comment=startup.docsis_network_access_enabled_comment,
+    )
+
+
+def test__parse_docsis_network_access__missing_table(caplog):
+    html = "<html></html>"
+
+    docsis = parse_docsis_network_access(html)
+
+    assert math.isnan(docsis.allowed)
+    assert docsis.comment == ""
+    expected_log = (
+        "surfboard_exporter.parser",
+        logging.WARNING,
+        "table with th content 'Startup Procedure' not found",
+    )
+    assert expected_log in caplog.record_tuples
+
+
+def test__parse_docsis_network_access__missing_row(caplog):
+    html = (
+        f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"
+        f"{STARTUP_PROCEDURE__TITLE_ROW}\n"
+        f"{STARTUP_PROCEDURE__TABLE_END}"
+    )
+
+    docsis = parse_docsis_network_access(html)
+
+    assert math.isnan(docsis.allowed)
+    assert docsis.comment == ""
+    expected_log = (
+        "surfboard_exporter.parser",
+        logging.WARNING,
+        f"DOCSIS Network Access Enabled row not found:\n{html!r}",
     )
     assert expected_log in caplog.record_tuples
 

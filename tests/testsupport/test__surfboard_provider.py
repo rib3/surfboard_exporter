@@ -52,6 +52,20 @@ def test__surfboard_security_comment(faker):
 
 
 @pytest.mark.repeat(20)
+def test__surfboard_docsis_network_access_enabled(faker):
+    result = faker.surfboard_docsis_network_access_enabled()
+
+    assert result in {"Allowed", "BOGUS_TEST_VALUE"}
+
+
+@pytest.mark.repeat(20)
+def test__surfboard_docsis_network_access_enabled_comment(faker):
+    result = faker.surfboard_docsis_network_access_enabled_comment()
+
+    assert result in {"", "BOGUS_TEST_COMMENT"}
+
+
+@pytest.mark.repeat(20)
 def test__surfboard_downstream_corrected(faker):
     result = faker.surfboard_downstream_corrected()
 

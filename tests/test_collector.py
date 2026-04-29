@@ -28,6 +28,11 @@ HTML = f"""
       <td>Enabled</td>
       <td>BPI+</td>
    </tr>
+   <tr>
+      <td>DOCSIS Network Access Enabled</td>
+      <td>Allowed</td>
+      <td></td>
+   </tr>
 {STARTUP_PROCEDURE__TABLE_END}
 {DOWNSTREAM__BEGIN_TITLE_HEADERS}
 <tr align="left">
@@ -182,6 +187,41 @@ def test__security_enabled__missing_table():
     metrics = collect_with("<html></html>")
 
     sample = _get_sample(metrics, "surfboard_security_enabled")
+
+    assert math.isnan(sample.value)
+    assert sample.labels == {"comment": ""}
+
+
+@pytest.mark.parametrize(
+    ("docsis_network_access_enabled", "expected_allowed"),
+    [("Allowed", 1.0), ("Denied", 0.0), ("", 0.0), ("BOGUS", 0.0)],
+)
+def test__docsis_network_access_allowed__factory(
+    docsis_network_access_enabled,
+    expected_allowed,
+    connection_status_factory,
+    startup_procedure_factory,
+):
+    startup = startup_procedure_factory.build(
+        docsis_network_access_enabled=docsis_network_access_enabled
+    )
+    html = connection_status_factory.build(startup=startup).to_html()
+
+    metrics = collect_with(html)
+
+    sample = _get_sample(metrics, "surfboard_docsis_network_access_allowed")
+
+    assert_attrs(
+        sample,
+        value=expected_allowed,
+        labels={"comment": startup.docsis_network_access_enabled_comment},
+    )
+
+
+def test__docsis_network_access_allowed__missing_table():
+    metrics = collect_with("<html></html>")
+
+    sample = _get_sample(metrics, "surfboard_docsis_network_access_allowed")
 
     assert math.isnan(sample.value)
     assert sample.labels == {"comment": ""}

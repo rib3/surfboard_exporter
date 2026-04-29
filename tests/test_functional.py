@@ -81,6 +81,19 @@ def _metric_security_enabled_sample(value, comment):
     )
 
 
+def _metric_docsis_network_access_allowed_sample(value, comment):
+    name = "surfboard_docsis_network_access_allowed"
+    return _metric(
+        name,
+        (
+            "Startup Procedure DOCSIS Network Access"
+            " (1=Allowed, 0=not allowed, NaN=unknown)"
+        ),
+        "gauge",
+        [_sample(name, {"comment": comment}, value)],
+    )
+
+
 @dataclass
 class DownstreamChannelValues:
     channel_id: str
@@ -324,6 +337,7 @@ def test__generate_latest(
         _metric_system_time_sample(expected_system_time),
         _metric_connectivity_state_ok_sample(1.0, "Operational"),
         _metric_security_enabled_sample(1.0, "BPI+"),
+        _metric_docsis_network_access_allowed_sample(1.0, ""),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
@@ -420,6 +434,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
         _metric_system_time_sample(expected_system_time),
         _metric_connectivity_state_ok_sample(1.0, "Operational"),
         _metric_security_enabled_sample(1.0, "BPI+"),
+        _metric_docsis_network_access_allowed_sample(1.0, ""),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",
@@ -734,6 +749,7 @@ def test__generate_latest_real_html__2026_03_30_1441(
         _metric_system_time_sample(expected_system_time),
         _metric_connectivity_state_ok_sample(1.0, "Operational"),
         _metric_security_enabled_sample(1.0, "BPI+"),
+        _metric_docsis_network_access_allowed_sample(1.0, ""),
         *_metrics_upstream(
             UpstreamChannelValues(
                 channel_id="1",

@@ -69,6 +69,8 @@ class StartupProcedure:
     connectivity_state_comment: str
     security: str
     security_comment: str
+    docsis_network_access_enabled: str
+    docsis_network_access_enabled_comment: str
 
     def to_html(self) -> str:
         return (
@@ -100,8 +102,8 @@ class StartupProcedure:
             "   </tr>\n"
             "   <tr>\n"
             "      <td>DOCSIS Network Access Enabled</td>\n"
-            "      <td>Allowed</td>\n"
-            "      <td></td>\n"
+            f"      <td>{self.docsis_network_access_enabled}</td>\n"
+            f"      <td>{self.docsis_network_access_enabled_comment}</td>\n"
             "   </tr>\n"
             f"{STARTUP_PROCEDURE__TABLE_END}"
         )

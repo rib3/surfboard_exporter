@@ -5,6 +5,7 @@ from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 from .client import SurfboardClient
 from .parser import (
     parse_connectivity_state,
+    parse_docsis_network_access,
     parse_downstream_channels,
     parse_security,
     parse_system_time,
@@ -73,6 +74,17 @@ class SurfboardCollector:
         )
         security_enabled.add_metric([security.comment], security.enabled)
         yield security_enabled
+        docsis = parse_docsis_network_access(html)
+        docsis_allowed = GaugeMetricFamily(
+            "surfboard_docsis_network_access_allowed",
+            (
+                "Startup Procedure DOCSIS Network Access"
+                " (1=Allowed, 0=not allowed, NaN=unknown)"
+            ),
+            labels=["comment"],
+        )
+        docsis_allowed.add_metric([docsis.comment], docsis.allowed)
+        yield docsis_allowed
         yield from self.collect_upstream(html)
         yield from self.collect_downstream(html)
 

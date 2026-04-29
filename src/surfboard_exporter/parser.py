@@ -23,6 +23,12 @@ class Security:
 
 
 @dataclass
+class DocsisNetworkAccess:
+    allowed: float
+    comment: str
+
+
+@dataclass
 class DownstreamChannel:
     channel_id: int
     lock_status: str
@@ -125,6 +131,13 @@ def parse_connectivity_state(html: str) -> ConnectivityState:
 def parse_security(html: str) -> Security:
     enabled, comment = _parse_startup_row(html, "Security", "Enabled")
     return Security(enabled=enabled, comment=comment)
+
+
+def parse_docsis_network_access(html: str) -> DocsisNetworkAccess:
+    allowed, comment = _parse_startup_row(
+        html, "DOCSIS Network Access Enabled", "Allowed"
+    )
+    return DocsisNetworkAccess(allowed=allowed, comment=comment)
 
 
 def _hz_from_str(s: str) -> int:

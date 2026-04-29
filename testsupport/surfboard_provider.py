@@ -110,6 +110,31 @@ class SurfboardProvider(BaseProvider):
             )
         )
 
+    def surfboard_docsis_network_access_enabled(self) -> str:
+        # real modems effectively always report "Allowed"; keep BOGUS rare but
+        # non-zero so non-Allowed code paths still get exercised in batches.
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("Allowed", 0.9),  # observed: only value seen in captures
+                    (
+                        "BOGUS_TEST_VALUE",
+                        0.1,
+                    ),  # synthetic sentinel for non-Allowed paths
+                ]
+            )
+        )
+
+    def surfboard_docsis_network_access_enabled_comment(self) -> str:
+        return self.generator.random_element(
+            OrderedDict(
+                [
+                    ("", 0.9),  # observed: only value seen in captures
+                    ("BOGUS_TEST_COMMENT", 0.1),  # synthetic sentinel
+                ]
+            )
+        )
+
     def surfboard_downstream_channel_id(self) -> int:
         return self.generator.random_element([*range(1, 25), 193])
 

@@ -260,6 +260,10 @@ class StartupProcedureFactory(DataclassFactory):
     connectivity_state_comment = UseFaker("surfboard_connectivity_state_comment")
     security = UseFaker("surfboard_security")
     security_comment = UseFaker("surfboard_security_comment")
+    docsis_network_access_enabled = UseFaker("surfboard_docsis_network_access_enabled")
+    docsis_network_access_enabled_comment = UseFaker(
+        "surfboard_docsis_network_access_enabled_comment"
+    )
 
 
 @register_fixture

@@ -9,3 +9,5 @@ def test__build(startup_procedure_factory):
     assert isinstance(page.connectivity_state_comment, str)
     assert isinstance(page.security, str)
     assert isinstance(page.security_comment, str)
+    assert isinstance(page.docsis_network_access_enabled, str)
+    assert isinstance(page.docsis_network_access_enabled_comment, str)

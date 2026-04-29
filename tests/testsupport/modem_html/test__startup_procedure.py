@@ -27,6 +27,8 @@ def _expected_html(
     connectivity_state_comment=MISSING,
     security=MISSING,
     security_comment=MISSING,
+    docsis_network_access_enabled=MISSING,
+    docsis_network_access_enabled_comment=MISSING,
 ) -> str:
     resolve = _resolve_with(startup_procedure)
     connectivity_state = resolve(connectivity_state, "connectivity_state", "OK")
@@ -35,6 +37,14 @@ def _expected_html(
     )
     security = resolve(security, "security", "Enabled")
     security_comment = resolve(security_comment, "security_comment", "BPI+")
+    docsis_network_access_enabled = resolve(
+        docsis_network_access_enabled, "docsis_network_access_enabled", "Allowed"
+    )
+    docsis_network_access_enabled_comment = resolve(
+        docsis_network_access_enabled_comment,
+        "docsis_network_access_enabled_comment",
+        "",
+    )
     return (
         '<table class="simpleTable">\n'
         "<tbody>\n"
@@ -71,8 +81,8 @@ def _expected_html(
         "   </tr>\n"
         "   <tr>\n"
         "      <td>DOCSIS Network Access Enabled</td>\n"
-        "      <td>Allowed</td>\n"
-        "      <td></td>\n"
+        f"      <td>{docsis_network_access_enabled}</td>\n"
+        f"      <td>{docsis_network_access_enabled_comment}</td>\n"
         "   </tr>\n"
         "</tbody>\n"
         "</table>"
@@ -95,6 +105,9 @@ def test__to_html__factory(startup_procedure_factory):
         dict(connectivity_state_comment="BOGUS_TEST_COMMENT"),
         dict(security="Disabled"),
         dict(security_comment="BOGUS_TEST_COMMENT"),
+        dict(docsis_network_access_enabled="Allowed"),
+        dict(docsis_network_access_enabled="Denied"),
+        dict(docsis_network_access_enabled_comment="BOGUS_TEST_COMMENT"),
     ],
     ids=repr,
 )

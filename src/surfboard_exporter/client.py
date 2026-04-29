@@ -103,6 +103,9 @@ class SurfboardClient:
     def _session_id_get(self) -> str | None:
         return self._client.cookies.get("sessionId")
 
+    def _log_cookies(self, message: str) -> None:
+        logger.debug(message, dict(self._client.cookies))
+
     def token_get(self) -> str:
         logger.debug("token (cached)=%r", self._token)
         if not self._session_id_get():
@@ -131,7 +134,7 @@ class SurfboardClient:
         return token
 
     def _token_get_request(self) -> httpx.Response:
-        logger.debug("cookies (before)=%r", dict(self._client.cookies))
+        self._log_cookies("cookies (before)=%r")
         auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
         try:
             response = self._client.get(
@@ -144,7 +147,7 @@ class SurfboardClient:
             raise
         logger.info("response=%r", response)
         logger.debug("response.text=%r", response.text)
-        logger.debug("cookies=%r", dict(self._client.cookies))
+        self._log_cookies("cookies=%r")
         response.raise_for_status()
         return response
 
@@ -155,7 +158,7 @@ class SurfboardClient:
             logger.warning("can't get status, token unavailable", exc_info=True)
             return None
 
-        logger.debug("cookies (before)=%r", dict(self._client.cookies))
+        self._log_cookies("cookies (before)=%r")
         try:
             response = self._client.get(f"{_CONNECTION_STATUS_PATH}?ct_{token}")
         except httpx.HTTPError:
@@ -171,7 +174,7 @@ class SurfboardClient:
             )
             return None
 
-        logger.debug("cookies=%r", dict(self._client.cookies))
+        self._log_cookies("cookies=%r")
         session_id = self._session_id_get()
         if not session_id:
             logger.warning("session_id=%r empty after request", session_id)

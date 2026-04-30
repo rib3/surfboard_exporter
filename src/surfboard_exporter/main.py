@@ -5,12 +5,13 @@ import os
 from pathlib import Path
 
 from .instance import instance_dir_get
-from .server import DEFAULT__PORT, start
+from .server import DEFAULT__HOST, DEFAULT__PORT, start
 
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--port", type=int, default=DEFAULT__PORT)
+parser.add_argument("--listen-host", default=DEFAULT__HOST)
+parser.add_argument("--listen-port", type=int, default=DEFAULT__PORT)
 parser.add_argument("--log-file", action="store_true", default=False)
 parser.add_argument("--response-save", action="store_true", default=False)
 parser.add_argument("-v", "--verbose", action="store_true", default=False)
@@ -54,7 +55,8 @@ def main() -> None:
     )
     modem_certificate_path = os.environ.get("SURFBOARD_MODEM_CERTIFICATE_PATH")
     _, thread = start(
-        port=args.port,
+        host=args.listen_host,
+        port=args.listen_port,
         username=username,
         password=password,
         modem_host=modem_host,

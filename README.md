@@ -26,6 +26,7 @@ Typical:
 
 ## Options
 
+- `--port` — HTTP port to serve metrics on (default `9779`)
 - `-v`, `--verbose` — increase logging
 - `--log-file` — write logs to `exporter.log`
 - `--response-save` — dump modem responses to file(s) (for debugging)

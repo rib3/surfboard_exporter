@@ -13,6 +13,7 @@ Requires Python 3.12+.
 | Variable                            | Default           | Notes                                    |
 | ----------------------------------- | ----------------- | ---------------------------------------- |
 | `SURFBOARD_PASSWORD`                | *(required)*      | Modem admin password.                    |
+| `SURFBOARD_PASSWORD_FILE`           | unset             | Path to file containing password; overrides `SURFBOARD_PASSWORD`. |
 | `SURFBOARD_USERNAME`                | `admin`           |                                          |
 | `SURFBOARD_MODEM_HOST`              | `192.168.100.1`   |                                          |
 | `SURFBOARD_MODEM_CERTIFICATE_VERIFY`| `true`            | JSON bool. `false` disables TLS verify.  |

@@ -57,6 +57,14 @@ Logs/files are written to a per-pid temp dir
 
 ## Development
 
+### Setup
+
+Setup [Environment](#environment) variables.
+- via an `.env` file in the project root ([gitignored](.gitignore))
+- manually
+
+### Commands
+
 - `make http` — run collector http server
   - `make http-dev` — http + auto-restart on file changes
   - pass additional args via `ARGS=`

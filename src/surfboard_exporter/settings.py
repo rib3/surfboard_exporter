@@ -13,6 +13,7 @@ DEFAULT__PORT = 9779
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="SURFBOARD_",
+        env_file=".env",
         cli_parse_args=True,
         cli_kebab_case=True,
         cli_implicit_flags=True,

@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 from prometheus_client import CollectorRegistry, generate_latest
@@ -11,6 +10,7 @@ from prometheus_client.samples import Sample
 
 from surfboard_exporter.collector import SurfboardCollector
 from tests.test_collector import HTML, LABELS, _get_sample_value
+from testsupport import TESTDATA_DIR
 
 
 def _metric(name, doc, typ, samples):
@@ -413,7 +413,7 @@ def test__generate_latest__ssl_verify__disabled(
 def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
-    html = Path("testdata/cmconnectionstatus.2026-03-26-1558.html").read_text(
+    html = (TESTDATA_DIR / "cmconnectionstatus.2026-03-26-1558.html").read_text(
         encoding="windows-1252"
     )
     token = "abc123token"
@@ -728,7 +728,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
 def test__generate_latest_real_html__2026_03_30_1441(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
-    html = Path("testdata/cmconnectionstatus.2026-03-30-1441.html").read_text(
+    html = (TESTDATA_DIR / "cmconnectionstatus.2026-03-30-1441.html").read_text(
         encoding="windows-1252"
     )
     token = "abc123token"

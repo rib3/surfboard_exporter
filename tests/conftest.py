@@ -60,6 +60,12 @@ def _env_surfboard_clear(monkeypatch, tmp_path):
             monkeypatch.delenv(key)
 
 
+@pytest.fixture(autouse=True)
+def _chdir_tmp_path(monkeypatch, tmp_path):
+    # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
+    monkeypatch.chdir(tmp_path)
+
+
 class UseFaker(Use):
     def __init__(self, method_name: str, *args, **kwargs) -> None:
         super().__init__(

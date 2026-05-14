@@ -107,3 +107,29 @@ def test__settings__cli__log_file(monkeypatch):
     settings = Settings(_cli_parse_args=["--log-file"])
 
     assert settings.log_file is True
+
+
+def test__settings__env_file(tmp_path):
+    password = "from-env-file"
+    modem_host = "10.0.0.1"
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        f"SURFBOARD_PASSWORD={password}\nSURFBOARD_MODEM_HOST={modem_host}\n"
+    )
+
+    settings = Settings(_env_file=str(env_file), _cli_parse_args=[])
+
+    assert settings.password.get_secret_value() == password
+    assert settings.modem_host == modem_host
+
+
+def test__settings__env_file__env_overrides(monkeypatch, tmp_path):
+    modem_host = "10.0.0.2"
+    monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
+    monkeypatch.setenv("SURFBOARD_MODEM_HOST", modem_host)
+    env_file = tmp_path / ".env"
+    env_file.write_text("SURFBOARD_MODEM_HOST=from-file\n")
+
+    settings = Settings(_env_file=str(env_file), _cli_parse_args=[])
+
+    assert settings.modem_host == modem_host

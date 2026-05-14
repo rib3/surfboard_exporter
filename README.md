@@ -57,8 +57,10 @@ Logs/files are written to a per-pid temp dir
 
 ## Development
 
-- `make http` - run collector http server
-  - `make http-dev` - http + auto-restart on file changes
+- `make http` — run collector http server
+  - `make http-dev` — http + auto-restart on file changes
+  - pass additional args via `ARGS=`
+    - `make http-dev ARGS="--response-save --log-file"`
 - `pytest`
 - `make lint` / `make lint-fix`
 

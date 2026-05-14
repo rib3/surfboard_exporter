@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 import ssl
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -50,6 +51,13 @@ def pytest_collection_modifyitems(config, items):
             terminal.write_sep(
                 "!", f"only mode: {len(focused)} test(s) selected", red=True, bold=True
             )
+
+
+@pytest.fixture(autouse=True)
+def _env_surfboard_clear(monkeypatch, tmp_path):
+    for key in list(os.environ):
+        if key.startswith("SURFBOARD_"):
+            monkeypatch.delenv(key)
 
 
 class UseFaker(Use):

@@ -3,11 +3,9 @@ import logging
 from prometheus_client import REGISTRY, start_http_server
 
 from .collector import SurfboardCollector
+from .settings import DEFAULT__HOST, DEFAULT__PORT
 
 logger = logging.getLogger(__name__)
-
-DEFAULT__HOST = "0.0.0.0"
-DEFAULT__PORT = 9779
 
 
 def start(

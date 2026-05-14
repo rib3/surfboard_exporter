@@ -8,30 +8,29 @@ Requires Python 3.12+.
 
 `pip install git+https://github.com/rib3/surfboard_exporter.git`
 
-## Environment
+## Configuration
 
-| Variable                            | Default           | Notes                                    |
-| ----------------------------------- | ----------------- | ---------------------------------------- |
-| `SURFBOARD_PASSWORD`                | *(required)*      | Modem admin password.                    |
-| `SURFBOARD_PASSWORD_FILE`           | unset             | Path to file containing password; overrides `SURFBOARD_PASSWORD`. |
-| `SURFBOARD_USERNAME`                | `admin`           |                                          |
-| `SURFBOARD_MODEM_HOST`              | `192.168.100.1`   |                                          |
-| `SURFBOARD_MODEM_CERTIFICATE_VERIFY`| `true`            | JSON bool. `false` disables TLS verify.  |
-| `SURFBOARD_MODEM_CERTIFICATE_PATH`  | unset             | Path to modem cert, for (quirk-tolerant) TLS verification. |
+Precedence (per setting): CLI > env > `.env` > default.
+
+| Env Var                              | CLI Flag                          | Default           | Notes |
+| ------------------------------------ | --------------------------------- | ----------------- | ----- |
+| `SURFBOARD_PASSWORD`                 | `--password`                      | *(required)*      | Modem admin password. **Warning:** prefer env (or file); `--password …` is visible via `ps`/`/proc`. |
+| `SURFBOARD_PASSWORD_FILE`            | `--password-file`                 | unset             | Path to file containing password; overrides `SURFBOARD_PASSWORD`. |
+| `SURFBOARD_USERNAME`                 | `--username`                      | `admin`           |  |
+| `SURFBOARD_MODEM_HOST`               | `--modem-host`                    | `192.168.100.1`   |  |
+| `SURFBOARD_MODEM_CERTIFICATE_VERIFY` | `--[no-]modem-certificate-verify` | `true`            | `false` disables TLS verify. |
+| `SURFBOARD_MODEM_CERTIFICATE_PATH`   | `--modem-certificate-path`        | unset             | Path to modem cert, for (quirk-tolerant) TLS verification. |
+| `SURFBOARD_LISTEN_HOST`              | `--listen-host`                   | `0.0.0.0`         | HTTP bind address. |
+| `SURFBOARD_LISTEN_PORT`              | `--listen-port`                   | `9779`            | HTTP port to serve metrics on. |
+| `SURFBOARD_VERBOSE`                  | `-v`, `--[no-]verbose`            | `false`           | Increase logging. |
+| `SURFBOARD_LOG_FILE`                 | `--[no-]log-file`                 | `false`           | Write logs to `exporter.log`. |
+| `SURFBOARD_RESPONSE_SAVE`            | `--[no-]response-save`            | `false`           | Dump modem responses to file(s) (for debugging). |
 
 Typical:
 
 - `SURFBOARD_PASSWORD`
 - `SURFBOARD_MODEM_CERTIFICATE_PATH`
   - or `SURFBOARD_MODEM_CERTIFICATE_VERIFY=false`
-
-## Options
-
-- `--listen-host` — HTTP bind address (default `0.0.0.0`)
-- `--listen-port` — HTTP port to serve metrics on (default `9779`)
-- `-v`, `--verbose` — increase logging
-- `--log-file` — write logs to `exporter.log`
-- `--response-save` — dump modem responses to file(s) (for debugging)
 
 Logs/files are written to a per-pid temp dir
 (`$TMPDIR/surfboard_exporter.<pid>.<rand>/`).
@@ -59,8 +58,8 @@ Logs/files are written to a per-pid temp dir
 
 ### Setup
 
-Setup [Environment](#environment) variables.
-- via an `.env` file in the project root ([gitignored](.gitignore))
+Setup Environment variables (see [Configuration](#configuration)).
+- via a `.env` file (recommended in the project root) ([gitignored](.gitignore))
 - manually
 
 ### Commands

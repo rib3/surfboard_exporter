@@ -74,8 +74,8 @@ def test__init__modem_host__empty():
 
 
 def test__init__modem_certificate_path__does_not_exist(tmp_path):
-    missing = str(tmp_path / "missing.crt")
-    expected = f"modem_certificate_path={missing!r} does not exist"
+    missing = tmp_path / "missing.crt"
+    expected = f"modem_certificate_path={str(missing)!r} does not exist"
 
     with pytest.raises(FileNotFoundError, match=f"^{re.escape(expected)}$"):
         SurfboardClient(password="password", modem_certificate_path=missing)

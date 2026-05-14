@@ -51,11 +51,7 @@ def main() -> None:
         password=settings.password.get_secret_value(),
         modem_host=settings.modem_host,
         modem_certificate_verify=settings.modem_certificate_verify,
-        modem_certificate_path=(
-            str(settings.modem_certificate_path)
-            if settings.modem_certificate_path is not None
-            else None
-        ),
+        modem_certificate_path=settings.modem_certificate_path,
         response_save=settings.response_save,
     )
     thread.join()

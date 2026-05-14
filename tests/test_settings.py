@@ -36,7 +36,7 @@ def test__settings__password__missing():
         Settings(_cli_parse_args=[])
 
 
-def test__settings__password_file(monkeypatch, tmp_path):
+def test__settings__password_file(caplog, monkeypatch, tmp_path):
     password = "from-file"
     password_file = tmp_path / "password"
     password_file.write_text(f"{password}\n")
@@ -45,6 +45,12 @@ def test__settings__password_file(monkeypatch, tmp_path):
     settings = Settings(_cli_parse_args=[])
 
     assert settings.password.get_secret_value() == password
+    expected_log_tuple = (
+        "surfboard_exporter.settings",
+        logging.INFO,
+        f"loading password from {str(password_file)!r}",
+    )
+    assert expected_log_tuple in caplog.record_tuples
 
 
 def test__settings__password_file__overrides_password(monkeypatch, tmp_path):

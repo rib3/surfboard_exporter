@@ -1,7 +1,10 @@
+import logging
 from pathlib import Path
 
 from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 DEFAULT__HOST = "0.0.0.0"
 DEFAULT__PORT = 9779
@@ -34,6 +37,7 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _password_file_load(self) -> "Settings":
         if self.password_file is not None:
+            logger.info("loading password from %r", str(self.password_file))
             self.password = SecretStr(self.password_file.read_text().rstrip("\n"))
         return self
 

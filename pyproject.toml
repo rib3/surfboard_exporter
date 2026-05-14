@@ -46,6 +46,7 @@ profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
+log_level = "INFO"
 pythonpath = ["src"]
 
 [tool.coverage.report]

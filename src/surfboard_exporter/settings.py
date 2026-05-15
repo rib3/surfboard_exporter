@@ -1,8 +1,9 @@
 import logging
+import os
 from pathlib import Path
 
 from pydantic import AliasChoices, Field, FilePath, SecretStr, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SecretsSettingsSource, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,23 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("v", "verbose"),
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        if file_secret_settings.secrets_dir is None:
+            secrets_dir = os.environ.get("SURFBOARD_SECRETS_DIR")
+            if secrets_dir:
+                file_secret_settings = SecretsSettingsSource(
+                    settings_cls, secrets_dir=secrets_dir
+                )
+        return init_settings, env_settings, dotenv_settings, file_secret_settings
 
     @model_validator(mode="after")
     def _tmpdir_expanduser(self) -> "Settings":

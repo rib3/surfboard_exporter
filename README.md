@@ -10,7 +10,7 @@ Requires Python 3.12+.
 
 ## Configuration
 
-Precedence (per setting): CLI > env > `.env` > default.
+Precedence (per setting): CLI > env > `.env` > secrets dir (if enabled) > default.
 
 | Env Var                              | CLI Flag                          | Default           | Notes |
 | ------------------------------------ | --------------------------------- | ----------------- | ----- |
@@ -25,6 +25,7 @@ Precedence (per setting): CLI > env > `.env` > default.
 | `SURFBOARD_VERBOSE`                  | `-v`, `--[no-]verbose`            | `false`           | Increase logging. |
 | `SURFBOARD_LOG_FILE`                 | `--[no-]log-file`                 | `false`           | Write logs to `exporter.log`. |
 | `SURFBOARD_RESPONSE_SAVE`            | `--[no-]response-save`            | `false`           | Dump modem responses to file(s) (for debugging). |
+| `SURFBOARD_SECRETS_DIR`              | —                                 | unset             | Directory of per-setting files (e.g. `/run/secrets` for container secrets). |
 | `TMPDIR`                             | `--tmpdir`                        | system default    | Override tempdir (base for per-pid temp dir). |
 
 Typical:

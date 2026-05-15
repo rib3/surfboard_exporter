@@ -99,6 +99,23 @@ def env_surfboard_password(
     return password
 
 
+@pytest.fixture
+def secrets_dir(faker, tmp_path):
+    path = tmp_path / f"secrets.{faker.word()}"
+    path.mkdir()
+    return path
+
+
+@pytest.fixture
+def env_surfboard_secrets_dir(
+    _env_surfboard_clear,  # guarantee it runs before our setenv
+    monkeypatch,
+    secrets_dir,
+):
+    monkeypatch.setenv("SURFBOARD_SECRETS_DIR", str(secrets_dir))
+    return secrets_dir
+
+
 class UseFaker(Use):
     def __init__(self, method_name: str, *args, **kwargs) -> None:
         super().__init__(

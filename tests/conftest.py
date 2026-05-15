@@ -55,6 +55,12 @@ def pytest_collection_modifyitems(config, items):
             )
 
 
+def pytest_make_parametrize_id(val):
+    if isinstance(val, ConnectionStatus):
+        return val.testdata_id
+    return None
+
+
 @pytest.fixture(autouse=True)
 def _env_surfboard_clear(monkeypatch, tmp_path):
     for key in list(os.environ):

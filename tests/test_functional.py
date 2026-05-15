@@ -176,9 +176,7 @@ def test__generate_latest__ssl_verify__disabled(
     assert _get_sample_value(metrics, "surfboard_scrape_success") == 1.0
 
 
-@pytest.mark.parametrize(
-    "connection_status", CONNECTION_STATUSES, ids=lambda c: c.testdata_id
-)
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
 def test__generate_latest__real_html(
     connection_status,
     surfboard_api_mock_get_login,

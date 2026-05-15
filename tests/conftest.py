@@ -80,6 +80,17 @@ def _sys_argv_patch(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["pytest"])
 
 
+@pytest.fixture
+def env_surfboard_password(
+    _env_surfboard_clear,  # guarantee it runs before our setenv
+    faker,
+    monkeypatch,
+):
+    password = faker.password()
+    monkeypatch.setenv("SURFBOARD_PASSWORD", password)
+    return password
+
+
 class UseFaker(Use):
     def __init__(self, method_name: str, *args, **kwargs) -> None:
         super().__init__(

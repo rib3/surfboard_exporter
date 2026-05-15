@@ -6,8 +6,12 @@ from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.parser import text_string_to_metric_families
 
 from surfboard_exporter.collector import SurfboardCollector
-from testdata.cmconnectionstatus_2026_03_26_1558 import METRICS__2026_03_26_1558
-from testdata.cmconnectionstatus_2026_03_30_1441 import METRICS__2026_03_30_1441
+from testdata.cmconnectionstatus_2026_03_26_1558 import (
+    CONNECTION_STATUS__2026_03_26_1558,
+)
+from testdata.cmconnectionstatus_2026_03_30_1441 import (
+    CONNECTION_STATUS__2026_03_30_1441,
+)
 from tests.test_collector import HTML, LABELS, _get_sample_value
 from testsupport import TESTDATA_DIR
 from testsupport.metrics import (
@@ -19,6 +23,7 @@ from testsupport.metrics import (
     _metric_system_time_sample,
     _metrics_downstream,
     _metrics_upstream,
+    expected_metrics_get,
 )
 from testsupport.modem_html import (
     DownstreamBondedChannelsRow,
@@ -194,7 +199,8 @@ def test__generate_latest_real_html__2026_03_26_1558(
     output = generate_latest(registry)
 
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
-    assert metrics == METRICS__2026_03_26_1558
+    expected_metrics = expected_metrics_get(CONNECTION_STATUS__2026_03_26_1558)
+    assert metrics == expected_metrics
 
 
 def test__generate_latest_real_html__2026_03_30_1441(
@@ -214,4 +220,5 @@ def test__generate_latest_real_html__2026_03_30_1441(
     output = generate_latest(registry)
 
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
-    assert metrics == METRICS__2026_03_30_1441
+    expected_metrics = expected_metrics_get(CONNECTION_STATUS__2026_03_30_1441)
+    assert metrics == expected_metrics

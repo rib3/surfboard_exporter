@@ -4,11 +4,10 @@ from datetime import datetime
 from http import HTTPStatus
 from pathlib import Path
 from ssl import PROTOCOL_TLS_CLIENT, VERIFY_X509_PARTIAL_CHAIN, SSLContext
-from tempfile import NamedTemporaryFile
 
 import httpx
 
-from .instance import instance_dir_get
+from .instance import instance_file_create
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +25,7 @@ def _response_save(response: httpx.Response) -> None:
     epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
-    instance_dir = instance_dir_get()
-    with NamedTemporaryFile(prefix=prefix, delete=False, dir=instance_dir) as f:
+    with instance_file_create(prefix=prefix) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)
 

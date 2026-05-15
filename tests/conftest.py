@@ -335,6 +335,8 @@ class UpstreamBondedChannelsFactory(DataclassFactory):
 class ConnectionStatusFactory(DataclassFactory):
     __model__ = ConnectionStatus
     system_time_str = None
+    # real-capture stem (testdata/<id>.html); factory should generate None
+    testdata_id = None
 
     @post_generated
     @classmethod

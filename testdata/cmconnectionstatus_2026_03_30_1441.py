@@ -10,6 +10,7 @@ from testsupport.modem_html import (
 )
 
 CONNECTION_STATUS__2026_03_30_1441 = ConnectionStatus(
+    testdata_id="cmconnectionstatus_2026_03_30_1441",
     system_time=datetime(2026, 3, 30, 13, 40, 58),
     startup=StartupProcedure(
         connectivity_state="OK",

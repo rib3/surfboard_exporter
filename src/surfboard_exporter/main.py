@@ -48,7 +48,12 @@ def main() -> None:
     logging_config(args)
     logger.info("starting")
     username = os.environ.get("SURFBOARD_USERNAME")
-    password = os.environ["SURFBOARD_PASSWORD"]
+    password_file = os.environ.get("SURFBOARD_PASSWORD_FILE")
+    if password_file is not None:
+        logger.info("SURFBOARD_PASSWORD_FILE=%r", password_file)
+        password = Path(password_file).read_text().rstrip("\n")
+    else:
+        password = os.environ["SURFBOARD_PASSWORD"]
     modem_host = os.environ.get("SURFBOARD_MODEM_HOST")
     modem_certificate_verify = json.loads(
         os.environ.get("SURFBOARD_MODEM_CERTIFICATE_VERIFY", "null")

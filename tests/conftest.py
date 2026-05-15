@@ -69,6 +69,14 @@ def _env_surfboard_clear(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _env_clear_tmpdir(monkeypatch):
+    # env vars taken from `tempfile._candidate_tempdir_list`
+    # https://github.com/python/cpython/blob/e56ae817e5f3df37a603251641ada5bf182af152/Lib/tempfile.py#L164
+    for key in ("TMPDIR", "TEMP", "TMP"):
+        monkeypatch.delenv(key, raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _chdir_tmp_path(monkeypatch, tmp_path):
     # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
     monkeypatch.chdir(tmp_path)

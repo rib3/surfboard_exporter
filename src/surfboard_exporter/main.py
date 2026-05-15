@@ -1,4 +1,5 @@
 import logging
+import tempfile
 from pathlib import Path
 
 from .instance import instance_dir_get
@@ -39,9 +40,21 @@ def logging_config(settings: Settings) -> None:
         logging.root.addHandler(handler)
 
 
+def tempfile_config(settings: Settings) -> None:
+    if instance_dir_get.cache_info().currsize != 0:
+        raise RuntimeError("tempfile_config must run before instance_dir_get is called")
+    if settings.tmpdir is None:
+        return
+    tmpdir = str(settings.tmpdir)
+    if tmpdir != tempfile.tempdir:
+        logger.info("tempfile.tempdir=%r (was %r)", tmpdir, tempfile.tempdir)
+        tempfile.tempdir = tmpdir
+
+
 def main() -> None:
     logging_init()
     settings = Settings()
+    tempfile_config(settings)
     logging_config(settings)
     logger.info("starting")
     _, thread = start(

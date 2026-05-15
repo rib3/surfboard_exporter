@@ -30,10 +30,21 @@ class Settings(BaseSettings):
     listen_port: int = Field(DEFAULT__PORT, description="HTTP port")
     log_file: bool = False
     response_save: bool = False
+    tmpdir: Path | None = Field(
+        default=None,
+        # no SURFBOARD_ prefix; defer to python/OS TMPDIR convention
+        validation_alias=AliasChoices("tmpdir", "TMPDIR"),
+    )
     verbose: bool = Field(
         default=False,
         validation_alias=AliasChoices("v", "verbose"),
     )
+
+    @model_validator(mode="after")
+    def _tmpdir_expanduser(self) -> "Settings":
+        if self.tmpdir is not None:
+            self.tmpdir = self.tmpdir.expanduser()
+        return self
 
     @model_validator(mode="after")
     def _password_file_load(self) -> "Settings":

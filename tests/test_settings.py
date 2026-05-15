@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -23,6 +24,7 @@ def test__settings__defaults(env_surfboard_password):
         listen_port=9779,
         log_file=False,
         response_save=False,
+        tmpdir=None,
         verbose=False,
     )
     assert settings.password.get_secret_value() == env_surfboard_password
@@ -123,6 +125,16 @@ def test__settings__cli__log_file(env_surfboard_password):
     settings = Settings(_cli_parse_args=["--log-file"])
 
     assert settings.log_file is True
+
+
+def test__settings__tmpdir__expanduser(monkeypatch):
+    monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
+    monkeypatch.setenv("TMPDIR", "~/tmp")
+
+    settings = Settings(_cli_parse_args=[])
+
+    expected_tmpdir = Path.home() / "tmp"
+    assert settings.tmpdir == expected_tmpdir
 
 
 def test__settings__env_file(tmp_path):

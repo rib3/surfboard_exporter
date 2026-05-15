@@ -1,10 +1,10 @@
-import base64
 import logging
-import pathlib
-import ssl
-import tempfile
+from base64 import b64encode
 from datetime import datetime
 from http import HTTPStatus
+from pathlib import Path
+from ssl import PROTOCOL_TLS_CLIENT, VERIFY_X509_PARTIAL_CHAIN, SSLContext
+from tempfile import NamedTemporaryFile
 
 import httpx
 
@@ -20,14 +20,14 @@ class TokenUnavailableError(Exception):
 
 
 def _response_save(response: httpx.Response) -> None:
-    # time.time() (at least under time_machine) may have additional digits compared to
-    # datetime.timestamp() used in tests
+    # using datetime.timestamp() to match test usage
+    # time.time() (at least under time_machine) may have additional digits
     # example: 1792793067.4058182 vs 1792793067.405818
     epoch = datetime.now().timestamp()
     path = response.request.url.path.lstrip("/")
     prefix = f"{epoch}.{path}."
-    save_dir = instance_dir_get()
-    with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=save_dir) as f:
+    instance_dir = instance_dir_get()
+    with NamedTemporaryFile(prefix=prefix, delete=False, dir=instance_dir) as f:
         logger.info("writing to %r", f.name)
         f.write(response.content)
 
@@ -77,7 +77,7 @@ class SurfboardClient:
 
     def _verify_get(
         self, modem_certificate_verify: bool, modem_certificate_path: str | None
-    ) -> bool | ssl.SSLContext:
+    ) -> bool | SSLContext:
         logger.info("modem_certificate_verify=%r", modem_certificate_verify)
         if not modem_certificate_verify:
             return False
@@ -86,15 +86,15 @@ class SurfboardClient:
             return self._ssl_context_get_modem(modem_certificate_path)
         return True
 
-    def _ssl_context_get_modem(self, path: str) -> ssl.SSLContext:
-        if not pathlib.Path(path).is_file():
+    def _ssl_context_get_modem(self, path: str) -> SSLContext:
+        if not Path(path).is_file():
             raise FileNotFoundError(f"modem_certificate_path={path!r} does not exist")
         # modem cert is self-signed, use a context with only the modem cert as CA
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_context = SSLContext(PROTOCOL_TLS_CLIENT)
         ssl_context.load_verify_locations(cafile=path)
         # modem cert has CA:FALSE
         # partial chain allows a non-CA cert in trust store to terminate the chain
-        ssl_context.verify_flags |= ssl.VERIFY_X509_PARTIAL_CHAIN
+        ssl_context.verify_flags |= VERIFY_X509_PARTIAL_CHAIN
         ssl_context.check_hostname = False  # work around CN=localhost.localdomain
         # lower seclevel to support weak modem cert key (1024-bit RSA)
         ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
@@ -135,7 +135,7 @@ class SurfboardClient:
 
     def _token_get_request(self) -> httpx.Response:
         self._log_cookies("cookies (before)=%r")
-        auth = base64.b64encode(f"{self._username}:{self._password}".encode()).decode()
+        auth = b64encode(f"{self._username}:{self._password}".encode()).decode()
         try:
             response = self._client.get(
                 f"{_CONNECTION_STATUS_PATH}?login_{auth}",

@@ -5,6 +5,8 @@ from unittest.mock import patch
 import pytest
 
 from surfboard_exporter.collector import SurfboardCollector
+from testdata import CONNECTION_STATUSES
+from testsupport.metrics import expected_metrics_get
 from testsupport.modem_html import (
     DOWNSTREAM__BEGIN_TITLE_HEADERS,
     DOWNSTREAM__TABLE_END,
@@ -309,3 +311,10 @@ def test__upstream_gauges__locked(
     )
     assert sample.labels["lock_status"] == lock_status
     assert sample.value == expected_locked
+
+
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__collect__real_html(connection_status):
+    metrics = collect_with(connection_status.html_raw)
+
+    assert metrics == expected_metrics_get(connection_status)

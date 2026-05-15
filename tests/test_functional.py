@@ -180,7 +180,7 @@ def test__generate_latest__ssl_verify__disabled(
 def test__generate_latest_real_html__2026_03_26_1558(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
-    html = (TESTDATA_DIR / "cmconnectionstatus.2026-03-26-1558.html").read_text(
+    html = (TESTDATA_DIR / "cmconnectionstatus_2026_03_26_1558.html").read_text(
         encoding="windows-1252"
     )
     token = "abc123token"
@@ -200,7 +200,7 @@ def test__generate_latest_real_html__2026_03_26_1558(
 def test__generate_latest_real_html__2026_03_30_1441(
     surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
 ):
-    html = (TESTDATA_DIR / "cmconnectionstatus.2026-03-30-1441.html").read_text(
+    html = (TESTDATA_DIR / "cmconnectionstatus_2026_03_30_1441.html").read_text(
         encoding="windows-1252"
     )
     token = "abc123token"

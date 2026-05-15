@@ -1,10 +1,10 @@
 .PHONY: http
 http:
-	PYTHONPATH=src python -m surfboard_exporter
+	PYTHONPATH=src python -m surfboard_exporter $(ARGS)
 
 .PHONY: http-dev
 http-dev:
-	watchmedo auto-restart --patterns="*.py;pyproject.toml" --recursive -- $(MAKE) http
+	watchmedo auto-restart --patterns="*.py;pyproject.toml" --recursive -- $(MAKE) http ARGS="$(ARGS)"
 
 .PHONY: lint
 .IGNORE: lint # continue after fail (so all errors are displayed)

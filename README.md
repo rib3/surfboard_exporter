@@ -55,6 +55,15 @@ Logs/files are written to a per-pid temp dir
 - `surfboard_downstream_corrected{channel_id}`
 - `surfboard_downstream_uncorrectables{channel_id}`
 
+## Development
+
+- `make http` — run collector http server
+  - `make http-dev` — http + auto-restart on file changes
+  - pass additional args via `ARGS=`
+    - `make http-dev ARGS="--response-save --log-file"`
+- `pytest`
+- `make lint` / `make lint-fix`
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).

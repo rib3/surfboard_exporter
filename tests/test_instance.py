@@ -4,7 +4,7 @@ from pathlib import Path
 
 from re_assert import Matches
 
-from surfboard_exporter.instance import instance_dir_get
+from surfboard_exporter.instance import instance_dir_get, instance_file_create
 
 
 def test__instance_dir_get(tmp_path, monkeypatch):
@@ -32,3 +32,15 @@ def test__instance_dir_get__once(tmp_path, monkeypatch):
     dirs = list(tmp_path.iterdir())
     dirs[0]
     assert not dirs[1:]
+
+
+def test__instance_file_create(tmp_path, monkeypatch):
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
+    prefix = "thing."
+
+    with instance_file_create(prefix=prefix) as f:
+        path = Path(f.name)
+
+    assert path.parent == Path(instance_dir_get())
+    assert path.name.startswith(prefix)
+    assert path.is_file()

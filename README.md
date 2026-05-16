@@ -25,6 +25,7 @@ Precedence (per setting): CLI > env > `.env` > default.
 | `SURFBOARD_VERBOSE`                  | `-v`, `--[no-]verbose`            | `false`           | Increase logging. |
 | `SURFBOARD_LOG_FILE`                 | `--[no-]log-file`                 | `false`           | Write logs to `exporter.log`. |
 | `SURFBOARD_RESPONSE_SAVE`            | `--[no-]response-save`            | `false`           | Dump modem responses to file(s) (for debugging). |
+| `TMPDIR`                             | `--tmpdir`                        | system default    | Override tempdir (base for per-pid temp dir). |
 
 Typical:
 

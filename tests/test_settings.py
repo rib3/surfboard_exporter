@@ -19,7 +19,7 @@ def test__settings__defaults(env_surfboard_password):
         username="admin",
         modem_host="192.168.100.1",
         modem_certificate_verify=True,
-        modem_certificate_path=None,
+        modem_certificate_file=None,
         listen_host="0.0.0.0",
         listen_port=9779,
         log_file=False,
@@ -109,25 +109,25 @@ def test__settings__modem_certificate_verify__false(
     assert settings.modem_certificate_verify is False
 
 
-def test__settings__modem_certificate_path__exists(
+def test__settings__modem_certificate_file__exists(
     env_surfboard_password, monkeypatch, tmp_path
 ):
     cert_file = tmp_path / "cert.crt"
     cert_file.write_text("dummy")
-    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_PATH", str(cert_file))
+    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_FILE", str(cert_file))
 
     settings = Settings(_cli_parse_args=[])
 
-    assert settings.modem_certificate_path == cert_file
+    assert settings.modem_certificate_file == cert_file
 
 
-def test__settings__modem_certificate_path__does_not_exist(
+def test__settings__modem_certificate_file__does_not_exist(
     env_surfboard_password, monkeypatch, tmp_path
 ):
     missing = tmp_path / "missing.crt"
-    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_PATH", str(missing))
+    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_FILE", str(missing))
 
-    with pytest.raises(ValidationError, match="modem_certificate_path"):
+    with pytest.raises(ValidationError, match="modem_certificate_file"):
         Settings(_cli_parse_args=[])
 
 

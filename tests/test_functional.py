@@ -39,12 +39,12 @@ def test__init__modem_host__empty():
         SurfboardCollector(password="pass", modem_host="")
 
 
-def test__init__modem_certificate_path__does_not_exist(tmp_path):
+def test__init__modem_certificate_file__does_not_exist(tmp_path):
     missing = tmp_path / "missing.crt"
-    expected = f"modem_certificate_path={str(missing)!r} does not exist"
+    expected = f"modem_certificate_file={str(missing)!r} does not exist"
 
     with pytest.raises(FileNotFoundError, match=f"^{re.escape(expected)}$"):
-        SurfboardCollector(password="pass", modem_certificate_path=missing)
+        SurfboardCollector(password="pass", modem_certificate_file=missing)
 
 
 @pytest.mark.parametrize(
@@ -131,7 +131,7 @@ def test__generate_latest(
 
 
 @pytest.mark.parametrize("collector_kwargs", [{}, {"modem_certificate_verify": True}])
-def test__generate_latest__ssl_verify__enabled__certificate_path__none(
+def test__generate_latest__ssl_verify__enabled__certificate_file__none(
     https_server_modem, collector_kwargs
 ):
     registry = CollectorRegistry()

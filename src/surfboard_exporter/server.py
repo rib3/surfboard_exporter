@@ -17,7 +17,7 @@ def start(
     password: str,
     modem_host: str | None = None,
     modem_certificate_verify: bool | None = None,
-    modem_certificate_path: Path | None = None,
+    modem_certificate_file: Path | None = None,
     response_save: bool = False,
 ):
     logger.info("host=%r port=%r", host, port)
@@ -27,7 +27,7 @@ def start(
             password=password,
             modem_host=modem_host,
             modem_certificate_verify=modem_certificate_verify,
-            modem_certificate_path=modem_certificate_path,
+            modem_certificate_file=modem_certificate_file,
             response_save=response_save,
         )
     )

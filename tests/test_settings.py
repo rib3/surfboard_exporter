@@ -127,8 +127,7 @@ def test__settings__cli__log_file(env_surfboard_password):
     assert settings.log_file is True
 
 
-def test__settings__tmpdir__expanduser(monkeypatch):
-    monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
+def test__settings__tmpdir__expanduser(env_surfboard_password, monkeypatch):
     monkeypatch.setenv("TMPDIR", "~/tmp")
 
     settings = Settings(_cli_parse_args=[])

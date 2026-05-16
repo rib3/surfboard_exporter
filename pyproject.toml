@@ -10,6 +10,7 @@ dependencies = [
   "cachetools>=7.0.5",
   "httpx>=0.28",
   "prometheus-client>=0.24.1",
+  "pydantic-settings>=2.14.1",
 ]
 
 [project.scripts]
@@ -45,6 +46,7 @@ profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"
+log_level = "INFO"
 pythonpath = ["src"]
 
 [tool.coverage.report]

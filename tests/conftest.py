@@ -1,6 +1,8 @@
 import base64
 import logging
+import os
 import ssl
+import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
@@ -50,6 +52,25 @@ def pytest_collection_modifyitems(config, items):
             terminal.write_sep(
                 "!", f"only mode: {len(focused)} test(s) selected", red=True, bold=True
             )
+
+
+@pytest.fixture(autouse=True)
+def _env_surfboard_clear(monkeypatch, tmp_path):
+    for key in list(os.environ):
+        if key.startswith("SURFBOARD_"):
+            monkeypatch.delenv(key)
+
+
+@pytest.fixture(autouse=True)
+def _chdir_tmp_path(monkeypatch, tmp_path):
+    # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
+    monkeypatch.chdir(tmp_path)
+
+
+@pytest.fixture(autouse=True)
+def _sys_argv_patch(monkeypatch):
+    # avoid pytest's own argv leaking into pydantic-settings' CLI parser
+    monkeypatch.setattr(sys, "argv", ["pytest"])
 
 
 class UseFaker(Use):

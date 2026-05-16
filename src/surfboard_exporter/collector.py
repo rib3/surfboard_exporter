@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
@@ -29,7 +30,7 @@ class SurfboardCollector:
         password: str,
         modem_host: str | None = None,
         modem_certificate_verify: bool | None = None,
-        modem_certificate_path: str | None = None,
+        modem_certificate_path: Path | None = None,
         response_save: bool = False,
     ) -> None:
         self._client = SurfboardClient(

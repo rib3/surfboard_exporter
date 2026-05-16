@@ -6,6 +6,7 @@ import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import pytest
@@ -189,7 +190,7 @@ def key_cert_like_modem(tmp_path):
             prefix=prefix, suffix=".crt", dir=tmp_path, delete=False
         )
         cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
-        return key_file.name, cert_file.name
+        return Path(key_file.name), Path(cert_file.name)
 
     return _make
 
@@ -197,7 +198,7 @@ def key_cert_like_modem(tmp_path):
 @dataclass
 class HttpServerModem:
     server: HTTPServer
-    cert_path: str
+    cert_path: Path
     host: str
 
 

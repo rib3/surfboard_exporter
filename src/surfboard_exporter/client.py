@@ -40,7 +40,7 @@ class SurfboardClient:
         password: str,
         modem_host: str | None = None,
         modem_certificate_verify: bool | None = None,
-        modem_certificate_path: str | None = None,
+        modem_certificate_path: Path | None = None,
         response_save: bool = False,
     ) -> None:
         if username is None:
@@ -76,19 +76,24 @@ class SurfboardClient:
         return bool(self._verify)
 
     def _verify_get(
-        self, modem_certificate_verify: bool, modem_certificate_path: str | None
+        self, modem_certificate_verify: bool, modem_certificate_path: Path | None
     ) -> bool | SSLContext:
         logger.info("modem_certificate_verify=%r", modem_certificate_verify)
         if not modem_certificate_verify:
             return False
-        logger.info("modem_certificate_path=%r", modem_certificate_path)
+        logger.info(
+            "modem_certificate_path=%r",
+            str(modem_certificate_path) if modem_certificate_path is not None else None,
+        )
         if modem_certificate_path:
             return self._ssl_context_get_modem(modem_certificate_path)
         return True
 
-    def _ssl_context_get_modem(self, path: str) -> SSLContext:
-        if not Path(path).is_file():
-            raise FileNotFoundError(f"modem_certificate_path={path!r} does not exist")
+    def _ssl_context_get_modem(self, path: Path) -> SSLContext:
+        if not path.is_file():
+            raise FileNotFoundError(
+                f"modem_certificate_path={str(path)!r} does not exist"
+            )
         # modem cert is self-signed, use a context with only the modem cert as CA
         ssl_context = SSLContext(PROTOCOL_TLS_CLIENT)
         ssl_context.load_verify_locations(cafile=path)

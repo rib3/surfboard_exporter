@@ -74,6 +74,26 @@ def test__settings__modem_certificate_verify__false(monkeypatch):
     assert settings.modem_certificate_verify is False
 
 
+def test__settings__modem_certificate_path__exists(monkeypatch, tmp_path):
+    monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
+    cert_file = tmp_path / "cert.crt"
+    cert_file.write_text("dummy")
+    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_PATH", str(cert_file))
+
+    settings = Settings(_cli_parse_args=[])
+
+    assert settings.modem_certificate_path == cert_file
+
+
+def test__settings__modem_certificate_path__does_not_exist(monkeypatch, tmp_path):
+    monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
+    missing = tmp_path / "missing.crt"
+    monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_PATH", str(missing))
+
+    with pytest.raises(ValidationError, match="modem_certificate_path"):
+        Settings(_cli_parse_args=[])
+
+
 def test__settings__cli__listen_port(monkeypatch):
     monkeypatch.setenv("SURFBOARD_PASSWORD", "x")
     listen_port = 5555

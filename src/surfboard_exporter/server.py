@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from prometheus_client import REGISTRY, start_http_server
 
@@ -16,7 +17,7 @@ def start(
     password: str,
     modem_host: str | None = None,
     modem_certificate_verify: bool | None = None,
-    modem_certificate_path: str | None = None,
+    modem_certificate_path: Path | None = None,
     response_save: bool = False,
 ):
     logger.info("host=%r port=%r", host, port)

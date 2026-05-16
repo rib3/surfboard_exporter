@@ -62,7 +62,7 @@ def pytest_make_parametrize_id(val):
 
 
 @pytest.fixture(autouse=True)
-def _env_surfboard_clear(monkeypatch, tmp_path):
+def _env_surfboard_clear(monkeypatch):
     for key in list(os.environ):
         if key.startswith("SURFBOARD_"):
             monkeypatch.delenv(key)
@@ -78,6 +78,17 @@ def _chdir_tmp_path(monkeypatch, tmp_path):
 def _sys_argv_patch(monkeypatch):
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
     monkeypatch.setattr(sys, "argv", ["pytest"])
+
+
+@pytest.fixture
+def env_surfboard_password(
+    _env_surfboard_clear,  # guarantee it runs before our setenv
+    faker,
+    monkeypatch,
+):
+    password = faker.password()
+    monkeypatch.setenv("SURFBOARD_PASSWORD", password)
+    return password
 
 
 class UseFaker(Use):

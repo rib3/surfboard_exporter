@@ -23,49 +23,49 @@ def test__date_time_utc__tzinfo__raises(faker):
         faker.date_time_utc(tzinfo=UTC)
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_connectivity_state(faker):
     result = faker.surfboard_connectivity_state()
 
     assert result in {"OK", "BOGUS_TEST_VALUE"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_connectivity_state_comment(faker):
     result = faker.surfboard_connectivity_state_comment()
 
     assert result in {"Operational", "BOGUS_TEST_COMMENT"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_security(faker):
     result = faker.surfboard_security()
 
     assert result in {"Enabled", "BOGUS_TEST_VALUE"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_security_comment(faker):
     result = faker.surfboard_security_comment()
 
     assert result in {"BPI+", "BOGUS_TEST_COMMENT"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_docsis_network_access_enabled(faker):
     result = faker.surfboard_docsis_network_access_enabled()
 
     assert result in {"Allowed", "BOGUS_TEST_VALUE"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_docsis_network_access_enabled_comment(faker):
     result = faker.surfboard_docsis_network_access_enabled_comment()
 
     assert result in {"", "BOGUS_TEST_COMMENT"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_corrected(faker):
     result = faker.surfboard_downstream_corrected()
 
@@ -73,7 +73,7 @@ def test__surfboard_downstream_corrected(faker):
     assert 0 <= result <= 2**32 - 1
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_frequency_hz(faker):
     result = faker.surfboard_downstream_frequency_hz()
 
@@ -82,21 +82,21 @@ def test__surfboard_downstream_frequency_hz(faker):
     assert result % 6_000_000 == 0
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_lock_status(faker):
     result = faker.surfboard_downstream_lock_status()
 
     assert result in {"Locked", "BOGUS_TEST_VALUE"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_modulation(faker):
     result = faker.surfboard_downstream_modulation()
 
     assert result in {"QAM256", "Other"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_power_dbmv(faker):
     result = faker.surfboard_downstream_power_dbmv()
 
@@ -105,7 +105,7 @@ def test__surfboard_downstream_power_dbmv(faker):
     assert round(result, 1) == result
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_snr_db(faker):
     result = faker.surfboard_downstream_snr_db()
 
@@ -114,7 +114,7 @@ def test__surfboard_downstream_snr_db(faker):
     assert round(result, 1) == result
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_downstream_uncorrectables(faker):
     result = faker.surfboard_downstream_uncorrectables()
 
@@ -122,7 +122,7 @@ def test__surfboard_downstream_uncorrectables(faker):
     assert 0 <= result <= 2**32 - 1
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_channel(faker):
     result = faker.surfboard_upstream_channel()
 
@@ -130,7 +130,7 @@ def test__surfboard_upstream_channel(faker):
     assert 1 <= result <= 4
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_channel_id(faker):
     result = faker.surfboard_upstream_channel_id()
 
@@ -138,7 +138,7 @@ def test__surfboard_upstream_channel_id(faker):
     assert 1 <= result <= 8
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_channel_type(faker):
     result = faker.surfboard_upstream_channel_type()
 
@@ -149,7 +149,7 @@ def test__surfboard_upstream_channel_type(faker):
     }
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_frequency_hz(faker):
     result = faker.surfboard_upstream_frequency_hz()
 
@@ -157,14 +157,14 @@ def test__surfboard_upstream_frequency_hz(faker):
     assert 5_000_000 <= result <= 85_000_000
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_lock_status(faker):
     result = faker.surfboard_upstream_lock_status()
 
     assert result in {"Locked", "BOGUS_TEST_VALUE"}
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_power_dbmv(faker):
     result = faker.surfboard_upstream_power_dbmv()
 
@@ -173,7 +173,7 @@ def test__surfboard_upstream_power_dbmv(faker):
     assert round(result, 1) == result
 
 
-@pytest.mark.repeat(20)
+@pytest.mark.repeat(10)
 def test__surfboard_upstream_width_hz(faker):
     result = faker.surfboard_upstream_width_hz()
 

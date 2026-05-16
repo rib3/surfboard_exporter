@@ -2,9 +2,33 @@ from prometheus_client.metrics_core import Metric
 from prometheus_client.samples import Sample
 
 from testsupport.modem_html import (
+    ConnectionStatus,
     DownstreamBondedChannelsRow,
     UpstreamBondedChannelsRow,
 )
+
+
+def expected_metrics_get(connection_status: ConnectionStatus) -> list[Metric]:
+    startup = connection_status.startup
+    return [
+        _metric_ssl_verify_sample(1.0),
+        _metric_scrape_success_sample(1.0),
+        _metric_system_time_sample(connection_status.system_time.timestamp()),
+        _metric_connectivity_state_ok_sample(
+            1.0 if startup.connectivity_state == "OK" else 0.0,
+            startup.connectivity_state_comment,
+        ),
+        _metric_security_enabled_sample(
+            1.0 if startup.security == "Enabled" else 0.0,
+            startup.security_comment,
+        ),
+        _metric_docsis_network_access_allowed_sample(
+            1.0 if startup.docsis_network_access_enabled == "Allowed" else 0.0,
+            startup.docsis_network_access_enabled_comment,
+        ),
+        *_metrics_upstream(*connection_status.upstream.rows),
+        *_metrics_downstream(*connection_status.downstream.rows),
+    ]
 
 
 def _metric(name, doc, typ, samples):

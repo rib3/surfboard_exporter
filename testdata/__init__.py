@@ -1,0 +1,11 @@
+from testdata.cmconnectionstatus_2026_03_26_1558 import (
+    CONNECTION_STATUS__2026_03_26_1558,
+)
+from testdata.cmconnectionstatus_2026_03_30_1441 import (
+    CONNECTION_STATUS__2026_03_30_1441,
+)
+
+CONNECTION_STATUSES = [
+    CONNECTION_STATUS__2026_03_26_1558,
+    CONNECTION_STATUS__2026_03_30_1441,
+]

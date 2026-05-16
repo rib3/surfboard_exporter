@@ -6,10 +6,8 @@ from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.parser import text_string_to_metric_families
 
 from surfboard_exporter.collector import SurfboardCollector
-from testdata.cmconnectionstatus_2026_03_26_1558 import METRICS__2026_03_26_1558
-from testdata.cmconnectionstatus_2026_03_30_1441 import METRICS__2026_03_30_1441
+from testdata import CONNECTION_STATUSES
 from tests.test_collector import HTML, LABELS, _get_sample_value
-from testsupport import TESTDATA_DIR
 from testsupport.metrics import (
     _metric_connectivity_state_ok_sample,
     _metric_docsis_network_access_allowed_sample,
@@ -19,6 +17,7 @@ from testsupport.metrics import (
     _metric_system_time_sample,
     _metrics_downstream,
     _metrics_upstream,
+    expected_metrics_get,
 )
 from testsupport.modem_html import (
     DownstreamBondedChannelsRow,
@@ -177,15 +176,17 @@ def test__generate_latest__ssl_verify__disabled(
     assert _get_sample_value(metrics, "surfboard_scrape_success") == 1.0
 
 
-def test__generate_latest_real_html__2026_03_26_1558(
-    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__generate_latest__real_html(
+    connection_status,
+    surfboard_api_mock_get_login,
+    surfboard_api_mock_get_connectionstatus,
 ):
-    html = (TESTDATA_DIR / "cmconnectionstatus_2026_03_26_1558.html").read_text(
-        encoding="windows-1252"
-    )
     token = "abc123token"
     surfboard_api_mock_get_login(password="pass", token=token)
-    surfboard_api_mock_get_connectionstatus(token=token, text=html)
+    surfboard_api_mock_get_connectionstatus(
+        token=token, text=connection_status.html_raw
+    )
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(password="pass")
@@ -194,24 +195,5 @@ def test__generate_latest_real_html__2026_03_26_1558(
     output = generate_latest(registry)
 
     metrics = list(text_string_to_metric_families(output.decode("utf-8")))
-    assert metrics == METRICS__2026_03_26_1558
-
-
-def test__generate_latest_real_html__2026_03_30_1441(
-    surfboard_api_mock_get_login, surfboard_api_mock_get_connectionstatus
-):
-    html = (TESTDATA_DIR / "cmconnectionstatus_2026_03_30_1441.html").read_text(
-        encoding="windows-1252"
-    )
-    token = "abc123token"
-    surfboard_api_mock_get_login(password="pass", token=token)
-    surfboard_api_mock_get_connectionstatus(token=token, text=html)
-
-    registry = CollectorRegistry()
-    collector = SurfboardCollector(password="pass")
-    registry.register(collector)
-
-    output = generate_latest(registry)
-
-    metrics = list(text_string_to_metric_families(output.decode("utf-8")))
-    assert metrics == METRICS__2026_03_30_1441
+    expected_metrics = expected_metrics_get(connection_status)
+    assert metrics == expected_metrics

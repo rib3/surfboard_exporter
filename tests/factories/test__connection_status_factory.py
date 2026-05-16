@@ -9,6 +9,7 @@ def test__no_args(connection_status_factory):
 
     assert page.system_time is not None
     assert page.system_time_str == page.system_time.strftime("%a %b %d %H:%M:%S %Y")
+    assert page.testdata_id is None
 
 
 def test__system_time_str(connection_status_factory):

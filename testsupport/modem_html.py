@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from testsupport import TESTDATA_DIR
+
 STARTUP_PROCEDURE__TABLE_BEGIN = '<table class="simpleTable">\n<tbody>'
 STARTUP_PROCEDURE__TITLE_ROW = (
     "<tr><th colspan=3><strong>Startup Procedure</strong></th></tr>"
@@ -186,6 +188,15 @@ class ConnectionStatus:
         default_factory=DownstreamBondedChannels
     )
     upstream: UpstreamBondedChannels = field(default_factory=UpstreamBondedChannels)
+    testdata_id: str | None = None
+
+    @property
+    def html_raw(self) -> str | None:
+        if self.testdata_id is None:
+            return None
+        return (TESTDATA_DIR / f"{self.testdata_id}.html").read_text(
+            encoding="windows-1252"
+        )
 
     def __post_init__(self):
         if self.system_time is not None and self.system_time_str is not None:

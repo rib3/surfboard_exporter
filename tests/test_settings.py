@@ -64,6 +64,41 @@ def test__settings__password_file__overrides_password(monkeypatch, tmp_path):
     assert settings.password.get_secret_value() == password
 
 
+def test__settings__secrets_dir(env_surfboard_secrets_dir):
+    password = "from-secrets-dir"
+    (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text(password)
+
+    settings = Settings(_cli_parse_args=[])
+
+    assert settings.password.get_secret_value() == password
+
+
+def test__settings__env__overrides_secrets_dir(env_surfboard_secrets_dir, monkeypatch):
+    env_password = "from-env"
+    secrets_dir_password = "from-secrets-dir"
+    (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text(secrets_dir_password)
+    monkeypatch.setenv("SURFBOARD_PASSWORD", env_password)
+
+    settings = Settings(_cli_parse_args=[])
+
+    assert settings.password.get_secret_value() == env_password
+
+
+def test__settings__password_file__overrides_secrets_dir(
+    env_surfboard_secrets_dir, monkeypatch, tmp_path
+):
+    file_password = "from-password-file"
+    secrets_dir_password = "from-secrets-dir"
+    password_file = tmp_path / "password"
+    password_file.write_text(file_password)
+    (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text(secrets_dir_password)
+    monkeypatch.setenv("SURFBOARD_PASSWORD_FILE", str(password_file))
+
+    settings = Settings(_cli_parse_args=[])
+
+    assert settings.password.get_secret_value() == file_password
+
+
 def test__settings__modem_certificate_verify__false(
     env_surfboard_password, monkeypatch
 ):

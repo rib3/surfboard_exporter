@@ -62,7 +62,7 @@ def pytest_make_parametrize_id(val):
 
 
 @pytest.fixture(autouse=True)
-def _env_surfboard_clear(monkeypatch, tmp_path):
+def _env_surfboard_clear(monkeypatch):
     for key in list(os.environ):
         if key.startswith("SURFBOARD_"):
             monkeypatch.delenv(key)

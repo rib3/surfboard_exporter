@@ -12,6 +12,7 @@ from surfboard_exporter.parser import (
     parse_system_time,
     parse_upstream_channels,
 )
+from testdata import CONNECTION_STATUSES
 from testsupport.modem_html import (
     DOWNSTREAM__BEGIN_TITLE_HEADERS,
     DOWNSTREAM__TABLE_BEGIN,
@@ -25,6 +26,14 @@ from testsupport.modem_html import (
     UPSTREAM__TABLE_BEGIN,
     UPSTREAM__TABLE_END,
     UPSTREAM__TITLE_ROW,
+)
+from testsupport.parser import (
+    expected_connectivity_state_get,
+    expected_docsis_network_access_get,
+    expected_downstream_channels_get,
+    expected_security_get,
+    expected_system_time_get,
+    expected_upstream_channels_get,
 )
 
 from .test_shared import assert_attrs, assert_attrs_list
@@ -101,6 +110,13 @@ def test__parse_system_time__static_html():
     assert parse_system_time(HTML) == datetime(2026, 3, 26, 14, 58, 2).timestamp()
 
 
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_system_time__real_html(connection_status):
+    result = parse_system_time(connection_status.html_raw)
+
+    assert result == expected_system_time_get(connection_status)
+
+
 def test__parse_system_time__factory(connection_status_factory):
     page = connection_status_factory.build()
     html = page.to_html()
@@ -144,6 +160,13 @@ def test__parse_connectivity_state__static_html():
         ok=True,
         comment="Operational",
     )
+
+
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_connectivity_state__real_html(connection_status):
+    state = parse_connectivity_state(connection_status.html_raw)
+
+    assert state == expected_connectivity_state_get(connection_status)
 
 
 @pytest.mark.parametrize(
@@ -218,6 +241,13 @@ def test__parse_security__static_html():
     )
 
 
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_security__real_html(connection_status):
+    security = parse_security(connection_status.html_raw)
+
+    assert security == expected_security_get(connection_status)
+
+
 @pytest.mark.parametrize(
     ("security", "expected_enabled"),
     [("Enabled", True), ("Disabled", False), ("", False), ("BOGUS", False)],
@@ -288,6 +318,13 @@ def test__parse_docsis_network_access__static_html():
         allowed=True,
         comment="",
     )
+
+
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_docsis_network_access__real_html(connection_status):
+    docsis = parse_docsis_network_access(connection_status.html_raw)
+
+    assert docsis == expected_docsis_network_access_get(connection_status)
 
 
 @pytest.mark.parametrize(
@@ -382,6 +419,13 @@ def test__parse_downstream_channels__fields__static_html():
             uncorrectables=400,
         ),
     )
+
+
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_downstream_channels__real_html(connection_status):
+    channels = parse_downstream_channels(connection_status.html_raw)
+
+    assert channels == expected_downstream_channels_get(connection_status)
 
 
 def test__parse_downstream_channels__fields__factory(
@@ -479,6 +523,13 @@ def test__parse_upstream_channels__fields__static_html():
             power_dbmv=48.0,
         ),
     )
+
+
+@pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
+def test__parse_upstream_channels__real_html(connection_status):
+    channels = parse_upstream_channels(connection_status.html_raw)
+
+    assert channels == expected_upstream_channels_get(connection_status)
 
 
 def test__parse_upstream_channels__fields__factory(

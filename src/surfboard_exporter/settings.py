@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     modem_certificate_verify: bool = True
     modem_certificate_file: FilePath | None = None  # FilePath validates file exists
 
-    listen_host: str = Field(DEFAULT__HOST, description="HTTP bind address")
-    listen_port: int = Field(DEFAULT__PORT, description="HTTP port")
+    listen_host: str = Field(default=DEFAULT__HOST, description="HTTP bind address")
+    listen_port: int = Field(default=DEFAULT__PORT, description="HTTP port")
     log_file: bool = False
     response_save: bool = False
     tmpdir: Path | None = Field(

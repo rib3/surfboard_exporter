@@ -81,7 +81,9 @@ def _trs_for_table(
     skip: int = 0,
 ) -> Iterator[Tag]:
     soup = BeautifulSoup(html, "html.parser")
-    header = soup.find("th", string=lambda t: t and t.strip() == title)
+    # bs4 supports name+string together at runtime but its own overloads don't model
+    # the combination; the call site is correct, the type stub is incomplete
+    header = soup.find("th", string=lambda t: t and t.strip() == title)  # pyright: ignore[reportCallIssue, reportArgumentType]
     if header is None:
         logger.warning("table with th content %r not found", title)
         return

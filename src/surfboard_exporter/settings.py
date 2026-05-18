@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     password_file: Path | None = None
     modem_host: str = "192.168.100.1"
     modem_certificate_verify: bool = True
-    modem_certificate_path: FilePath | None = None  # FilePath validates file exists
+    modem_certificate_file: FilePath | None = None  # FilePath validates file exists
 
     listen_host: str = Field(DEFAULT__HOST, description="HTTP bind address")
     listen_port: int = Field(DEFAULT__PORT, description="HTTP port")

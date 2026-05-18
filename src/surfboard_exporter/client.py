@@ -38,7 +38,7 @@ class SurfboardClient:
         password: str,
         modem_host: str | None = None,
         modem_certificate_verify: bool | None = None,
-        modem_certificate_path: Path | None = None,
+        modem_certificate_file: Path | None = None,
         response_save: bool = False,
     ) -> None:
         if username is None:
@@ -61,7 +61,7 @@ class SurfboardClient:
         if modem_certificate_verify is None:
             modem_certificate_verify = True
         self._verify = self._verify_get(
-            modem_certificate_verify, modem_certificate_path
+            modem_certificate_verify, modem_certificate_file
         )
         self._client = httpx.Client(base_url=base_url, verify=self._verify)
         self._token: str | None = None
@@ -74,23 +74,23 @@ class SurfboardClient:
         return bool(self._verify)
 
     def _verify_get(
-        self, modem_certificate_verify: bool, modem_certificate_path: Path | None
+        self, modem_certificate_verify: bool, modem_certificate_file: Path | None
     ) -> bool | SSLContext:
         logger.info("modem_certificate_verify=%r", modem_certificate_verify)
         if not modem_certificate_verify:
             return False
         logger.info(
-            "modem_certificate_path=%r",
-            str(modem_certificate_path) if modem_certificate_path is not None else None,
+            "modem_certificate_file=%r",
+            str(modem_certificate_file) if modem_certificate_file is not None else None,
         )
-        if modem_certificate_path:
-            return self._ssl_context_get_modem(modem_certificate_path)
+        if modem_certificate_file:
+            return self._ssl_context_get_modem(modem_certificate_file)
         return True
 
     def _ssl_context_get_modem(self, path: Path) -> SSLContext:
         if not path.is_file():
             raise FileNotFoundError(
-                f"modem_certificate_path={str(path)!r} does not exist"
+                f"modem_certificate_file={str(path)!r} does not exist"
             )
         # modem cert is self-signed, use a context with only the modem cert as CA
         ssl_context = SSLContext(PROTOCOL_TLS_CLIENT)

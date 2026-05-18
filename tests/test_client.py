@@ -73,12 +73,12 @@ def test__init__modem_host__empty():
         SurfboardClient(password="password", modem_host="")
 
 
-def test__init__modem_certificate_path__does_not_exist(tmp_path):
+def test__init__modem_certificate_file__does_not_exist(tmp_path):
     missing = tmp_path / "missing.crt"
-    expected = f"modem_certificate_path={str(missing)!r} does not exist"
+    expected = f"modem_certificate_file={str(missing)!r} does not exist"
 
     with pytest.raises(FileNotFoundError, match=f"^{re.escape(expected)}$"):
-        SurfboardClient(password="password", modem_certificate_path=missing)
+        SurfboardClient(password="password", modem_certificate_file=missing)
 
 
 def test__token_get__cached(caplog, faker, httpx_mock, surfboard_api_mock_get_login):
@@ -214,7 +214,7 @@ def test__connection_status_get__modem_certificate_verify__false(
     assert result == text
 
 
-def test__connection_status_get__modem_certificate_path(
+def test__connection_status_get__modem_certificate_file(
     https_server_modem,
     https_server_modem_expect_ordered_request_login_get,
     https_server_modem_expect_ordered_request_connectionstatus_get,
@@ -229,7 +229,7 @@ def test__connection_status_get__modem_certificate_path(
         password="password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
-        modem_certificate_path=https_server_modem.cert_path,
+        modem_certificate_file=https_server_modem.cert_path,
     )
 
     result = client.connection_status_get()
@@ -238,7 +238,7 @@ def test__connection_status_get__modem_certificate_path(
 
 
 @pytest.mark.parametrize("client_kwargs", [{}, {"modem_certificate_verify": True}])
-def test__connection_status_get__modem_certificate_path__none__ssl_fails(
+def test__connection_status_get__modem_certificate_file__none__ssl_fails(
     https_server_modem, caplog, client_kwargs
 ):
     client = SurfboardClient(
@@ -258,7 +258,7 @@ def test__connection_status_get__modem_certificate_path__none__ssl_fails(
     assert expected_log_tuple_ssl in caplog.record_tuples
 
 
-def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
+def test__connection_status_get__modem_certificate_file__wrong_cert__ssl_fails(
     https_server_modem, key_cert_like_modem, caplog
 ):
     _, wrong_cert_path = key_cert_like_modem()
@@ -266,7 +266,7 @@ def test__connection_status_get__modem_certificate_path__wrong_cert__ssl_fails(
         password="password",
         modem_host=https_server_modem.host,
         modem_certificate_verify=True,
-        modem_certificate_path=wrong_cert_path,
+        modem_certificate_file=wrong_cert_path,
     )
 
     result = client.connection_status_get()

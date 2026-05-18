@@ -19,7 +19,7 @@ Precedence (per setting): CLI > env > `.env` > secrets dir (if enabled) > defaul
 | `SURFBOARD_USERNAME`                 | `--username`                      | `admin`           |  |
 | `SURFBOARD_MODEM_HOST`               | `--modem-host`                    | `192.168.100.1`   |  |
 | `SURFBOARD_MODEM_CERTIFICATE_VERIFY` | `--[no-]modem-certificate-verify` | `true`            | `false` disables TLS verify. |
-| `SURFBOARD_MODEM_CERTIFICATE_PATH`   | `--modem-certificate-path`        | unset             | Path to modem cert, for (quirk-tolerant) TLS verification. |
+| `SURFBOARD_MODEM_CERTIFICATE_FILE`   | `--modem-certificate-file`        | unset             | Path to modem cert, for (quirk-tolerant) TLS verification. |
 | `SURFBOARD_LISTEN_HOST`              | `--listen-host`                   | `0.0.0.0`         | HTTP bind address. |
 | `SURFBOARD_LISTEN_PORT`              | `--listen-port`                   | `9779`            | HTTP port to serve metrics on. |
 | `SURFBOARD_VERBOSE`                  | `-v`, `--[no-]verbose`            | `false`           | Increase logging. |
@@ -31,7 +31,7 @@ Precedence (per setting): CLI > env > `.env` > secrets dir (if enabled) > defaul
 Typical:
 
 - `SURFBOARD_PASSWORD`
-- `SURFBOARD_MODEM_CERTIFICATE_PATH`
+- `SURFBOARD_MODEM_CERTIFICATE_FILE`
   - or `SURFBOARD_MODEM_CERTIFICATE_VERIFY=false`
 
 Logs/files are written to a per-pid temp dir

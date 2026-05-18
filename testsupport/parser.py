@@ -9,7 +9,10 @@ from testsupport.modem_html import ConnectionStatus
 
 
 def expected_system_time_get(connection_status: ConnectionStatus) -> float:
-    return connection_status.system_time.timestamp()
+    system_time = connection_status.system_time
+    if system_time is None:
+        return float("nan")
+    return system_time.timestamp()
 
 
 def expected_connectivity_state_get(

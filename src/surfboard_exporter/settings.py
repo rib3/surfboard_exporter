@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _password_file_load(self) -> "Settings":
         if self.password_file is not None:
+            if self.password is not None:
+                raise ValueError("set password or password_file, not both")
             logger.info("loading password from %r", str(self.password_file))
             self.password = SecretStr(self.password_file.read_text().rstrip("\n"))
         return self

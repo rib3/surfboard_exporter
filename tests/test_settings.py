@@ -10,6 +10,8 @@ from .test_shared import assert_attrs
 
 logger = logging.getLogger(__name__)
 
+PASSWORD_CONFLICT_MESSAGE = "set password or password_file, not both"
+
 
 def test__settings__defaults(env_surfboard_password):
     settings = Settings(_cli_parse_args=[])
@@ -52,16 +54,14 @@ def test__settings__password_file(caplog, monkeypatch, tmp_path):
     assert expected_log_tuple in caplog.record_tuples
 
 
-def test__settings__password_file__overrides_password(monkeypatch, tmp_path):
-    password = "from-file"
+def test__settings__password_file__password(monkeypatch, tmp_path):
     password_file = tmp_path / "password"
-    password_file.write_text(password)
+    password_file.write_text("from-file")
     monkeypatch.setenv("SURFBOARD_PASSWORD", "from-env")
     monkeypatch.setenv("SURFBOARD_PASSWORD_FILE", str(password_file))
 
-    settings = Settings(_cli_parse_args=[])
-
-    assert settings.password.get_secret_value() == password
+    with pytest.raises(ValidationError, match=PASSWORD_CONFLICT_MESSAGE):
+        Settings(_cli_parse_args=[])
 
 
 def test__settings__secrets_dir(caplog, env_surfboard_secrets_dir):
@@ -90,19 +90,16 @@ def test__settings__env__overrides_secrets_dir(env_surfboard_secrets_dir, monkey
     assert settings.password.get_secret_value() == env_password
 
 
-def test__settings__password_file__overrides_secrets_dir(
+def test__settings__password_file__secrets_dir__password(
     env_surfboard_secrets_dir, monkeypatch, tmp_path
 ):
-    file_password = "from-password-file"
-    secrets_dir_password = "from-secrets-dir"
     password_file = tmp_path / "password"
-    password_file.write_text(file_password)
-    (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text(secrets_dir_password)
+    password_file.write_text("from-password-file")
+    (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text("from-secrets-dir")
     monkeypatch.setenv("SURFBOARD_PASSWORD_FILE", str(password_file))
 
-    settings = Settings(_cli_parse_args=[])
-
-    assert settings.password.get_secret_value() == file_password
+    with pytest.raises(ValidationError, match=PASSWORD_CONFLICT_MESSAGE):
+        Settings(_cli_parse_args=[])
 
 
 def test__settings__modem_certificate_verify__false(

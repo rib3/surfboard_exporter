@@ -50,12 +50,13 @@ class Settings(BaseSettings):
         dotenv_settings,
         file_secret_settings,
     ):
-        if file_secret_settings.secrets_dir is None:
-            secrets_dir = os.environ.get("SURFBOARD_SECRETS_DIR")
-            if secrets_dir:
-                file_secret_settings = SecretsSettingsSource(
-                    settings_cls, secrets_dir=secrets_dir
-                )
+        secrets_dir_env = "SURFBOARD_SECRETS_DIR"
+        secrets_dir = os.environ.get(secrets_dir_env)
+        if secrets_dir:
+            logger.info("%s=%r", secrets_dir_env, secrets_dir)
+            file_secret_settings = SecretsSettingsSource(
+                settings_cls, secrets_dir=secrets_dir
+            )
         return init_settings, env_settings, dotenv_settings, file_secret_settings
 
     @model_validator(mode="after")
@@ -67,6 +68,8 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _password_file_load(self) -> "Settings":
         if self.password_file is not None:
+            if self.password is not None:
+                raise ValueError("set password or password_file, not both")
             logger.info("loading password from %r", str(self.password_file))
             self.password = SecretStr(self.password_file.read_text().rstrip("\n"))
         return self

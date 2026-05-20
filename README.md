@@ -15,7 +15,7 @@ Precedence (per setting): CLI > env > `.env` > secrets dir (if enabled) > defaul
 | Env Var                              | CLI Flag                          | Default           | Notes |
 | ------------------------------------ | --------------------------------- | ----------------- | ----- |
 | `SURFBOARD_PASSWORD`                 | `--password`                      | *(required)*      | Modem admin password. **Warning:** prefer env (or file); `--password …` is visible via `ps`/`/proc`. |
-| `SURFBOARD_PASSWORD_FILE`            | `--password-file`                 | unset             | Path to file containing password; overrides `SURFBOARD_PASSWORD`. |
+| `SURFBOARD_PASSWORD_FILE`            | `--password-file`                 | unset             | Path to file containing password; alternative to `SURFBOARD_PASSWORD` (setting both is an error). |
 | `SURFBOARD_USERNAME`                 | `--username`                      | `admin`           |  |
 | `SURFBOARD_MODEM_HOST`               | `--modem-host`                    | `192.168.100.1`   |  |
 | `SURFBOARD_MODEM_CERTIFICATE_VERIFY` | `--[no-]modem-certificate-verify` | `true`            | `false` disables TLS verify. |

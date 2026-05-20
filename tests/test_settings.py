@@ -64,13 +64,19 @@ def test__settings__password_file__overrides_password(monkeypatch, tmp_path):
     assert settings.password.get_secret_value() == password
 
 
-def test__settings__secrets_dir(env_surfboard_secrets_dir):
+def test__settings__secrets_dir(caplog, env_surfboard_secrets_dir):
     password = "from-secrets-dir"
     (env_surfboard_secrets_dir / "SURFBOARD_PASSWORD").write_text(password)
 
     settings = Settings(_cli_parse_args=[])
 
     assert settings.password.get_secret_value() == password
+    expected_log_tuple = (
+        "surfboard_exporter.settings",
+        logging.INFO,
+        f"SURFBOARD_SECRETS_DIR={str(env_surfboard_secrets_dir)!r}",
+    )
+    assert expected_log_tuple in caplog.record_tuples
 
 
 def test__settings__env__overrides_secrets_dir(env_surfboard_secrets_dir, monkeypatch):

@@ -3,8 +3,10 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from pydantic.version import version_short
 
 from surfboard_exporter.settings import Settings
+from testsupport.raises import pytest_raises_match_exact, repr_trunc_pydantic
 
 from .test_shared import assert_attrs
 
@@ -33,7 +35,16 @@ def test__settings__defaults(env_surfboard_password):
 
 
 def test__settings__password__missing():
-    with pytest.raises(ValidationError, match="SURFBOARD_PASSWORD"):
+    expected_message = (
+        "1 validation error for Settings\n"
+        "  Value error, password required:"
+        " SURFBOARD_PASSWORD/--password"
+        " or SURFBOARD_PASSWORD_FILE/--password-file"
+        " [type=value_error, input_value={}, input_type=dict]\n"
+        "    For further information visit"
+        f" https://errors.pydantic.dev/{version_short()}/v/value_error"
+    )
+    with pytest_raises_match_exact(ValidationError, expected_message):
         Settings(_cli_parse_args=[])
 
 
@@ -130,7 +141,15 @@ def test__settings__modem_certificate_file__does_not_exist(
     missing = tmp_path / "missing.crt"
     monkeypatch.setenv("SURFBOARD_MODEM_CERTIFICATE_FILE", str(missing))
 
-    with pytest.raises(ValidationError, match="modem_certificate_file"):
+    expected_message = (
+        "1 validation error for Settings\n"
+        "modem_certificate_file\n"
+        "  Path does not point to a file"
+        " [type=path_not_file,"
+        f" input_value={repr_trunc_pydantic(missing)},"
+        " input_type=str]"
+    )
+    with pytest_raises_match_exact(ValidationError, expected_message):
         Settings(_cli_parse_args=[])
 
 

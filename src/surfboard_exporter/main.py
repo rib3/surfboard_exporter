@@ -1,12 +1,11 @@
 import logging
 
-from prometheus_client import REGISTRY
+from prometheus_client import REGISTRY, start_http_server
 
 from .collector import SurfboardCollector
 from .files import tempfile_config
 from .log import logging_config, logging_init
-from .server import start
-from .settings import Settings
+from .settings import DEFAULT__HOST, DEFAULT__PORT, Settings
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ def main() -> None:
     logger.info("starting")
     collector = collector_from_settings(settings)
     REGISTRY.register(collector)
-    _, thread = start(
+    _, thread = http_server_start(
         host=settings.listen_host,
         port=settings.listen_port,
     )
@@ -35,3 +34,10 @@ def collector_from_settings(settings: Settings) -> SurfboardCollector:
         modem_certificate_file=settings.modem_certificate_file,
         response_save=settings.response_save,
     )
+
+
+def http_server_start(*, host: str = DEFAULT__HOST, port: int = DEFAULT__PORT):
+    logger.info("host=%r port=%r", host, port)
+    server, thread = start_http_server(port, addr=host)
+    logger.info("listening at http://%s:%d/metrics", host, server.server_port)
+    return server, thread

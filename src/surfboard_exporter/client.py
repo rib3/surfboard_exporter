@@ -7,7 +7,7 @@ from ssl import PROTOCOL_TLS_CLIENT, VERIFY_X509_PARTIAL_CHAIN, SSLContext
 
 import httpx
 
-from .instance import instance_file_create
+from .files import instance_file_create
 
 logger = logging.getLogger(__name__)
 

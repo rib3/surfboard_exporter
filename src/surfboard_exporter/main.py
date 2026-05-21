@@ -2,7 +2,7 @@ import logging
 import tempfile
 from pathlib import Path
 
-from .instance import instance_dir_get
+from .files import instance_dir_get
 from .server import start
 from .settings import Settings
 

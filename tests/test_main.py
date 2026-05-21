@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from surfboard_exporter.instance import instance_dir_get
+from surfboard_exporter.files import instance_dir_get
 from surfboard_exporter.main import tempfile_config
 from surfboard_exporter.settings import Settings
 

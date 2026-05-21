@@ -15,7 +15,7 @@ def main() -> None:
     settings = Settings()
     tempfile_config(settings)
     logging_config(settings)
-    logger.info("starting")
+
     collector = collector_from_settings(settings)
     REGISTRY.register(collector)
     _, thread = http_server_start(

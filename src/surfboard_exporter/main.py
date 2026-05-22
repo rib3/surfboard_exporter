@@ -26,9 +26,18 @@ def main() -> None:
 
 
 def collector_from_settings(settings: Settings) -> SurfboardCollector:
+    password = settings.password
+    # type-checker guard: password is optional because password_file is an alternate
+    # source. _password_required enforces one of the two set it, so the RuntimeError
+    # should not be possible.
+    # It could be changed to required, with password_file loading moved to a before
+    # validator, but before validators are slightly more complicated (strings vs
+    # values), and guards may need to be added to Settings tests.
+    if password is None:
+        raise RuntimeError("password unset")
     return SurfboardCollector(
         username=settings.username,
-        password=settings.password.get_secret_value(),
+        password=password.get_secret_value(),
         modem_host=settings.modem_host,
         modem_certificate_verify=settings.modem_certificate_verify,
         modem_certificate_file=settings.modem_certificate_file,

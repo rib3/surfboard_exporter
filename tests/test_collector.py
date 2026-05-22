@@ -95,13 +95,17 @@ def test__system_time__static_html():
 def test__system_time__missing_element__static_html__no_tome():
     metrics = collect_with(HTML__NO_TIME)
 
-    assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
+    sample_value = _get_sample_value(metrics, "surfboard_system_time")
+    assert sample_value is not None
+    assert math.isnan(sample_value)
 
 
 def test__system_time__invalid_format__static_html_with_bad_time():
     metrics = collect_with(HTML__BAD_TIME)
 
-    assert math.isnan(_get_sample_value(metrics, "surfboard_system_time"))
+    sample_value = _get_sample_value(metrics, "surfboard_system_time")
+    assert sample_value is not None
+    assert math.isnan(sample_value)
 
 
 def test__connectivity_state_ok__static_html():
@@ -144,7 +148,7 @@ def test__connectivity_state_ok__missing_table():
     metrics = collect_with("<html></html>")
 
     sample = _get_sample(metrics, "surfboard_connectivity_state_ok")
-
+    assert sample is not None
     assert math.isnan(sample.value)
     assert sample.labels == {"comment": ""}
 
@@ -189,7 +193,7 @@ def test__security_enabled__missing_table():
     metrics = collect_with("<html></html>")
 
     sample = _get_sample(metrics, "surfboard_security_enabled")
-
+    assert sample is not None
     assert math.isnan(sample.value)
     assert sample.labels == {"comment": ""}
 
@@ -224,7 +228,7 @@ def test__docsis_network_access_allowed__missing_table():
     metrics = collect_with("<html></html>")
 
     sample = _get_sample(metrics, "surfboard_docsis_network_access_allowed")
-
+    assert sample is not None
     assert math.isnan(sample.value)
     assert sample.labels == {"comment": ""}
 

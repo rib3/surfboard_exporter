@@ -22,6 +22,7 @@ from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
 
 from surfboard_exporter.files import instance_dir_get
+from surfboard_exporter.settings import Settings
 from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,
@@ -80,12 +81,29 @@ def _env_clear_tmpdir(monkeypatch):
 def _chdir_tmp_path(monkeypatch, tmp_path):
     # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
     monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
+@pytest.fixture
+def dotenv_file(_chdir_tmp_path):
+    dotenv_file = _chdir_tmp_path / ".env"
+    assert dotenv_file.name == Settings.model_config.get("env_file")
+    return dotenv_file
+
+
+@pytest.fixture
+def cli_args_set(monkeypatch):
+    def _set(args: list[str]):
+        # argv[0] is the program name; pydantic-settings parses argv[1:]
+        monkeypatch.setattr(sys, "argv", ["surfboard_exporter", *args])
+
+    return _set
 
 
 @pytest.fixture(autouse=True)
-def _sys_argv_patch(monkeypatch):
+def _sys_argv_patch(cli_args_set):
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
-    monkeypatch.setattr(sys, "argv", ["pytest"])
+    cli_args_set([])
 
 
 @pytest.fixture

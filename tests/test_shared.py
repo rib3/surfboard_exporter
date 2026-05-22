@@ -16,10 +16,10 @@ def assert_attrs_list(
     objs: Iterable[Any], *expected_attrs_list: dict[str, Any]
 ) -> None:
     objs = list(objs)
-    expected_attrs_list = list(expected_attrs_list)
+    expected_list = list(expected_attrs_list)
     actual_list = [
         _obj_as_dict(obj, expected_attrs)
-        for obj, expected_attrs in zip(objs, expected_attrs_list, strict=False)
+        for obj, expected_attrs in zip(objs, expected_list, strict=False)
     ]
-    actual_list.extend(objs[len(expected_attrs_list) :])
-    assert actual_list == expected_attrs_list
+    actual_list.extend(objs[len(expected_list) :])
+    assert actual_list == expected_list

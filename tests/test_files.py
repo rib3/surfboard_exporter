@@ -19,7 +19,7 @@ def test__tempfile_config__instance_dir_already_cached(
     env_surfboard_password, monkeypatch, tmp_path
 ):
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
-    settings = Settings(_cli_parse_args=[])
+    settings = Settings()
     instance_dir_get()
 
     with pytest.raises(RuntimeError, match="tempfile_config must run before"):
@@ -33,7 +33,7 @@ def test__tempfile_config__tmpdir(
     other.mkdir()
     monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
     monkeypatch.setenv("TMPDIR", str(other))
-    settings = Settings(_cli_parse_args=[])
+    settings = Settings()
 
     tempfile_config(settings)
 

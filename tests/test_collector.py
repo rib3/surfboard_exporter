@@ -264,6 +264,7 @@ def test__downstream_gauges__locked(
         "surfboard_downstream_locked",
         {"channel_id": str(row.channel_id)},
     )
+    assert sample is not None
     assert sample.labels["lock_status"] == lock_status
     assert sample.value == expected_locked
 
@@ -313,6 +314,7 @@ def test__upstream_gauges__locked(
         "surfboard_upstream_locked",
         {"channel_id": str(row.channel_id)},
     )
+    assert sample is not None
     assert sample.labels["lock_status"] == lock_status
     assert sample.value == expected_locked
 

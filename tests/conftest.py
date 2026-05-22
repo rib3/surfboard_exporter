@@ -318,6 +318,7 @@ def https_server_modem__expect_ordered_request__login__get(
             headers = None
         https_server_modem.server.expect_ordered_request(
             "/cmconnectionstatus.html",
+            method="GET",
             query_string=f"login_{auth}",
         ).respond_with_data(token, headers=headers)
         return session_id, token
@@ -346,6 +347,7 @@ def https_server_modem__expect_ordered_request__connectionstatus__get(
             text = faker.text()
         https_server_modem.server.expect_ordered_request(
             "/cmconnectionstatus.html",
+            method="GET",
             query_string=f"ct_{token}",
         ).respond_with_data(text, status=status_code, headers=headers)
         return session_id, text

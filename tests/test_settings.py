@@ -31,6 +31,7 @@ def test__settings__defaults(env_surfboard_password):
         tmpdir=None,
         verbose=False,
     )
+    assert settings.password is not None
     assert settings.password.get_secret_value() == env_surfboard_password
 
 
@@ -56,6 +57,7 @@ def test__settings__password_file(caplog, monkeypatch, tmp_path):
 
     settings = Settings(_cli_parse_args=[])
 
+    assert settings.password is not None
     assert settings.password.get_secret_value() == password
     expected_log_tuple = (
         "surfboard_exporter.settings",
@@ -81,6 +83,7 @@ def test__settings__secrets_dir(caplog, env_surfboard_secrets_dir):
 
     settings = Settings(_cli_parse_args=[])
 
+    assert settings.password is not None
     assert settings.password.get_secret_value() == password
     expected_log_tuple = (
         "surfboard_exporter.settings",
@@ -98,6 +101,7 @@ def test__settings__env__overrides_secrets_dir(env_surfboard_secrets_dir, monkey
 
     settings = Settings(_cli_parse_args=[])
 
+    assert settings.password is not None
     assert settings.password.get_secret_value() == env_password
 
 
@@ -203,6 +207,7 @@ def test__settings__env_file(tmp_path):
 
     settings = Settings(_env_file=str(env_file), _cli_parse_args=[])
 
+    assert settings.password is not None
     assert settings.password.get_secret_value() == password
     assert settings.modem_host == modem_host
 

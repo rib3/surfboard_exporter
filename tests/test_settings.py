@@ -211,7 +211,7 @@ def test__settings__env_file(tmp_path):
         f"SURFBOARD_PASSWORD={password}\nSURFBOARD_MODEM_HOST={modem_host}\n"
     )
 
-    settings = Settings(_env_file=str(env_file))
+    settings = Settings()
 
     assert settings.password is not None
     assert settings.password.get_secret_value() == password
@@ -226,6 +226,6 @@ def test__settings__env_file__env_overrides(
     env_file = tmp_path / ".env"
     env_file.write_text("SURFBOARD_MODEM_HOST=from-file\n")
 
-    settings = Settings(_env_file=str(env_file))
+    settings = Settings()
 
     assert settings.modem_host == modem_host

@@ -46,11 +46,7 @@ dev = [
 profile = "black"
 
 [tool.pyright]
-include = [
-  "src",
-  # "tests", # TODO
-  "testsupport",
-]
+include = ["src", "tests", "testsupport"]
 typeCheckingMode = "standard"
 pythonVersion = "3.12"
 

@@ -22,6 +22,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+  "basedpyright>=1.39.5",
   "cryptography>=46.0.6",
   "faker>=40.13.0",
   "ipython>=9.12.0",
@@ -43,6 +44,15 @@ dev = [
 
 [tool.isort]
 profile = "black"
+
+[tool.pyright]
+include = [
+  "src",
+  # "tests", # TODO
+  "testsupport",
+]
+typeCheckingMode = "standard"
+pythonVersion = "3.12"
 
 [tool.pytest.ini_options]
 addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb"

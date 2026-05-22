@@ -6,6 +6,7 @@ from testsupport.modem_html import (
     DownstreamBondedChannelsRow,
     UpstreamBondedChannelsRow,
 )
+from testsupport.parser import expected_system_time_get
 
 
 def expected_metrics_get(connection_status: ConnectionStatus) -> list[Metric]:
@@ -13,7 +14,7 @@ def expected_metrics_get(connection_status: ConnectionStatus) -> list[Metric]:
     return [
         _metric_ssl_verify_sample(1.0),
         _metric_scrape_success_sample(1.0),
-        _metric_system_time_sample(connection_status.system_time.timestamp()),
+        _metric_system_time_sample(expected_system_time_get(connection_status)),
         _metric_connectivity_state_ok_sample(
             1.0 if startup.connectivity_state == "OK" else 0.0,
             startup.connectivity_state_comment,

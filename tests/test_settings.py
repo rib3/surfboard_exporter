@@ -157,33 +157,39 @@ def test__settings__modem_certificate_file__does_not_exist(
         Settings()
 
 
-def test__settings__cli__listen_port(env_surfboard_password):
+def test__settings__cli__listen_port(cli_args_set, env_surfboard_password):
     listen_port = 5555
+    cli_args_set(["--listen-port", str(listen_port)])
 
-    settings = Settings(_cli_parse_args=["--listen-port", str(listen_port)])
+    settings = Settings()
 
     assert settings.listen_port == listen_port
 
 
 def test__settings__cli__listen_port__overrides_env(
-    env_surfboard_password, monkeypatch
+    cli_args_set, env_surfboard_password, monkeypatch
 ):
     monkeypatch.setenv("SURFBOARD_LISTEN_PORT", "1234")
     listen_port = 5555
+    cli_args_set(["--listen-port", str(listen_port)])
 
-    settings = Settings(_cli_parse_args=["--listen-port", str(listen_port)])
+    settings = Settings()
 
     assert settings.listen_port == listen_port
 
 
-def test__settings__cli__verbose__short(env_surfboard_password):
-    settings = Settings(_cli_parse_args=["-v"])
+def test__settings__cli__verbose__short(cli_args_set, env_surfboard_password):
+    cli_args_set(["-v"])
+
+    settings = Settings()
 
     assert settings.verbose is True
 
 
-def test__settings__cli__log_file(env_surfboard_password):
-    settings = Settings(_cli_parse_args=["--log-file"])
+def test__settings__cli__log_file(cli_args_set, env_surfboard_password):
+    cli_args_set(["--log-file"])
+
+    settings = Settings()
 
     assert settings.log_file is True
 

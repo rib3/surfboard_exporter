@@ -82,10 +82,19 @@ def _chdir_tmp_path(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
 
 
+@pytest.fixture
+def cli_args_set(monkeypatch):
+    def _set(args: list[str]):
+        # argv[0] is the program name; pydantic-settings parses argv[1:]
+        monkeypatch.setattr(sys, "argv", ["surfboard_exporter", *args])
+
+    return _set
+
+
 @pytest.fixture(autouse=True)
-def _sys_argv_patch(monkeypatch):
+def _sys_argv_patch(cli_args_set):
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
-    monkeypatch.setattr(sys, "argv", ["pytest"])
+    cli_args_set([])
 
 
 @pytest.fixture

@@ -203,11 +203,10 @@ def test__settings__tmpdir__expanduser(env_surfboard_password, monkeypatch):
     assert settings.tmpdir == expected_tmpdir
 
 
-def test__settings__env_file(tmp_path):
+def test__settings__env_file(dotenv_file):
     password = "from-env-file"
     modem_host = "10.0.0.1"
-    env_file = tmp_path / ".env"
-    env_file.write_text(
+    dotenv_file.write_text(
         f"SURFBOARD_PASSWORD={password}\nSURFBOARD_MODEM_HOST={modem_host}\n"
     )
 
@@ -219,12 +218,11 @@ def test__settings__env_file(tmp_path):
 
 
 def test__settings__env_file__env_overrides(
-    env_surfboard_password, monkeypatch, tmp_path
+    dotenv_file, env_surfboard_password, monkeypatch
 ):
     modem_host = "10.0.0.2"
     monkeypatch.setenv("SURFBOARD_MODEM_HOST", modem_host)
-    env_file = tmp_path / ".env"
-    env_file.write_text("SURFBOARD_MODEM_HOST=from-file\n")
+    dotenv_file.write_text("SURFBOARD_MODEM_HOST=from-file\n")
 
     settings = Settings()
 

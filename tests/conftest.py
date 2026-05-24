@@ -3,6 +3,7 @@ import logging
 import os
 import ssl
 import sys
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
@@ -264,7 +265,7 @@ class HttpServerModem:
 
 
 @pytest.fixture
-def https_server_modem(key_cert_like_modem):
+def https_server_modem(key_cert_like_modem) -> Iterator[HttpServerModem]:
     key_path, cert_path = key_cert_like_modem()
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
@@ -283,7 +284,7 @@ def https_server_modem(key_cert_like_modem):
 
 @pytest.fixture
 def https_server_modem_expect_ordered_request_login_get(
-    https_server_modem, faker: FakerWithProviders
+    https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
         *,
@@ -312,7 +313,7 @@ def https_server_modem_expect_ordered_request_login_get(
 
 @pytest.fixture
 def https_server_modem_expect_ordered_request_connectionstatus_get(
-    https_server_modem, faker: FakerWithProviders
+    https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
         *,

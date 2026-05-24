@@ -48,6 +48,7 @@ profile = "black"
 [tool.pyright]
 include = ["src", "tests", "testsupport"]
 typeCheckingMode = "standard"
+strict = ["src"]
 pythonVersion = "3.12"
 
 [tool.pytest.ini_options]

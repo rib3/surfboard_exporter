@@ -3,7 +3,12 @@ import os
 from pathlib import Path
 
 from pydantic import AliasChoices, Field, FilePath, SecretStr, model_validator
-from pydantic_settings import BaseSettings, SecretsSettingsSource, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SecretsSettingsSource,
+    SettingsConfigDict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +49,12 @@ class Settings(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls,
-        init_settings,
-        env_settings,
-        dotenv_settings,
-        file_secret_settings,
-    ):
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         secrets_dir_env = "SURFBOARD_SECRETS_DIR"
         secrets_dir = os.environ.get(secrets_dir_env)
         if secrets_dir:

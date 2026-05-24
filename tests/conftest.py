@@ -1,4 +1,5 @@
 import base64
+import enum
 import logging
 import os
 import ssl
@@ -37,7 +38,12 @@ from testsupport.surfboard_provider import SurfboardProvider
 
 logger = logging.getLogger(__name__)
 
-UNSPECIFIED = object()
+
+class _Unspecified(enum.Enum):
+    UNSPECIFIED = enum.auto()
+
+
+UNSPECIFIED = _Unspecified.UNSPECIFIED
 
 
 def pytest_configure(config):
@@ -288,11 +294,11 @@ def https_server_modem_expect_ordered_request_login_get(
 ):
     def _expect(
         *,
-        username,
-        password,
-        session_id=UNSPECIFIED,
-        token=UNSPECIFIED,
-    ):
+        username: str,
+        password: str,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        token: str | _Unspecified = UNSPECIFIED,
+    ) -> tuple[str | None, str]:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
@@ -317,11 +323,11 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
 ):
     def _expect(
         *,
-        token,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        text=UNSPECIFIED,
-    ):
+        token: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        text: str | _Unspecified = UNSPECIFIED,
+    ) -> tuple[str | None, str]:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if session_id is not None:

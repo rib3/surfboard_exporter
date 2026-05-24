@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from bs4 import BeautifulSoup, Tag
+from bs4.filter import SoupStrainer
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +82,7 @@ def _trs_for_table(
     skip: int = 0,
 ) -> Iterator[Tag]:
     soup = BeautifulSoup(html, "html.parser")
-    # bs4 supports name+string together at runtime but its own overloads don't model
-    # the combination; the call site is correct, the type stub is incomplete
-    header = soup.find("th", string=title)  # pyright: ignore[reportCallIssue, reportArgumentType]
+    header = soup.find(SoupStrainer("th", string=title))
     if header is None:
         logger.warning("table with th content %r not found", title)
         return

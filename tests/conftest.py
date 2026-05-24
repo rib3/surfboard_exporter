@@ -22,6 +22,7 @@ from polyfactory.factories.base import BaseFactory
 from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
+from pytest_httpx import HTTPXMock
 
 from surfboard_exporter.files import instance_dir_get
 from surfboard_exporter.settings import Settings
@@ -162,16 +163,16 @@ def instance_dir_get__cache_clear():
 
 
 @pytest.fixture
-def surfboard_api_mock_get_login(httpx_mock, faker):
+def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProviders):
     def _mock(
         *,
-        username="admin",
-        password,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        token=UNSPECIFIED,
-        side_effect=None,
-    ):
+        username: str = "admin",
+        password: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        token: str | _Unspecified = UNSPECIFIED,
+        side_effect: Exception | None = None,
+    ) -> None:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
@@ -193,15 +194,17 @@ def surfboard_api_mock_get_login(httpx_mock, faker):
 
 
 @pytest.fixture
-def surfboard_api_mock_get_connectionstatus(httpx_mock, faker):
+def surfboard_api_mock_get_connectionstatus(
+    httpx_mock: HTTPXMock, faker: FakerWithProviders
+):
     def _mock(
         *,
-        token,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        text=UNSPECIFIED,
-        side_effect=None,
-    ):
+        token: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        text: str | _Unspecified = UNSPECIFIED,
+        side_effect: Exception | None = None,
+    ) -> None:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if session_id is not None:

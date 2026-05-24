@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterator
 from pathlib import Path
 
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
@@ -42,7 +43,7 @@ class SurfboardCollector:
             response_save=response_save,
         )
 
-    def collect(self):
+    def collect(self) -> Iterator[GaugeMetricFamily | CounterMetricFamily]:
         logger.debug("collect start")
         yield GaugeMetricFamily(
             "surfboard_ssl_verify",

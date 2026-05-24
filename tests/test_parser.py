@@ -209,6 +209,21 @@ def test__parse_connectivity_state__missing_table(caplog):
     assert expected_log in caplog.record_tuples
 
 
+def test__parse_connectivity_state__th_without_table(caplog):
+    title = "Startup Procedure"
+    html = f"<th>{title}</th>"
+
+    state = parse_connectivity_state(html)
+
+    assert_attrs(state, ok=None, comment="")
+    expected_log = (
+        "surfboard_exporter.parser",
+        logging.WARNING,
+        f"no enclosing table for header=<th>{title}</th>",
+    )
+    assert expected_log in caplog.record_tuples
+
+
 def test__parse_connectivity_state__missing_row(caplog):
     html = (
         f"{STARTUP_PROCEDURE__TABLE_BEGIN}\n"

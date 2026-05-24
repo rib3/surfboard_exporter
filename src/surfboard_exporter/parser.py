@@ -88,6 +88,9 @@ def _trs_for_table(
         logger.warning("table with th content %r not found", title)
         return
     table = header.find_parent("table")
+    if table is None:
+        logger.warning("no enclosing table for header=%r", header)
+        return
     rows = table.find_all("tr")
     yield from rows[skip:]
 

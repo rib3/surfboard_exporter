@@ -23,6 +23,7 @@ from pytest_httpserver import HTTPServer
 
 from surfboard_exporter.files import instance_dir_get
 from surfboard_exporter.settings import Settings
+from testsupport.faker_with_providers import FakerWithProviders
 from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,
@@ -281,7 +282,9 @@ def https_server_modem(key_cert_like_modem):
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_login_get(https_server_modem, faker):
+def https_server_modem_expect_ordered_request_login_get(
+    https_server_modem, faker: FakerWithProviders
+):
     def _expect(
         *,
         username,
@@ -309,7 +312,7 @@ def https_server_modem_expect_ordered_request_login_get(https_server_modem, fake
 
 @pytest.fixture
 def https_server_modem_expect_ordered_request_connectionstatus_get(
-    https_server_modem, faker
+    https_server_modem, faker: FakerWithProviders
 ):
     def _expect(
         *,

@@ -4,7 +4,7 @@ import logging
 import os
 import ssl
 import sys
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
@@ -74,14 +74,14 @@ def pytest_make_parametrize_id(val: object) -> str | None:
 
 
 @pytest.fixture(autouse=True)
-def _env_surfboard_clear(monkeypatch):
+def _env_surfboard_clear(monkeypatch: pytest.MonkeyPatch) -> None:
     for key in list(os.environ):
         if key.startswith("SURFBOARD_"):
             monkeypatch.delenv(key)
 
 
 @pytest.fixture(autouse=True)
-def _env_clear_tmpdir(monkeypatch):
+def _env_clear_tmpdir(monkeypatch: pytest.MonkeyPatch) -> None:
     # env vars taken from `tempfile._candidate_tempdir_list`
     # https://github.com/python/cpython/blob/e56ae817e5f3df37a603251641ada5bf182af152/Lib/tempfile.py#L164
     for key in ("TMPDIR", "TEMP", "TMP"):
@@ -112,7 +112,7 @@ def cli_args_set(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
-def _sys_argv_patch(cli_args_set):
+def _sys_argv_patch(cli_args_set: Callable[[list[str]], None]) -> None:
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
     cli_args_set([])
 
@@ -160,7 +160,7 @@ def _session_faker(_session_faker):
 
 
 @pytest.fixture(autouse=True)
-def instance_dir_get__cache_clear():
+def instance_dir_get__cache_clear() -> None:
     instance_dir_get.cache_clear()
 
 

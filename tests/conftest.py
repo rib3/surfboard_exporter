@@ -68,7 +68,7 @@ def pytest_collection_modifyitems(config, items):
 def pytest_make_parametrize_id(val: object) -> str | None:
     if isinstance(val, ConnectionStatus):
         return val.testdata_id
-    return None
+    return None  # defer to pytest
 
 
 @pytest.fixture(autouse=True)

@@ -146,8 +146,8 @@ def env_surfboard_secrets_dir(
     return secrets_dir
 
 
-class UseFaker(Use):
-    def __init__(self, method_name: str, *args, **kwargs) -> None:
+class UseFaker(Use[[], object]):
+    def __init__(self, method_name: str, *args: object, **kwargs: object) -> None:
         super().__init__(
             lambda: getattr(BaseFactory.__faker__, method_name)(*args, **kwargs)
         )

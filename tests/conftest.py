@@ -47,19 +47,21 @@ class _Unspecified(enum.Enum):
 UNSPECIFIED = _Unspecified.UNSPECIFIED
 
 
-def pytest_configure(config):
+def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers", "only: run only this test (dev-only, do not commit)"
     )
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: list[pytest.Item]
+) -> None:
     focused = [i for i in items if i.get_closest_marker("only")]
     if focused:
         config.hook.pytest_deselected(items=[i for i in items if i not in focused])
         items[:] = focused
         terminal = config.pluginmanager.getplugin("terminalreporter")
-        if terminal:
+        if isinstance(terminal, pytest.TerminalReporter):
             terminal.write_sep(
                 "!", f"only mode: {len(focused)} test(s) selected", red=True, bold=True
             )

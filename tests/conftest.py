@@ -16,6 +16,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
+from faker import Faker
 from polyfactory import Use
 from polyfactory.decorators import post_generated
 from polyfactory.factories.base import BaseFactory
@@ -153,7 +154,7 @@ class UseFaker(Use):
 
 
 @pytest.fixture(scope="session")
-def _session_faker(_session_faker):
+def _session_faker(_session_faker: Faker) -> Faker:
     _session_faker.add_provider(SurfboardProvider)
     BaseFactory.__faker__.add_provider(SurfboardProvider)
     return _session_faker

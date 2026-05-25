@@ -87,22 +87,22 @@ def _env_clear_tmpdir(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _chdir_tmp_path(monkeypatch, tmp_path):
+def _chdir_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
 @pytest.fixture
-def dotenv_file(_chdir_tmp_path):
+def dotenv_file(_chdir_tmp_path: Path) -> Path:
     dotenv_file = _chdir_tmp_path / ".env"
     assert dotenv_file.name == Settings.model_config.get("env_file")
     return dotenv_file
 
 
 @pytest.fixture
-def cli_args_set(monkeypatch):
-    def _set(args: list[str]):
+def cli_args_set(monkeypatch: pytest.MonkeyPatch):
+    def _set(args: list[str]) -> None:
         # argv[0] is the program name; pydantic-settings parses argv[1:]
         monkeypatch.setattr(sys, "argv", ["surfboard_exporter", *args])
 
@@ -117,17 +117,17 @@ def _sys_argv_patch(cli_args_set):
 
 @pytest.fixture
 def env_surfboard_password(
-    _env_surfboard_clear,  # guarantee it runs before our setenv
-    faker,
-    monkeypatch,
-):
+    _env_surfboard_clear: None,  # guarantee it runs before our setenv
+    faker: FakerWithProviders,
+    monkeypatch: pytest.MonkeyPatch,
+) -> str:
     password = faker.password()
     monkeypatch.setenv("SURFBOARD_PASSWORD", password)
     return password
 
 
 @pytest.fixture
-def secrets_dir(faker, tmp_path):
+def secrets_dir(faker: FakerWithProviders, tmp_path: Path) -> Path:
     path = tmp_path / f"secrets.{faker.word()}"
     path.mkdir()
     return path
@@ -135,10 +135,10 @@ def secrets_dir(faker, tmp_path):
 
 @pytest.fixture
 def env_surfboard_secrets_dir(
-    _env_surfboard_clear,  # guarantee it runs before our setenv
-    monkeypatch,
-    secrets_dir,
-):
+    _env_surfboard_clear: None,  # guarantee it runs before our setenv
+    monkeypatch: pytest.MonkeyPatch,
+    secrets_dir: Path,
+) -> Path:
     monkeypatch.setenv("SURFBOARD_SECRETS_DIR", str(secrets_dir))
     return secrets_dir
 
@@ -225,8 +225,8 @@ def surfboard_api_mock_get_connectionstatus(
 
 
 @pytest.fixture
-def key_cert_like_modem(tmp_path):
-    def _make():
+def key_cert_like_modem(tmp_path: Path):
+    def _make() -> tuple[Path, Path]:
         # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
         key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
         prefix = "modem-"

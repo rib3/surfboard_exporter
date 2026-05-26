@@ -228,7 +228,7 @@ def surfboard_api_mock_get_connectionstatus(
 
 
 @pytest.fixture
-def key_cert_like_modem(tmp_path: Path):
+def key_cert_like_modem_factory(tmp_path: Path):
     def _make() -> tuple[Path, Path]:
         # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
         key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
@@ -277,8 +277,10 @@ class HttpServerModem:
 
 
 @pytest.fixture
-def https_server_modem(key_cert_like_modem) -> Iterator[HttpServerModem]:
-    key_path, cert_path = key_cert_like_modem()
+def https_server_modem(
+    key_cert_like_modem_factory: Callable[[], tuple[Path, Path]],
+) -> Iterator[HttpServerModem]:
+    key_path, cert_path = key_cert_like_modem_factory()
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
     ssl_ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)

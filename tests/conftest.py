@@ -154,7 +154,7 @@ class UseFaker(Use[[], object]):
 
 
 @pytest.fixture(scope="session")
-def _session_faker(_session_faker: Faker) -> Faker:
+def _session_faker(_session_faker: Faker) -> Faker:  # pyright: ignore[reportUnusedFunction]
     _session_faker.add_provider(SurfboardProvider)
     BaseFactory.__faker__.add_provider(SurfboardProvider)
     return _session_faker

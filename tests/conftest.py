@@ -416,7 +416,7 @@ class ConnectionStatusFactory(DataclassFactory[ConnectionStatus]):
 
     @post_generated
     @classmethod
-    def system_time(cls, system_time_str):
+    def system_time(cls, system_time_str: str | None) -> datetime | None:
         if system_time_str is None:
             provider = cls.get_provider_map()[datetime]
             return provider()

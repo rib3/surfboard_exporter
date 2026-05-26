@@ -75,14 +75,14 @@ def pytest_make_parametrize_id(val: object) -> str | None:
 
 
 @pytest.fixture(autouse=True)
-def _env_surfboard_clear(monkeypatch: pytest.MonkeyPatch) -> None:
+def env_surfboard_clear(monkeypatch: pytest.MonkeyPatch) -> None:
     for key in list(os.environ):
         if key.startswith("SURFBOARD_"):
             monkeypatch.delenv(key)
 
 
 @pytest.fixture(autouse=True)
-def _env_clear_tmpdir(monkeypatch: pytest.MonkeyPatch) -> None:
+def env_clear_tmpdir(monkeypatch: pytest.MonkeyPatch) -> None:
     # env vars taken from `tempfile._candidate_tempdir_list`
     # https://github.com/python/cpython/blob/e56ae817e5f3df37a603251641ada5bf182af152/Lib/tempfile.py#L164
     for key in ("TMPDIR", "TEMP", "TMP"):
@@ -90,15 +90,15 @@ def _env_clear_tmpdir(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture(autouse=True)
-def _chdir_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+def chdir_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
 @pytest.fixture
-def dotenv_file(_chdir_tmp_path: Path) -> Path:
-    dotenv_file = _chdir_tmp_path / ".env"
+def dotenv_file(chdir_tmp_path: Path) -> Path:
+    dotenv_file = chdir_tmp_path / ".env"
     assert dotenv_file.name == Settings.model_config.get("env_file")
     return dotenv_file
 
@@ -113,14 +113,14 @@ def cli_args_set(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
-def _sys_argv_patch(cli_args_set: Callable[[list[str]], None]) -> None:
+def sys_argv_patch(cli_args_set: Callable[[list[str]], None]) -> None:
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
     cli_args_set([])
 
 
 @pytest.fixture
 def env_surfboard_password(
-    _env_surfboard_clear: None,  # guarantee it runs before our setenv
+    env_surfboard_clear: None,  # guarantee it runs before our setenv
     faker: FakerWithProviders,
     monkeypatch: pytest.MonkeyPatch,
 ) -> str:
@@ -138,7 +138,7 @@ def secrets_dir(faker: FakerWithProviders, tmp_path: Path) -> Path:
 
 @pytest.fixture
 def env_surfboard_secrets_dir(
-    _env_surfboard_clear: None,  # guarantee it runs before our setenv
+    env_surfboard_clear: None,  # guarantee it runs before our setenv
     monkeypatch: pytest.MonkeyPatch,
     secrets_dir: Path,
 ) -> Path:

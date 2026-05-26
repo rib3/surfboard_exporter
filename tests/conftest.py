@@ -352,7 +352,7 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
 
 
 @register_fixture
-class StartupProcedureFactory(DataclassFactory):
+class StartupProcedureFactory(DataclassFactory[StartupProcedure]):
     __model__ = StartupProcedure
     connectivity_state = UseFaker("surfboard_connectivity_state")
     connectivity_state_comment = UseFaker("surfboard_connectivity_state_comment")
@@ -365,7 +365,7 @@ class StartupProcedureFactory(DataclassFactory):
 
 
 @register_fixture
-class DownstreamBondedChannelsRowFactory(DataclassFactory):
+class DownstreamBondedChannelsRowFactory(DataclassFactory[DownstreamBondedChannelsRow]):
     __model__ = DownstreamBondedChannelsRow
     channel_id = UseFaker("surfboard_downstream_channel_id")
     lock_status = UseFaker("surfboard_downstream_lock_status")
@@ -378,7 +378,7 @@ class DownstreamBondedChannelsRowFactory(DataclassFactory):
 
 
 @register_fixture
-class DownstreamBondedChannelsFactory(DataclassFactory):
+class DownstreamBondedChannelsFactory(DataclassFactory[DownstreamBondedChannels]):
     __model__ = DownstreamBondedChannels
 
     @post_generated
@@ -389,7 +389,7 @@ class DownstreamBondedChannelsFactory(DataclassFactory):
 
 
 @register_fixture
-class UpstreamBondedChannelsRowFactory(DataclassFactory):
+class UpstreamBondedChannelsRowFactory(DataclassFactory[UpstreamBondedChannelsRow]):
     __model__ = UpstreamBondedChannelsRow
     channel = UseFaker("surfboard_upstream_channel")
     channel_id = UseFaker("surfboard_upstream_channel_id")
@@ -401,14 +401,14 @@ class UpstreamBondedChannelsRowFactory(DataclassFactory):
 
 
 @register_fixture
-class UpstreamBondedChannelsFactory(DataclassFactory):
+class UpstreamBondedChannelsFactory(DataclassFactory[UpstreamBondedChannels]):
     __model__ = UpstreamBondedChannels
     __min_collection_length__ = 0
     __max_collection_length__ = 4
 
 
 @register_fixture
-class ConnectionStatusFactory(DataclassFactory):
+class ConnectionStatusFactory(DataclassFactory[ConnectionStatus]):
     __model__ = ConnectionStatus
     system_time_str = None
     # real-capture stem (testdata/<id>.html); factory should generate None

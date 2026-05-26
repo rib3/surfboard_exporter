@@ -48,7 +48,7 @@ profile = "black"
 [tool.pyright]
 include = ["src", "tests", "testsupport"]
 typeCheckingMode = "standard"
-strict = ["src"]
+strict = ["src", "tests/conftest.py"]
 pythonVersion = "3.12"
 
 [tool.pytest.ini_options]

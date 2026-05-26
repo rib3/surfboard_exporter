@@ -1,8 +1,10 @@
 import base64
+import enum
 import logging
 import os
 import ssl
 import sys
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
@@ -14,15 +16,18 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
+from faker import Faker
 from polyfactory import Use
 from polyfactory.decorators import post_generated
 from polyfactory.factories.base import BaseFactory
 from polyfactory.factories.dataclass_factory import DataclassFactory
 from polyfactory.pytest_plugin import register_fixture
 from pytest_httpserver import HTTPServer
+from pytest_httpx import HTTPXMock
 
 from surfboard_exporter.files import instance_dir_get
 from surfboard_exporter.settings import Settings
+from testsupport.faker_with_providers import FakerWithProviders
 from testsupport.modem_html import (
     ConnectionStatus,
     DownstreamBondedChannels,
@@ -35,42 +40,49 @@ from testsupport.surfboard_provider import SurfboardProvider
 
 logger = logging.getLogger(__name__)
 
-UNSPECIFIED = object()
+
+class _Unspecified(enum.Enum):
+    UNSPECIFIED = enum.auto()
 
 
-def pytest_configure(config):
+UNSPECIFIED = _Unspecified.UNSPECIFIED
+
+
+def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers", "only: run only this test (dev-only, do not commit)"
     )
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: list[pytest.Item]
+) -> None:
     focused = [i for i in items if i.get_closest_marker("only")]
     if focused:
         config.hook.pytest_deselected(items=[i for i in items if i not in focused])
         items[:] = focused
         terminal = config.pluginmanager.getplugin("terminalreporter")
-        if terminal:
+        if isinstance(terminal, pytest.TerminalReporter):
             terminal.write_sep(
                 "!", f"only mode: {len(focused)} test(s) selected", red=True, bold=True
             )
 
 
-def pytest_make_parametrize_id(val):
+def pytest_make_parametrize_id(val: object) -> str | None:
     if isinstance(val, ConnectionStatus):
         return val.testdata_id
-    return None
+    return None  # defer to pytest
 
 
 @pytest.fixture(autouse=True)
-def _env_surfboard_clear(monkeypatch):
+def env_surfboard_clear(monkeypatch: pytest.MonkeyPatch) -> None:
     for key in list(os.environ):
         if key.startswith("SURFBOARD_"):
             monkeypatch.delenv(key)
 
 
 @pytest.fixture(autouse=True)
-def _env_clear_tmpdir(monkeypatch):
+def env_clear_tmpdir(monkeypatch: pytest.MonkeyPatch) -> None:
     # env vars taken from `tempfile._candidate_tempdir_list`
     # https://github.com/python/cpython/blob/e56ae817e5f3df37a603251641ada5bf182af152/Lib/tempfile.py#L164
     for key in ("TMPDIR", "TEMP", "TMP"):
@@ -78,22 +90,22 @@ def _env_clear_tmpdir(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _chdir_tmp_path(monkeypatch, tmp_path):
+def chdir_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     # avoid project-root .env leaking in (pydantic-settings reads relative to cwd)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
 @pytest.fixture
-def dotenv_file(_chdir_tmp_path):
-    dotenv_file = _chdir_tmp_path / ".env"
+def dotenv_file(chdir_tmp_path: Path) -> Path:
+    dotenv_file = chdir_tmp_path / ".env"
     assert dotenv_file.name == Settings.model_config.get("env_file")
     return dotenv_file
 
 
 @pytest.fixture
-def cli_args_set(monkeypatch):
-    def _set(args: list[str]):
+def cli_args_set(monkeypatch: pytest.MonkeyPatch):
+    def _set(args: list[str]) -> None:
         # argv[0] is the program name; pydantic-settings parses argv[1:]
         monkeypatch.setattr(sys, "argv", ["surfboard_exporter", *args])
 
@@ -101,24 +113,24 @@ def cli_args_set(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _sys_argv_patch(cli_args_set):
+def sys_argv_patch(cli_args_set: Callable[[list[str]], None]) -> None:
     # avoid pytest's own argv leaking into pydantic-settings' CLI parser
     cli_args_set([])
 
 
 @pytest.fixture
 def env_surfboard_password(
-    _env_surfboard_clear,  # guarantee it runs before our setenv
-    faker,
-    monkeypatch,
-):
+    env_surfboard_clear: None,  # guarantee it runs before our setenv
+    faker: FakerWithProviders,
+    monkeypatch: pytest.MonkeyPatch,
+) -> str:
     password = faker.password()
     monkeypatch.setenv("SURFBOARD_PASSWORD", password)
     return password
 
 
 @pytest.fixture
-def secrets_dir(faker, tmp_path):
+def secrets_dir(faker: FakerWithProviders, tmp_path: Path) -> Path:
     path = tmp_path / f"secrets.{faker.word()}"
     path.mkdir()
     return path
@@ -126,44 +138,44 @@ def secrets_dir(faker, tmp_path):
 
 @pytest.fixture
 def env_surfboard_secrets_dir(
-    _env_surfboard_clear,  # guarantee it runs before our setenv
-    monkeypatch,
-    secrets_dir,
-):
+    env_surfboard_clear: None,  # guarantee it runs before our setenv
+    monkeypatch: pytest.MonkeyPatch,
+    secrets_dir: Path,
+) -> Path:
     monkeypatch.setenv("SURFBOARD_SECRETS_DIR", str(secrets_dir))
     return secrets_dir
 
 
-class UseFaker(Use):
-    def __init__(self, method_name: str, *args, **kwargs) -> None:
+class UseFaker(Use[[], object]):
+    def __init__(self, method_name: str, *args: object, **kwargs: object) -> None:
         super().__init__(
             lambda: getattr(BaseFactory.__faker__, method_name)(*args, **kwargs)
         )
 
 
 @pytest.fixture(scope="session")
-def _session_faker(_session_faker):
+def _session_faker(_session_faker: Faker) -> Faker:  # pyright: ignore[reportUnusedFunction]
     _session_faker.add_provider(SurfboardProvider)
     BaseFactory.__faker__.add_provider(SurfboardProvider)
     return _session_faker
 
 
 @pytest.fixture(autouse=True)
-def instance_dir_get__cache_clear():
+def instance_dir_get__cache_clear() -> None:
     instance_dir_get.cache_clear()
 
 
 @pytest.fixture
-def surfboard_api_mock_get_login(httpx_mock, faker):
+def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProviders):
     def _mock(
         *,
-        username="admin",
-        password,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        token=UNSPECIFIED,
-        side_effect=None,
-    ):
+        username: str = "admin",
+        password: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        token: str | _Unspecified = UNSPECIFIED,
+        side_effect: Exception | None = None,
+    ) -> None:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
@@ -185,15 +197,17 @@ def surfboard_api_mock_get_login(httpx_mock, faker):
 
 
 @pytest.fixture
-def surfboard_api_mock_get_connectionstatus(httpx_mock, faker):
+def surfboard_api_mock_get_connectionstatus(
+    httpx_mock: HTTPXMock, faker: FakerWithProviders
+):
     def _mock(
         *,
-        token,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        text=UNSPECIFIED,
-        side_effect=None,
-    ):
+        token: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        text: str | _Unspecified = UNSPECIFIED,
+        side_effect: Exception | None = None,
+    ) -> None:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if session_id is not None:
@@ -214,8 +228,8 @@ def surfboard_api_mock_get_connectionstatus(httpx_mock, faker):
 
 
 @pytest.fixture
-def key_cert_like_modem(tmp_path):
-    def _make():
+def key_cert_like_modem_factory(tmp_path: Path):
+    def _make() -> tuple[Path, Path]:
         # generate a modem-like cert: 1024-bit RSA, CA:FALSE, self-signed
         key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
         prefix = "modem-"
@@ -263,8 +277,10 @@ class HttpServerModem:
 
 
 @pytest.fixture
-def https_server_modem(key_cert_like_modem):
-    key_path, cert_path = key_cert_like_modem()
+def https_server_modem(
+    key_cert_like_modem_factory: Callable[[], tuple[Path, Path]],
+) -> Iterator[HttpServerModem]:
+    key_path, cert_path = key_cert_like_modem_factory()
     ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ssl_ctx.set_ciphers("DEFAULT@SECLEVEL=1")
     ssl_ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)
@@ -281,14 +297,16 @@ def https_server_modem(key_cert_like_modem):
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_login_get(https_server_modem, faker):
+def https_server_modem_expect_ordered_request_login_get(
+    https_server_modem: HttpServerModem, faker: FakerWithProviders
+):
     def _expect(
         *,
-        username,
-        password,
-        session_id=UNSPECIFIED,
-        token=UNSPECIFIED,
-    ):
+        username: str,
+        password: str,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        token: str | _Unspecified = UNSPECIFIED,
+    ) -> tuple[str | None, str]:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
@@ -309,15 +327,15 @@ def https_server_modem_expect_ordered_request_login_get(https_server_modem, fake
 
 @pytest.fixture
 def https_server_modem_expect_ordered_request_connectionstatus_get(
-    https_server_modem, faker
+    https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
         *,
-        token,
-        status_code=HTTPStatus.OK,
-        session_id=UNSPECIFIED,
-        text=UNSPECIFIED,
-    ):
+        token: str,
+        status_code: HTTPStatus = HTTPStatus.OK,
+        session_id: str | None | _Unspecified = UNSPECIFIED,
+        text: str | _Unspecified = UNSPECIFIED,
+    ) -> tuple[str | None, str]:
         if session_id is UNSPECIFIED:
             session_id = faker.surfboard_session_id()
         if session_id is not None:
@@ -336,7 +354,7 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
 
 
 @register_fixture
-class StartupProcedureFactory(DataclassFactory):
+class StartupProcedureFactory(DataclassFactory[StartupProcedure]):
     __model__ = StartupProcedure
     connectivity_state = UseFaker("surfboard_connectivity_state")
     connectivity_state_comment = UseFaker("surfboard_connectivity_state_comment")
@@ -349,7 +367,7 @@ class StartupProcedureFactory(DataclassFactory):
 
 
 @register_fixture
-class DownstreamBondedChannelsRowFactory(DataclassFactory):
+class DownstreamBondedChannelsRowFactory(DataclassFactory[DownstreamBondedChannelsRow]):
     __model__ = DownstreamBondedChannelsRow
     channel_id = UseFaker("surfboard_downstream_channel_id")
     lock_status = UseFaker("surfboard_downstream_lock_status")
@@ -362,7 +380,7 @@ class DownstreamBondedChannelsRowFactory(DataclassFactory):
 
 
 @register_fixture
-class DownstreamBondedChannelsFactory(DataclassFactory):
+class DownstreamBondedChannelsFactory(DataclassFactory[DownstreamBondedChannels]):
     __model__ = DownstreamBondedChannels
 
     @post_generated
@@ -373,7 +391,7 @@ class DownstreamBondedChannelsFactory(DataclassFactory):
 
 
 @register_fixture
-class UpstreamBondedChannelsRowFactory(DataclassFactory):
+class UpstreamBondedChannelsRowFactory(DataclassFactory[UpstreamBondedChannelsRow]):
     __model__ = UpstreamBondedChannelsRow
     channel = UseFaker("surfboard_upstream_channel")
     channel_id = UseFaker("surfboard_upstream_channel_id")
@@ -385,14 +403,14 @@ class UpstreamBondedChannelsRowFactory(DataclassFactory):
 
 
 @register_fixture
-class UpstreamBondedChannelsFactory(DataclassFactory):
+class UpstreamBondedChannelsFactory(DataclassFactory[UpstreamBondedChannels]):
     __model__ = UpstreamBondedChannels
     __min_collection_length__ = 0
     __max_collection_length__ = 4
 
 
 @register_fixture
-class ConnectionStatusFactory(DataclassFactory):
+class ConnectionStatusFactory(DataclassFactory[ConnectionStatus]):
     __model__ = ConnectionStatus
     system_time_str = None
     # real-capture stem (testdata/<id>.html); factory should generate None
@@ -400,7 +418,7 @@ class ConnectionStatusFactory(DataclassFactory):
 
     @post_generated
     @classmethod
-    def system_time(cls, system_time_str):
+    def system_time(cls, system_time_str: str | None) -> datetime | None:
         if system_time_str is None:
             provider = cls.get_provider_map()[datetime]
             return provider()

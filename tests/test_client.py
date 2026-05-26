@@ -259,9 +259,9 @@ def test__connection_status_get__modem_certificate_file__none__ssl_fails(
 
 
 def test__connection_status_get__modem_certificate_file__wrong_cert__ssl_fails(
-    https_server_modem, key_cert_like_modem, caplog
+    https_server_modem, key_cert_like_modem_factory, caplog
 ):
-    _, wrong_cert_path = key_cert_like_modem()
+    _, wrong_cert_path = key_cert_like_modem_factory()
     client = SurfboardClient(
         password="password",
         modem_host=https_server_modem.host,

@@ -152,13 +152,13 @@ def test__generate_latest__ssl_verify__enabled__certificate_file__none(
 
 def test__generate_latest__ssl_verify__disabled(
     https_server_modem,
-    https_server_modem_expect_ordered_request_login_get,
-    https_server_modem_expect_ordered_request_connectionstatus_get,
+    https_server_modem__expect_ordered_request__login__get,
+    https_server_modem__expect_ordered_request__connectionstatus__get,
 ):
-    _, token = https_server_modem_expect_ordered_request_login_get(
+    _, token = https_server_modem__expect_ordered_request__login__get(
         username="user", password="pass"
     )
-    https_server_modem_expect_ordered_request_connectionstatus_get(token=token)
+    https_server_modem__expect_ordered_request__connectionstatus__get(token=token)
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(

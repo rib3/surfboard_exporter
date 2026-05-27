@@ -297,7 +297,7 @@ def https_server_modem(
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_login_get(
+def https_server_modem__expect_ordered_request__login__get(
     https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
@@ -326,7 +326,7 @@ def https_server_modem_expect_ordered_request_login_get(
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_connectionstatus_get(
+def https_server_modem__expect_ordered_request__connectionstatus__get(
     https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(

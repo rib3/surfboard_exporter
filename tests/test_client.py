@@ -216,13 +216,13 @@ def test__connection_status_get__modem_certificate_verify__false(
 
 def test__connection_status_get__modem_certificate_file(
     https_server_modem,
-    https_server_modem_expect_ordered_request_login_get,
-    https_server_modem_expect_ordered_request_connectionstatus_get,
+    https_server_modem__expect_ordered_request__login__get,
+    https_server_modem__expect_ordered_request__connectionstatus__get,
 ):
-    session_id, token = https_server_modem_expect_ordered_request_login_get(
+    session_id, token = https_server_modem__expect_ordered_request__login__get(
         username="admin", password="password"
     )
-    _, status_html = https_server_modem_expect_ordered_request_connectionstatus_get(
+    _, status_html = https_server_modem__expect_ordered_request__connectionstatus__get(
         token=token, session_id=session_id
     )
     client = SurfboardClient(

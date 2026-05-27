@@ -55,16 +55,16 @@ def test__init__modem_certificate_file__does_not_exist(tmp_path):
     ],
 )
 def test__generate_latest(
-    surfboard_api_mock_get_login,
-    surfboard_api_mock_get_connectionstatus,
+    surfboard_api__mock__login__get,
+    surfboard_api__mock__connectionstatus__get,
     collector_kwargs,
     expected_username,
 ):
     token = "abc123token"
-    surfboard_api_mock_get_login(
+    surfboard_api__mock__login__get(
         username=expected_username, password="pass", token=token
     )
-    surfboard_api_mock_get_connectionstatus(token=token, text=HTML)
+    surfboard_api__mock__connectionstatus__get(token=token, text=HTML)
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(password="pass", **collector_kwargs)
@@ -152,13 +152,13 @@ def test__generate_latest__ssl_verify__enabled__certificate_file__none(
 
 def test__generate_latest__ssl_verify__disabled(
     https_server_modem,
-    https_server_modem_expect_ordered_request_login_get,
-    https_server_modem_expect_ordered_request_connectionstatus_get,
+    https_server_modem__expect_ordered_request__login__get,
+    https_server_modem__expect_ordered_request__connectionstatus__get,
 ):
-    _, token = https_server_modem_expect_ordered_request_login_get(
+    _, token = https_server_modem__expect_ordered_request__login__get(
         username="user", password="pass"
     )
-    https_server_modem_expect_ordered_request_connectionstatus_get(token=token)
+    https_server_modem__expect_ordered_request__connectionstatus__get(token=token)
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(
@@ -179,12 +179,12 @@ def test__generate_latest__ssl_verify__disabled(
 @pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
 def test__generate_latest__real_html(
     connection_status,
-    surfboard_api_mock_get_login,
-    surfboard_api_mock_get_connectionstatus,
+    surfboard_api__mock__login__get,
+    surfboard_api__mock__connectionstatus__get,
 ):
     token = "abc123token"
-    surfboard_api_mock_get_login(password="pass", token=token)
-    surfboard_api_mock_get_connectionstatus(
+    surfboard_api__mock__login__get(password="pass", token=token)
+    surfboard_api__mock__connectionstatus__get(
         token=token, text=connection_status.html_raw
     )
 

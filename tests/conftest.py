@@ -48,6 +48,10 @@ class _Unspecified(enum.Enum):
 UNSPECIFIED = _Unspecified.UNSPECIFIED
 
 
+def _login_auth_encode(*, username: str, password: str) -> str:
+    return base64.b64encode(f"{username}:{password}".encode()).decode()
+
+
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers", "only: run only this test (dev-only, do not commit)"
@@ -166,7 +170,7 @@ def instance_dir_get__cache_clear() -> None:
 
 
 @pytest.fixture
-def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProviders):
+def surfboard_api__mock__login__get(httpx_mock: HTTPXMock, faker: FakerWithProviders):
     def _mock(
         *,
         username: str = "admin",
@@ -180,24 +184,28 @@ def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProvider
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
             token = faker.surfboard_token()
-        auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        auth = _login_auth_encode(username=username, password=password)
         url = f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
         if side_effect is not None:
-            httpx_mock.add_exception(side_effect, url=url)
+            httpx_mock.add_exception(side_effect, url=url, method="GET")
         else:
             if session_id is not None:
                 headers = {"Set-Cookie": f"sessionId={session_id}"}
             else:
                 headers = None
             httpx_mock.add_response(
-                url=url, status_code=status_code, headers=headers, text=token
+                url=url,
+                method="GET",
+                status_code=status_code,
+                headers=headers,
+                text=token,
             )
 
     return _mock
 
 
 @pytest.fixture
-def surfboard_api_mock_get_connectionstatus(
+def surfboard_api__mock__connectionstatus__get(
     httpx_mock: HTTPXMock, faker: FakerWithProviders
 ):
     def _mock(
@@ -218,10 +226,14 @@ def surfboard_api_mock_get_connectionstatus(
             text = faker.text()
         url = f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
         if side_effect is not None:
-            httpx_mock.add_exception(side_effect, url=url)
+            httpx_mock.add_exception(side_effect, url=url, method="GET")
         else:
             httpx_mock.add_response(
-                url=url, status_code=status_code, headers=headers, text=text
+                url=url,
+                method="GET",
+                status_code=status_code,
+                headers=headers,
+                text=text,
             )
 
     return _mock
@@ -297,7 +309,7 @@ def https_server_modem(
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_login_get(
+def https_server_modem__expect_ordered_request__login__get(
     https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
@@ -311,13 +323,14 @@ def https_server_modem_expect_ordered_request_login_get(
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
             token = faker.surfboard_token()
-        auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        auth = _login_auth_encode(username=username, password=password)
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:
             headers = None
         https_server_modem.server.expect_ordered_request(
             "/cmconnectionstatus.html",
+            method="GET",
             query_string=f"login_{auth}",
         ).respond_with_data(token, headers=headers)
         return session_id, token
@@ -326,7 +339,7 @@ def https_server_modem_expect_ordered_request_login_get(
 
 
 @pytest.fixture
-def https_server_modem_expect_ordered_request_connectionstatus_get(
+def https_server_modem__expect_ordered_request__connectionstatus__get(
     https_server_modem: HttpServerModem, faker: FakerWithProviders
 ):
     def _expect(
@@ -346,6 +359,7 @@ def https_server_modem_expect_ordered_request_connectionstatus_get(
             text = faker.text()
         https_server_modem.server.expect_ordered_request(
             "/cmconnectionstatus.html",
+            method="GET",
             query_string=f"ct_{token}",
         ).respond_with_data(text, status=status_code, headers=headers)
         return session_id, text

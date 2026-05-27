@@ -183,14 +183,18 @@ def surfboard_api__mock__login__get(httpx_mock: HTTPXMock, faker: FakerWithProvi
         auth = base64.b64encode(f"{username}:{password}".encode()).decode()
         url = f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
         if side_effect is not None:
-            httpx_mock.add_exception(side_effect, url=url)
+            httpx_mock.add_exception(side_effect, url=url, method="GET")
         else:
             if session_id is not None:
                 headers = {"Set-Cookie": f"sessionId={session_id}"}
             else:
                 headers = None
             httpx_mock.add_response(
-                url=url, status_code=status_code, headers=headers, text=token
+                url=url,
+                method="GET",
+                status_code=status_code,
+                headers=headers,
+                text=token,
             )
 
     return _mock
@@ -218,10 +222,14 @@ def surfboard_api__mock__connectionstatus__get(
             text = faker.text()
         url = f"https://192.168.100.1/cmconnectionstatus.html?ct_{token}"
         if side_effect is not None:
-            httpx_mock.add_exception(side_effect, url=url)
+            httpx_mock.add_exception(side_effect, url=url, method="GET")
         else:
             httpx_mock.add_response(
-                url=url, status_code=status_code, headers=headers, text=text
+                url=url,
+                method="GET",
+                status_code=status_code,
+                headers=headers,
+                text=text,
             )
 
     return _mock

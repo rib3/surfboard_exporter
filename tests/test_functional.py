@@ -55,16 +55,16 @@ def test__init__modem_certificate_file__does_not_exist(tmp_path):
     ],
 )
 def test__generate_latest(
-    surfboard_api_mock_get_login,
-    surfboard_api_mock_get_connectionstatus,
+    surfboard_api__mock__login__get,
+    surfboard_api__mock__connectionstatus__get,
     collector_kwargs,
     expected_username,
 ):
     token = "abc123token"
-    surfboard_api_mock_get_login(
+    surfboard_api__mock__login__get(
         username=expected_username, password="pass", token=token
     )
-    surfboard_api_mock_get_connectionstatus(token=token, text=HTML)
+    surfboard_api__mock__connectionstatus__get(token=token, text=HTML)
 
     registry = CollectorRegistry()
     collector = SurfboardCollector(password="pass", **collector_kwargs)
@@ -179,12 +179,12 @@ def test__generate_latest__ssl_verify__disabled(
 @pytest.mark.parametrize("connection_status", CONNECTION_STATUSES)
 def test__generate_latest__real_html(
     connection_status,
-    surfboard_api_mock_get_login,
-    surfboard_api_mock_get_connectionstatus,
+    surfboard_api__mock__login__get,
+    surfboard_api__mock__connectionstatus__get,
 ):
     token = "abc123token"
-    surfboard_api_mock_get_login(password="pass", token=token)
-    surfboard_api_mock_get_connectionstatus(
+    surfboard_api__mock__login__get(password="pass", token=token)
+    surfboard_api__mock__connectionstatus__get(
         token=token, text=connection_status.html_raw
     )
 

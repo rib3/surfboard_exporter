@@ -166,7 +166,7 @@ def instance_dir_get__cache_clear() -> None:
 
 
 @pytest.fixture
-def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProviders):
+def surfboard_api__mock__login__get(httpx_mock: HTTPXMock, faker: FakerWithProviders):
     def _mock(
         *,
         username: str = "admin",
@@ -197,7 +197,7 @@ def surfboard_api_mock_get_login(httpx_mock: HTTPXMock, faker: FakerWithProvider
 
 
 @pytest.fixture
-def surfboard_api_mock_get_connectionstatus(
+def surfboard_api__mock__connectionstatus__get(
     httpx_mock: HTTPXMock, faker: FakerWithProviders
 ):
     def _mock(

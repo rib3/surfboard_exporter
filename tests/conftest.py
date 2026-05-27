@@ -48,6 +48,10 @@ class _Unspecified(enum.Enum):
 UNSPECIFIED = _Unspecified.UNSPECIFIED
 
 
+def _login_auth_encode(*, username: str, password: str) -> str:
+    return base64.b64encode(f"{username}:{password}".encode()).decode()
+
+
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers", "only: run only this test (dev-only, do not commit)"
@@ -180,7 +184,7 @@ def surfboard_api__mock__login__get(httpx_mock: HTTPXMock, faker: FakerWithProvi
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
             token = faker.surfboard_token()
-        auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        auth = _login_auth_encode(username=username, password=password)
         url = f"https://192.168.100.1/cmconnectionstatus.html?login_{auth}"
         if side_effect is not None:
             httpx_mock.add_exception(side_effect, url=url, method="GET")
@@ -319,7 +323,7 @@ def https_server_modem__expect_ordered_request__login__get(
             session_id = faker.surfboard_session_id()
         if token is UNSPECIFIED:
             token = faker.surfboard_token()
-        auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        auth = _login_auth_encode(username=username, password=password)
         if session_id is not None:
             headers = {"Set-Cookie": f"sessionId={session_id}"}
         else:

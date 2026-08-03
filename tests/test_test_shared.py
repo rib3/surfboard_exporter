@@ -48,7 +48,7 @@ def test__assert_attrs_list__objs_longer__shows_extra_obj_in_diff():
 
     msg = _strip_ansi_sgr(str(exc_info.value))
     logger.info("msg:\n%s\n-----\n%r", msg, msg)
-    assert "namespace(a=2, b='y')" in msg
+    assert "Left contains one more item: namespace(a=2, b='y')" in msg
 
 
 def test__assert_attrs_list__objs_shorter__shows_unmatched_expected_in_diff():
@@ -59,4 +59,4 @@ def test__assert_attrs_list__objs_shorter__shows_unmatched_expected_in_diff():
 
     msg = _strip_ansi_sgr(str(exc_info.value))
     logger.info("msg:\n%s\n-----\n%r", msg, msg)
-    assert "{'a': 2, 'b': 'y'}" in msg
+    assert "Right contains one more item: {'a': 2, 'b': 'y'}" in msg
